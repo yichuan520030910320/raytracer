@@ -135,7 +135,7 @@ fn main() {
             z: -1.0,
         },
         radius: 0.5,
-        mat_ptr: Arc::new((Metal::new(Vec3::new(0.8, 0.8, 0.8)))),
+        mat_ptr: Arc::new((Metal::new(Vec3::new(0.8, 0.8, 0.8),0.3))),
     };
     let sphright = Sphere {
         p: Vec3 {
@@ -155,7 +155,7 @@ fn main() {
             z: -1.0,
         },
         radius: 0.5,
-        mat_ptr: Arc::new((Metal::new(Vec3::new(0.8, 0.6, 0.2)))),
+        mat_ptr: Arc::new((Metal::new(Vec3::new(0.8, 0.6, 0.2),1.0))),
     };
     world.add(
         Arc::new(sph2)
