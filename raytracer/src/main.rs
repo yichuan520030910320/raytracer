@@ -218,32 +218,32 @@ fn main() {
         radius: R,
         mat_ptr: Arc::new(Lambertian::new(Vec3::new(1.0, 0.0, 0.0))),//todo
     };
-    world.add(
-        Arc::new(materialleft)
-    );
-    world.add(
-        Arc::new(materialright)
-    );
     // world.add(
-    //     Arc::new(sph2)
-    // );
-    //
-    // world.add(
-    //     Arc::new(sph1)
-    // );
-    //
-    // world.add(
-    //     Arc::new(sphleft)
+    //     Arc::new(materialleft)
     // );
     // world.add(
-    //     Arc::new(sphleft_transparental)
-    // );
-    // world.add(
-    //     Arc::new(sphright)
+    //     Arc::new(materialright)
     // );
 
+
+    world.add(
+        Arc::new(sph1)
+    );
+    world.add(
+        Arc::new(sph2)
+    );
+    world.add(
+        Arc::new(sphleft)
+    );
+    world.add(
+        Arc::new(sphleft_transparental)
+    );
+    world.add(
+        Arc::new(sphright)
+    );
+
     //Camera
-    let cam = camera::Camera::new(90.0,ratio);
+    let cam = camera::Camera::new(Vec3::new(-2.0,2.0,1.0),Vec3::new(0.0,0.0,-1.0),Vec3::new(0.0,1.0,0.0),90.0,ratio);
 
     let view_heigth: f64 = 2.0;
     let view_width = (view_heigth * ratio) as f64;

@@ -1,15 +1,17 @@
-use std::ops::{Add, AddAssign,Sub,SubAssign,Mul,MulAssign,Div,DivAssign,Neg};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Neg};
 use rand::Rng;
 use std::f32::consts::PI;
+
 //let secret_number = ;
-fn random_doouble()->f64{
-    rand::thread_rng().gen_range(1..101) as f64/102.0
-}
-fn range_random_double(min:f64,max:f64)->f64{
-    min+(max-min)*random_doouble()
+fn random_doouble() -> f64 {
+    rand::thread_rng().gen_range(1..101) as f64 / 102.0
 }
 
-#[derive(Clone, Debug, PartialEq,Copy)]
+fn range_random_double(min: f64, max: f64) -> f64 {
+    min + (max - min) * random_doouble()
+}
+
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -33,46 +35,53 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn length(&self)-> f64{ { (self.x * self.x + self.y * self.y + self.z * self.z) as f64 }.sqrt()}
+    pub fn length(&self) -> f64 { { (self.x * self.x + self.y * self.y + self.z * self.z) as f64 }.sqrt() }
 
-    pub fn unit(self)->Self{
-        Self::new(self.x/self.length(), self.y/self.length(), self.z/self.length())
-    }
-
-    pub fn dot(a:Self,b:Self)->f64{
-        a.x*b.x+a.y*b.y+a.z*b.z
+    pub fn unit(self) -> Self {
+        Self::new(self.x / self.length(), self.y / self.length(), self.z / self.length())
     }
 
-    pub fn random()->Self{
-        Self::new(random_doouble(),random_doouble(),random_doouble())
+    pub fn dot(a: Self, b: Self) -> f64 {
+        a.x * b.x + a.y * b.y + a.z * b.z
     }
-    pub fn randomrange(min:f64,max:f64)->Self{
-        Self::new(range_random_double(min,max),range_random_double(min,max),range_random_double(min,max))
-    }
-    pub fn near_zero(self)->bool{
-        let s=1e-8;
-        return (self.x).abs()<s&&self.y.abs()<s&&self.z.abs()<s;
-    }//may need to do
-    pub fn reflect(v:Self,n:Self)->Self{
-        return v-n*(2.0 as f64*Vec3::dot(v, n));
-    }
-    pub fn refract(uv:Self, n:Self, etai_over_etat:f64) ->Self{
 
-        let costhta=Vec3::dot(-uv,n);
-        let r_out_perp=(uv+n*costhta)*etai_over_etat;
-        let r_out_parallel=(n*(-(1.0-Vec3::squared_length(&r_out_perp)).abs().sqrt()));
-        return r_out_perp+r_out_parallel;
+    pub fn random() -> Self {
+        Self::new(random_doouble(), random_doouble(), random_doouble())
+    }
+    pub fn randomrange(min: f64, max: f64) -> Self {
+        Self::new(range_random_double(min, max), range_random_double(min, max), range_random_double(min, max))
+    }
+    pub fn near_zero(self) -> bool {
+        let s = 1e-8;
+        return (self.x).abs() < s && self.y.abs() < s && self.z.abs() < s;
+    }
+    //may need to do
+    pub fn reflect(v: Self, n: Self) -> Self {
+        return v - n * (2.0 as f64 * Vec3::dot(v, n));
+    }
+    pub fn refract(uv: Self, n: Self, etai_over_etat: f64) -> Self {
+        let costhta = Vec3::dot(-uv, n);
+        let r_out_perp = (uv + n * costhta) * etai_over_etat;
+        let r_out_parallel = (n * (-(1.0 - Vec3::squared_length(&r_out_perp)).abs().sqrt()));
+        return r_out_perp + r_out_parallel;
+    }
+    pub fn cross(u: Self, v: Self) -> Self {
+        return Vec3::new(u.y * v.z - u.z * v.y,
+                         u.z * v.x - u.x * v.z,
+                         u.x * v.y - u.y * v.x,
+        );
     }
 }
+
 impl Vec3
 {
-    pub fn random_unit_vector()->Vec3{
-        let a=range_random_double(0.0, (2.0 * PI) as f64);
-        let z=range_random_double(-1.0,1.0);
-        let r=(1.0-z*z).sqrt();
-        return Vec3::new(r*a.cos(),r*a.sin(),z);
+    pub fn random_unit_vector() -> Vec3 {
+        let a = range_random_double(0.0, (2.0 * PI) as f64);
+        let z = range_random_double(-1.0, 1.0);
+        let r = (1.0 - z * z).sqrt();
+        return Vec3::new(r * a.cos(), r * a.sin(), z);
     }
-   pub fn random_in_unit_sphere() -> Vec3 {
+    pub fn random_in_unit_sphere() -> Vec3 {
         while true {
             let p = Vec3::randomrange(-1.0, 1.0);
             if p.squared_length() >= 1.0 { continue; }
@@ -80,12 +89,12 @@ impl Vec3
         }
         return Vec3::new(0.0, 0.0, 0.0);
     }
-    pub fn random_in_himisphere(normal:Vec3)->Vec3{
-        let in_unit_sphere=Vec3::random_in_unit_sphere();
-        if Vec3::dot(in_unit_sphere,normal)>0.0 {return in_unit_sphere; }
-        else { return -in_unit_sphere; }
+    pub fn random_in_himisphere(normal: Vec3) -> Vec3 {
+        let in_unit_sphere = Vec3::random_in_unit_sphere();
+        if Vec3::dot(in_unit_sphere, normal) > 0.0 { return in_unit_sphere; } else { return -in_unit_sphere; }
     }
 }
+
 impl Add for Vec3 {
     type Output = Self;
 
@@ -167,6 +176,7 @@ impl Mul for Vec3 {
         }
     }
 }
+
 impl Mul<f64> for Vec3 {
     type Output = Self;
 
@@ -214,13 +224,13 @@ impl Div<f64> for Vec3 {
     }
 }
 
-impl Neg for Vec3{
-    type  Output=Self;
-    fn neg(self)->Self{
-        Self{
-            x:-self.x,
-            y:-self.y,
-            z:-self.z,
+impl Neg for Vec3 {
+    type Output = Self;
+    fn neg(self) -> Self {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
         }
     }
 }
@@ -234,7 +244,6 @@ impl DivAssign for Vec3 {
         };
     }
 }
-
 
 
 #[cfg(test)]
