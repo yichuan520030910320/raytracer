@@ -4,6 +4,7 @@ use std::ops::{Add, AddAssign,Sub,SubAssign,Mul,MulAssign,Div,DivAssign,Neg};
 
 
 use rand::Rng;
+use std::f32::consts::PI;
 
 //let secret_number = ;
 fn random_doouble()->f64{
@@ -53,9 +54,22 @@ impl Vec3 {
     pub fn randomrange(min:f64,max:f64)->Self{
         Self::new(range_random_double(min,max),range_random_double(min,max),range_random_double(min,max))
     }
+    // pub fn near_zero()->bool{
+    //     let s=1e-8;
+    //     return (e[0].abs)
+    // }//may need to do
+    pub fn reflect(v:Self,n:Self)->Self{
+        return v-n*(2.0 as f64*Vec3::dot(v, n));
+    }
 }
 impl Vec3
 {
+    pub fn random_unit_vector()->Vec3{
+        let a=range_random_double(0.0, (2.0 * PI) as f64);
+        let z=range_random_double(-1.0,1.0);
+        let r=(1.0-z*z).sqrt();
+        return Vec3::new(r*a.cos(),r*a.sin(),z);
+    }
    pub fn random_in_unit_sphere() -> Vec3 {
         while true {
             let p = Vec3::randomrange(-1.0, 1.0);
@@ -63,6 +77,11 @@ impl Vec3
             return p;
         }
         return Vec3::new(0.0, 0.0, 0.0);
+    }
+    pub fn random_in_himisphere(normal:Vec3)->Vec3{
+        let in_unit_sphere=Vec3::random_in_unit_sphere();
+        if Vec3::dot(in_unit_sphere,normal)>0.0 {return in_unit_sphere; }
+        else { return -in_unit_sphere; }
     }
 }
 impl Add for Vec3 {
