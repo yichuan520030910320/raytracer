@@ -2,6 +2,9 @@
 mod vec3;
 mod ray;
 mod hittable;
+mod camera;
+mod rtweekend;
+
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 
@@ -10,7 +13,20 @@ pub use crate::ray::Ray;
 use crate::hittable::{HittableList, Sphere, Hittable};
 use std::sync::Arc;
 use std::f32::INFINITY;
+use rand::Rng;
 
+//let secret_number = ;
+fn random_doouble()->f64{
+    rand::thread_rng().gen_range(1..101) as f64/102.0
+}
+fn range_random_double(min:f64,max:f64)->f64{
+    min+(max-min)*random_doouble()
+}
+fn clamp(x:f64,min:f64,max:f64)->f64{
+    if x<min { return min}
+    else if x>max { return max}
+    return x
+}
 fn hit_sphere(center:Vec3,radius:f64,r:Ray)->f64{
     let oc=r.ori-center;
     let a=Vec3::squared_length(&r.dic);
@@ -40,6 +56,7 @@ fn main() {
     let ratio: f64 = 16.0 / 9.0;
     let image_width = 400 as u32;
     let image_heigth = (image_width as f64/ ratio) as u32;
+    let sample_per_pixel=100;
 
     //world
     let mut world=HittableList{
@@ -91,7 +108,8 @@ fn main() {
         Arc::new(sph1)
     );
 
-    //camera
+    //Camera
+    let cam=camera::Camera::new();
 
     let view_heigth: f64 = 2.0;
     let view_width= (view_heigth*ratio)as f64;
@@ -106,20 +124,29 @@ fn main() {
 
     for j in 0..image_heigth {
         for i in 0..image_width
-        {
-            let pixel = img.get_pixel_mut(i, j);
-           // let color = (x) as u8;
-            let aa: f32 = ((i) as f32 / (image_width-1)as f32) as f32;
-            let bb: f32 = ((image_heigth-j) as f32 / (image_heigth-1)as f32) as f32;
-            let r=Ray::new(origin,leftcorner+horizon*aa as f64+vertical*bb as f64-origin);
-            let output:Vec3=color(r, &world);
+        {let pixel = img.get_pixel_mut(i, j);
+            let mut pixel_color =Vec3::new(0.0, 0.0, 0.0);
+            for s in 0..sample_per_pixel {
+                let u=(i as f64+random_doouble())/ (image_width-1)as f64;
+                let v=(image_heigth as f64-j as f64+random_doouble())/(image_heigth-1) as f64;
+                let r=cam.get_ray(u,v);
+                pixel_color+=color(r, &world);
+            }
 
-            let cc: f32 = (0.25) as f32;
-            let aa1: u8 = (255.99 * aa) as u8;
-            let bb1: u8 = (255.99 * bb) as u8;
-            let cc1: u8 = (255.99 * cc) as u8;
-//
-            *pixel = image::Rgb([(output.x*255.99)as u8, (output.y*255.99)as u8, (output.z*255.99)as u8]);
+
+
+            // let aa: f32 = ((i) as f32 / (image_width-1)as f32) as f32;
+            // let bb: f32 = ((image_heigth-j) as f32 / (image_heigth-1)as f32) as f32;
+            // let r=Ray::new(origin,leftcorner+horizon*aa as f64+vertical*bb as f64-origin);
+            // let output:Vec3=color(r, &world);
+            let scale=1.0/sample_per_pixel as f64;
+            let aaa=pixel_color.x*scale;
+            let aaa1=256 as f64*clamp(aaa,0.0,0.999);
+            let bbb=pixel_color.y*scale;
+            let bbb1=256 as f64*clamp(bbb,0.0,0.999);
+            let ccc=pixel_color.z*scale;
+            let ccc1=256 as f64*clamp(ccc,0.0,0.999);
+            *pixel = image::Rgb([aaa1 as u8, bbb1 as u8, ccc1 as u8]);
         }
         bar.inc(1);
     }
