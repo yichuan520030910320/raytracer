@@ -1,5 +1,18 @@
 use std::ops::{Add, AddAssign,Sub,SubAssign,Mul,MulAssign,Div,DivAssign,Neg};
 
+
+
+
+use rand::Rng;
+
+//let secret_number = ;
+fn random_doouble()->f64{
+    rand::thread_rng().gen_range(1..101) as f64/102.0
+}
+fn range_random_double(min:f64,max:f64)->f64{
+    min+(max-min)*random_doouble()
+}
+
 #[derive(Clone, Debug, PartialEq,Copy)]
 pub struct Vec3 {
     pub x: f64,
@@ -33,8 +46,25 @@ impl Vec3 {
     pub fn dot(a:Self,b:Self)->f64{
         a.x*b.x+a.y*b.y+a.z*b.z
     }
-}
 
+    pub fn random()->Self{
+        Self::new(random_doouble(),random_doouble(),random_doouble())
+    }
+    pub fn randomrange(min:f64,max:f64)->Self{
+        Self::new(range_random_double(min,max),range_random_double(min,max),range_random_double(min,max))
+    }
+}
+impl Vec3
+{
+   pub fn random_in_unit_sphere() -> Vec3 {
+        while true {
+            let p = Vec3::randomrange(-1.0, 1.0);
+            if p.squared_length() >= 1.0 { continue; }
+            return p;
+        }
+        return Vec3::new(0.0, 0.0, 0.0);
+    }
+}
 impl Add for Vec3 {
     type Output = Self;
 
@@ -183,6 +213,8 @@ impl DivAssign for Vec3 {
         };
     }
 }
+
+
 
 #[cfg(test)]
 mod tests {

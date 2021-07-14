@@ -38,10 +38,14 @@ fn hit_sphere(center:Vec3,radius:f64,r:Ray)->f64{
 
 }
 
-fn color(x: Ray,world:&HittableList) -> Vec3 {
+fn color(x: Ray,world:&HittableList,dep:u32) -> Vec3 {
+    if dep<=0 {return Vec3::new(0.0,0.0,0.0) }
     let mut t=hit_sphere(Vec3::new(0.0,0.0,-1.0),0.5,x);
-    if let Option::Some(_rec) = world.hit(x,0.0,INFINITY as f64) {
-       (   _rec.normal+Vec3::new(1.0,1.0,1.0))*0.5
+
+    if let Option::Some(_rec) = world.hit(x,0.001,INFINITY as f64) {
+        color(Ray::new(_rec.p,_rec.p+_rec.normal+Vec3::random_in_unit_sphere()-_rec.p),world,dep-1)*0.5
+
+     //  (   _rec.normal+Vec3::new(1.0,1.0,1.0))*0.5
     }
     else { let unit_dir: Vec3 = Vec3::unit((x.dic));
          t = 0.5 * ((unit_dir.y.clone() + 1.0) as f64);
@@ -56,7 +60,8 @@ fn main() {
     let ratio: f64 = 16.0 / 9.0;
     let image_width = 400 as u32;
     let image_heigth = (image_width as f64/ ratio) as u32;
-    let sample_per_pixel=100;
+    let sample_per_pixel=60;//ought to be 100
+    let max_depth=50;//an bo modifyed to lessen the time
 
     //world
     let mut world=HittableList{
@@ -130,7 +135,7 @@ fn main() {
                 let u=(i as f64+random_doouble())/ (image_width-1)as f64;
                 let v=(image_heigth as f64-j as f64+random_doouble())/(image_heigth-1) as f64;
                 let r=cam.get_ray(u,v);
-                pixel_color+=color(r, &world);
+                pixel_color+=color(r, &world,max_depth);
             }
 
 
@@ -140,11 +145,11 @@ fn main() {
             // let r=Ray::new(origin,leftcorner+horizon*aa as f64+vertical*bb as f64-origin);
             // let output:Vec3=color(r, &world);
             let scale=1.0/sample_per_pixel as f64;
-            let aaa=pixel_color.x*scale;
+            let aaa=(pixel_color.x*scale).sqrt();
             let aaa1=256 as f64*clamp(aaa,0.0,0.999);
-            let bbb=pixel_color.y*scale;
+            let bbb=(pixel_color.y*scale).sqrt();
             let bbb1=256 as f64*clamp(bbb,0.0,0.999);
-            let ccc=pixel_color.z*scale;
+            let ccc=(pixel_color.z*scale).sqrt();
             let ccc1=256 as f64*clamp(ccc,0.0,0.999);
             *pixel = image::Rgb([aaa1 as u8, bbb1 as u8, ccc1 as u8]);
         }
