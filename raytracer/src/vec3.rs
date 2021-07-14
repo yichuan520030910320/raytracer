@@ -71,6 +71,15 @@ impl Vec3 {
                          u.x * v.y - u.y * v.x,
         );
     }
+    pub fn random_in_unit_disk()->Self{
+        while true {
+            let p=Vec3::new(range_random_double(-1.0,1.0),range_random_double(-1.0,1.0),0.0);
+        if p.squared_length()>=1.0 {continue; }
+            return p;
+
+        }
+        return Vec3::new(0.0,0.0,0.0);
+    }
 }
 
 impl Vec3

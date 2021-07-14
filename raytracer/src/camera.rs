@@ -8,6 +8,10 @@ pub struct Camera {
     horizontal: Vec3,
     vertical: Vec3,
     lower_left_corner: Vec3,
+    u: Vec3,
+    v: Vec3,
+    w: Vec3,
+    lens_radius: f64,
 }
 
 
@@ -18,7 +22,8 @@ fn degree_to_radians(degrees: f64) -> f64 {
 impl Camera {
     pub fn new(
         lookfrom: Vec3, lookat: Vec3, vup: Vec3,
-        vfov: f64, aspect_ratio: f64) -> Self {
+        vfov: f64, aspect_ratio: f64,
+        aperture: f64, focus_dist: f64) -> Self {
         let theta = degree_to_radians(vfov);
         let h = (theta / 2.0).tan();
         let view_heigth = 2.0 * h;
@@ -27,8 +32,8 @@ impl Camera {
         let u = Vec3::unit(Vec3::cross(vup, w));
         let v = Vec3::cross(w, u);
 
-let horizontemp=u*view_width;
-        let verticaltemp=v*view_heigth;
+        let horizontemp = u * view_width * focus_dist;
+        let verticaltemp = v * view_heigth * focus_dist;
 
 
         // let ratio: f64 = 16.0 / 9.0;
@@ -54,16 +59,23 @@ let horizontemp=u*view_width;
                 z: verticaltemp.z,
             },
             lower_left_corner: Vec3 {
-                x: lookfrom.x-horizontemp.x/2.0-verticaltemp.x/2.0-w.x,
-                y:  lookfrom.y-horizontemp.y/2.0-verticaltemp.y/2.0-w.y,
-                z:  lookfrom.z-horizontemp.z/2.0-verticaltemp.z/2.0-w.z,
+                x: lookfrom.x - horizontemp.x / 2.0 - verticaltemp.x / 2.0 - w.x * focus_dist,
+                y: lookfrom.y - horizontemp.y / 2.0 - verticaltemp.y / 2.0 - w.y * focus_dist,
+                z: lookfrom.z - horizontemp.z / 2.0 - verticaltemp.z / 2.0 - w.z * focus_dist,
 
             },
+            u,
+            v,
+            w,
+
+            lens_radius: aperture/2.0
         }
     }
-    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+    pub fn get_ray(&self, s: f64, t: f64) -> Ray {
+        let rd=Vec3::random_in_unit_disk()*self.lens_radius;
+        let offset=self.u*rd.x.clone()+self.v*rd.y.clone();
         Ray::new(
-            self.origin, self.lower_left_corner + self.horizontal * u + self.vertical * v - self.origin,
+            self.origin+offset, self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin-offset,
         )
     }
 }
