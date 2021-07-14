@@ -137,6 +137,27 @@ fn main() {
         radius: 0.5,
         mat_ptr: Arc::new((Dielectric::new(1.5))),
     };
+    let sphleft_transparental = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: -1.0,
+            y: 0.0,
+            z: -1.0,
+        },
+        radius: -0.4,
+        mat_ptr: Arc::new((Dielectric::new(1.5))),
+    };
+
     let sphright = Sphere {
         p: Vec3 {
             x: 0.0,
@@ -164,8 +185,12 @@ fn main() {
     world.add(
         Arc::new(sph1)
     );
+
     world.add(
         Arc::new(sphleft)
+    );
+    world.add(
+        Arc::new(sphleft_transparental)
     );
     world.add(
         Arc::new(sphright)

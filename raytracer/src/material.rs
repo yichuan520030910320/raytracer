@@ -2,8 +2,13 @@ pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
 pub use crate::hittable::Hitrecord;
 use std::sync::Arc;
+use crate::random_doouble;
 
-
+fn schlick(cosin:f64,ref_idx:f64)->f64{
+    let mut r0 =(1.0-ref_idx)/(1.0+ref_idx);
+    r0*=r0;
+    return r0+(1.0-r0)*(1.0-cosin)*(1.0-cosin)*(1.0-cosin)*(1.0-cosin)*(1.0-cosin);
+}
 pub trait Material {
     fn scatter(&self, r_in: &Ray, rec: &Hitrecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;//attenuation是衰减的意思
 }
@@ -102,6 +107,14 @@ impl Material for Dielectric {
             scattered.dic = reflected;
             return true;
         }
+        let reflect_pro=schlick(cos_theta,etai_over_etat);
+        if random_doouble()<reflect_pro {
+            let reflected=Vec3::reflect(unit_direction,rec.normal);
+            scattered.ori=rec.p;
+            scattered.dic=reflected;
+            return true;
+        }
+
         let refracted = Vec3::refract(unit_direction, rec.normal, etai_over_etat);
         scattered.ori = rec.p;
         scattered.dic = refracted;
