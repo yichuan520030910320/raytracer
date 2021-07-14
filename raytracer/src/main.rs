@@ -16,6 +16,7 @@ use std::sync::Arc;
 use std::f32::INFINITY;
 use rand::Rng;
 use crate::material::{Metal, Lambertian, Dielectric};
+use std::f64::consts::PI;
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -76,7 +77,6 @@ fn main() {
     let mut world = HittableList {
         objects: vec![],
     };
-
     let sph1 = Sphere {
         p: Vec3 {
             x: 0.0,
@@ -157,7 +157,6 @@ fn main() {
         radius: -0.4,
         mat_ptr: Arc::new((Dielectric::new(1.5))),
     };
-
     let sphright = Sphere {
         p: Vec3 {
             x: 0.0,
@@ -178,26 +177,73 @@ fn main() {
         radius: 0.5,
         mat_ptr: Arc::new((Metal::new(Vec3::new(0.8, 0.6, 0.2),1.0))),
     };
+    let R=(PI/4.0).cos();
+    let materialleft = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: -R,
+            y: 0.0,
+            z: -1.0,
+        },
+        radius: R,
+        mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.0, 0.0, 1.0))),//todo
+    };
+    let materialright = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: R,
+            y: 0.0,
+            z: -1.0,
+        },
+        radius: R,
+        mat_ptr: Arc::new(Lambertian::new(Vec3::new(1.0, 0.0, 0.0))),//todo
+    };
     world.add(
-        Arc::new(sph2)
-    );
-
-    world.add(
-        Arc::new(sph1)
-    );
-
-    world.add(
-        Arc::new(sphleft)
+        Arc::new(materialleft)
     );
     world.add(
-        Arc::new(sphleft_transparental)
+        Arc::new(materialright)
     );
-    world.add(
-        Arc::new(sphright)
-    );
+    // world.add(
+    //     Arc::new(sph2)
+    // );
+    //
+    // world.add(
+    //     Arc::new(sph1)
+    // );
+    //
+    // world.add(
+    //     Arc::new(sphleft)
+    // );
+    // world.add(
+    //     Arc::new(sphleft_transparental)
+    // );
+    // world.add(
+    //     Arc::new(sphright)
+    // );
 
     //Camera
-    let cam = camera::Camera::new();
+    let cam = camera::Camera::new(90.0,ratio);
 
     let view_heigth: f64 = 2.0;
     let view_width = (view_heigth * ratio) as f64;

@@ -1,5 +1,6 @@
 pub use crate::vec3::Vec3;
 pub use crate::ray::Ray;
+use std::f64::consts::PI;
 
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Camera {
@@ -9,11 +10,20 @@ pub struct Camera {
     lower_left_corner: Vec3,
 }
 
+
+fn degree_to_radians(degrees:f64)->f64{
+    return degrees*PI/180.0;
+}
 impl Camera {
-    pub fn new() -> Self {
-        let ratio: f64 = 16.0 / 9.0;
-        let view_heigth: f64 = 2.0;
-        let view_width = (view_heigth * ratio) as f64;
+    pub fn new(vfov:f64,aspect_ratio:f64) -> Self {
+        let theta=degree_to_radians(vfov);
+        let h=(theta/2.0).tan();
+        let view_heigth=2.0*h;
+        let view_width=aspect_ratio*view_heigth;
+
+        // let ratio: f64 = 16.0 / 9.0;
+        // let view_heigth: f64 = 2.0;
+        // let view_width = (view_heigth * ratio) as f64;
         let focallength = 1.0;
         Self {
             origin: Vec3 {
