@@ -15,7 +15,7 @@ use crate::hittable::{HittableList, Sphere, Hittable};
 use std::sync::Arc;
 use std::f32::INFINITY;
 use rand::Rng;
-use crate::material::{Metal, Lambertian};
+use crate::material::{Metal, Lambertian, Dielectric};
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -115,7 +115,7 @@ fn main() {
             z: -1.0,
         },
         radius: 0.5,
-        mat_ptr: Arc::new((Lambertian::new(Vec3::new(0.7, 0.3, 0.3)))),
+        mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))),
     };
     let sphleft = Sphere {
         p: Vec3 {
@@ -135,7 +135,7 @@ fn main() {
             z: -1.0,
         },
         radius: 0.5,
-        mat_ptr: Arc::new((Metal::new(Vec3::new(0.8, 0.8, 0.8),0.3))),
+        mat_ptr: Arc::new((Dielectric::new(1.5))),
     };
     let sphright = Sphere {
         p: Vec3 {

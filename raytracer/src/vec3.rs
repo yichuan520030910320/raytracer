@@ -1,11 +1,6 @@
 use std::ops::{Add, AddAssign,Sub,SubAssign,Mul,MulAssign,Div,DivAssign,Neg};
-
-
-
-
 use rand::Rng;
 use std::f32::consts::PI;
-
 //let secret_number = ;
 fn random_doouble()->f64{
     rand::thread_rng().gen_range(1..101) as f64/102.0
@@ -54,12 +49,19 @@ impl Vec3 {
     pub fn randomrange(min:f64,max:f64)->Self{
         Self::new(range_random_double(min,max),range_random_double(min,max),range_random_double(min,max))
     }
-    // pub fn near_zero()->bool{
-    //     let s=1e-8;
-    //     return (e[0].abs)
-    // }//may need to do
+    pub fn near_zero(self)->bool{
+        let s=1e-8;
+        return (self.x).abs()<s&&self.y.abs()<s&&self.z.abs()<s;
+    }//may need to do
     pub fn reflect(v:Self,n:Self)->Self{
         return v-n*(2.0 as f64*Vec3::dot(v, n));
+    }
+    pub fn refract(uv:Self, n:Self, etai_over_etat:f64) ->Self{
+
+        let costhta=Vec3::dot(-uv,n);
+        let r_out_perp=(uv+n*costhta)*etai_over_etat;
+        let r_out_parallel=(n*(-(1.0-Vec3::squared_length(&r_out_perp)).abs().sqrt()));
+        return r_out_perp+r_out_parallel;
     }
 }
 impl Vec3
