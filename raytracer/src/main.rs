@@ -67,187 +67,199 @@ fn main() {
     let x = Vec3::new(1.0, 1.0, 1.0);
     println!("{:?}", x);
     //image
-    let ratio: f64 = 16.0 / 9.0;
-    let image_width = 400 as u32;
+    let ratio: f64 = 3.0 / 2.0;
+    let image_width = 1200 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 100;//ought to be 100
+    let sample_per_pixel = 500;//ought to be 100  可以做的更大比如500//todo
     let max_depth = 50;//an bo modifyed to lessen the time
 
     //world
-    let mut world = HittableList {
-        objects: vec![],
-    };
-    let sph1 = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: 0.0,
-            y: -100.5,
-            z: -1.0,
-        },
-        radius: 100.0,
-        mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))),//todo
-    };
-    let sph2 = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: -1.0,
-        },
-        radius: 0.5,
-        mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))),
-    };
-    let sphleft = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: -1.0,
-            y: 0.0,
-            z: -1.0,
-        },
-        radius: 0.5,
-        mat_ptr: Arc::new((Dielectric::new(1.5))),
-    };
-    let sphleft_transparental = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: -1.0,
-            y: 0.0,
-            z: -1.0,
-        },
-        radius: -0.4,
-        mat_ptr: Arc::new((Dielectric::new(1.5))),
-    };
-    let sphright = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: 1.0,
-            y: 0.0,
-            z: -1.0,
-        },
-        radius: 0.5,
-        mat_ptr: Arc::new((Metal::new(Vec3::new(0.8, 0.6, 0.2),1.0))),
-    };
-    let R=(PI/4.0).cos();
-    let materialleft = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: -R,
-            y: 0.0,
-            z: -1.0,
-        },
-        radius: R,
-        mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.0, 0.0, 1.0))),//todo
-    };
-    let materialright = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: R,
-            y: 0.0,
-            z: -1.0,
-        },
-        radius: R,
-        mat_ptr: Arc::new(Lambertian::new(Vec3::new(1.0, 0.0, 0.0))),//todo
-    };
-    // world.add(
-    //     Arc::new(materialleft)
-    // );
-    // world.add(
-    //     Arc::new(materialright)
-    // );
+    let world=random_sence();
+
+    // {
+    //     let mut world = HittableList {
+    //         objects: vec![],
+    //     };
+    //     let sph1 = Sphere {
+    //         p: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         normal: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         t: 0.0,
+    //         center: Vec3 {
+    //             x: 0.0,
+    //             y: -100.5,
+    //             z: -1.0,
+    //         },
+    //         radius: 100.0,
+    //         mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))),//todo
+    //     };
+    //     let sph2 = Sphere {
+    //         p: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         normal: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         t: 0.0,
+    //         center: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: -1.0,
+    //         },
+    //         radius: 0.5,
+    //         mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))),
+    //     };
+    //     let sphleft = Sphere {
+    //         p: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         normal: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         t: 0.0,
+    //         center: Vec3 {
+    //             x: -1.0,
+    //             y: 0.0,
+    //             z: -1.0,
+    //         },
+    //         radius: 0.5,
+    //         mat_ptr: Arc::new((Dielectric::new(1.5))),
+    //     };
+    //     let sphleft_transparental = Sphere {
+    //         p: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         normal: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         t: 0.0,
+    //         center: Vec3 {
+    //             x: -1.0,
+    //             y: 0.0,
+    //             z: -1.0,
+    //         },
+    //         radius: -0.4,
+    //         mat_ptr: Arc::new((Dielectric::new(1.5))),
+    //     };
+    //     let sphright = Sphere {
+    //         p: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         normal: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         t: 0.0,
+    //         center: Vec3 {
+    //             x: 1.0,
+    //             y: 0.0,
+    //             z: -1.0,
+    //         },
+    //         radius: 0.5,
+    //         mat_ptr: Arc::new((Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0))),
+    //     };
+    //     let R = (PI / 4.0).cos();
+    //     let materialleft = Sphere {
+    //         p: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         normal: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         t: 0.0,
+    //         center: Vec3 {
+    //             x: -R,
+    //             y: 0.0,
+    //             z: -1.0,
+    //         },
+    //         radius: R,
+    //         mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.0, 0.0, 1.0))),//todo
+    //     };
+    //     let materialright = Sphere {
+    //         p: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         normal: Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: 0.0,
+    //         },
+    //         t: 0.0,
+    //         center: Vec3 {
+    //             x: R,
+    //             y: 0.0,
+    //             z: -1.0,
+    //         },
+    //         radius: R,
+    //         mat_ptr: Arc::new(Lambertian::new(Vec3::new(1.0, 0.0, 0.0))),//todo
+    //     };
+    //     { // world.add(
+    //         //     Arc::new(materialleft)
+    //         // );
+    //         // world.add(
+    //         //     Arc::new(materialright)
+    //         // );
+    //     }//two obj
+    //     {
+    //         world.add(
+    //             Arc::new(sph1)
+    //         );
+    //         world.add(
+    //             Arc::new(sph2)
+    //         );
+    //         world.add(
+    //             Arc::new(sphleft)
+    //         );
+    //         world.add(
+    //             Arc::new(sphleft_transparental)
+    //         );
+    //         world.add(
+    //             Arc::new(sphright)
+    //         );
+    //     }//five
+    // }
 
 
-    world.add(
-        Arc::new(sph1)
-    );
-    world.add(
-        Arc::new(sph2)
-    );
-    world.add(
-        Arc::new(sphleft)
-    );
-    world.add(
-        Arc::new(sphleft_transparental)
-    );
-    world.add(
-        Arc::new(sphright)
-    );
+
+
+
+
+
 
     //Camera
-    let lookfrom=Vec3::new(3.0,3.0,2.0);
-    let lookat=Vec3::new(0.0,0.0,-1.0);
+    let lookfrom=Vec3::new(13.0,2.0,3.0);
+    let lookat=Vec3::new(0.0,0.0,0.0);
     let vup=Vec3::new(0.0,1.0,0.0);
-    let dist_to_focus=(lookfrom-lookat).length();
-    let aperture=2.0;
+    let dist_to_focus=10.0;
+    let aperture=0.1;//ought to be 2
     let cam = camera::Camera::new(lookfrom,lookat,vup,20.0,ratio,aperture,dist_to_focus);
 
     let view_heigth: f64 = 2.0;
@@ -293,3 +305,211 @@ fn main() {
     img.save("output/test.png").unwrap();
     bar.finish();
 }
+
+fn random_sence()->HittableList{
+    let mut world = HittableList {
+        objects: vec![],
+    };
+    let ground = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: -1000.0,
+            z: 0.0,
+        },
+        radius: 1000.0,
+        mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),//todo
+    };
+    world.add(
+        Arc::new(ground)
+    );
+    for a in -11..11 {
+        for b in -11..11  {
+            let choose_mat=random_doouble();
+            let center=Vec3::new(a as f64+0.9*random_doouble(),0.2,b as f64+0.9*random_doouble());
+
+            if (center-Vec3::new(4.0,0.2,0.0)).length()>0.9 {
+               if choose_mat<0.8 {
+                   let albedo=Vec3::random()*Vec3::random();
+                   let temp = Sphere {
+                       p: Vec3 {
+                           x: 0.0,
+                           y: 0.0,
+                           z: 0.0,
+                       },
+                       normal: Vec3 {
+                           x: 0.0,
+                           y: 0.0,
+                           z: 0.0,
+                       },
+                       t: 0.0,
+                       center: Vec3 {
+                           x: center.x.clone(),
+                           y: center.y.clone(),
+                           z: center.z.clone(),
+                       },
+                       radius: 0.2,
+                       mat_ptr: Arc::new(Lambertian::new(albedo)),
+                   };
+                   world.add(
+                       Arc::new(temp)
+                   );
+
+
+               }
+                else if choose_mat<0.95 {
+                    let albedo=Vec3::randomrange(0.5,1.0);
+                    let fuzz=range_random_double(0.0,0.5);
+                    let temp = Sphere {
+                        p: Vec3 {
+                            x: 0.0,
+                            y: 0.0,
+                            z: 0.0,
+                        },
+                        normal: Vec3 {
+                            x: 0.0,
+                            y: 0.0,
+                            z: 0.0,
+                        },
+                        t: 0.0,
+                        center: Vec3 {
+                            x: center.x.clone(),
+                            y: center.y.clone(),
+                            z: center.z.clone(),
+                        },
+                        radius: 0.2,
+                        mat_ptr: Arc::new((Metal::new(albedo,fuzz))),
+                    };
+                    world.add(
+                        Arc::new(temp)
+                    );
+
+                }
+                else {
+                    let temp = Sphere {
+                        p: Vec3 {
+                            x: 0.0,
+                            y: 0.0,
+                            z: 0.0,
+                        },
+                        normal: Vec3 {
+                            x: 0.0,
+                            y: 0.0,
+                            z: 0.0,
+                        },
+                        t: 0.0,
+                        center: Vec3 {
+                            x: center.x.clone(),
+                            y: center.y.clone(),
+                            z: center.z.clone(),
+                        },
+                        radius: 0.2,
+                        mat_ptr: Arc::new((Dielectric::new(1.5))),
+                    };
+
+
+                    world.add(
+                        Arc::new(temp)
+                    );
+
+
+                }
+
+            }
+        }
+
+    }
+
+
+
+    let material1 = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: 1.0,
+            z: 0.0,
+        },
+        radius: 1.0,
+        mat_ptr: Arc::new((Dielectric::new(1.5))),
+    };
+    world.add(
+        Arc::new(material1)
+    );
+    let material2 = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: -4.0,
+            y: 1.0,
+            z: 0.0,
+        },
+        radius: 1.0,
+        mat_ptr: Arc::new((Lambertian::new(Vec3::new(0.4,0.2,0.1)))),
+    };
+    world.add(
+        Arc::new(material2)
+    );
+
+    let material3 = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 4.0,
+            y: 1.0,
+            z: 0.0,
+        },
+        radius: 1.0,
+        mat_ptr: Arc::new(Metal::new(Vec3::new(0.7,0.6,0.5),0.0)),
+    };
+    world.add(
+        Arc::new(material3)
+    );
+
+
+
+
+
+    return world;
+}
+
+
+
+
