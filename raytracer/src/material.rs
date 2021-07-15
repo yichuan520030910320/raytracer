@@ -34,6 +34,7 @@ impl Material for Lambertian {
 
         scattered.dic = scatter_direction;
         scattered.ori = rec.p;
+        scattered.tm=r_in.tm;
         // scattered= &mut Ray::new(rec.p.clone(), scatter_direction.clone());
         attenuation.x = self.albedo.x;
         attenuation.y = self.albedo.y;
@@ -61,6 +62,7 @@ impl Material for Metal {
         let reflected = Vec3::reflect(r_in.dic, rec.normal);
         scattered.dic = reflected + Vec3::random_in_unit_sphere() * self.fuzz;
         scattered.ori = rec.p;
+        scattered.tm=r_in.tm;
         //scattered= &mut Ray::new(rec.p, reflected.clone());
         attenuation.x = self.albedo.x;
         attenuation.y = self.albedo.y;
@@ -105,6 +107,7 @@ impl Material for Dielectric {
             let reflected = Vec3::reflect(unit_direction, rec.normal);
             scattered.ori = rec.p;
             scattered.dic = reflected;
+            scattered.tm=r_in.tm;
             return true;
         }
         let reflect_pro=schlick(cos_theta,etai_over_etat);
@@ -112,12 +115,14 @@ impl Material for Dielectric {
             let reflected=Vec3::reflect(unit_direction,rec.normal);
             scattered.ori=rec.p;
             scattered.dic=reflected;
+            scattered.tm=r_in.tm;
             return true;
         }
 
         let refracted = Vec3::refract(unit_direction, rec.normal, etai_over_etat);
         scattered.ori = rec.p;
         scattered.dic = refracted;
+        scattered.tm=r_in.tm;
         return true;
     }
 }
