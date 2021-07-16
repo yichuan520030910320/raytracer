@@ -19,6 +19,7 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
+
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
@@ -83,7 +84,9 @@ impl Vec3 {
 }
 
 impl Vec3
-{
+{ pub fn get( &self,demesion:i32)->f64{
+    return if demesion == 0 { self.x } else if demesion == 1 { self.y } else { self.z }
+}
     pub fn random_unit_vector() -> Vec3 {
         let a = range_random_double(0.0, (2.0 * PI) as f64);
         let z = range_random_double(-1.0, 1.0);

@@ -5,6 +5,8 @@ mod hittable;
 mod camera;
 mod rtweekend;
 mod material;
+mod aabb;
+mod texture;
 
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -17,6 +19,7 @@ use std::f32::INFINITY;
 use rand::Rng;
 use crate::material::{Metal, Lambertian, Dielectric};
 use std::f64::consts::PI;
+use crate::texture::{CheckerTexture, Texture};
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -255,7 +258,7 @@ fn main() {
 
 
     //Camera
-    let lookfrom=Vec3::new(13.0,2.0,3.0);
+    let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
     let lookat=Vec3::new(0.0,0.0,0.0);
     let vup=Vec3::new(0.0,1.0,0.0);
     let dist_to_focus=10.0;
@@ -310,6 +313,7 @@ fn random_sence()->HittableList{
     let mut world = HittableList {
         objects: vec![],
     };
+    let checker=Arc::new(CheckerTexture::new(Vec3::new(0.2,0.3,0.1), Vec3::new(0.9,0.9,0.9)));
     let ground = Sphere {
         p: Vec3 {
             x: 0.0,
@@ -328,7 +332,7 @@ fn random_sence()->HittableList{
             z: 0.0,
         },
         radius: 1000.0,
-        mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),//todo
+        mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
     };
     world.add(
         Arc::new(ground)
@@ -341,6 +345,8 @@ fn random_sence()->HittableList{
             if (center-Vec3::new(4.0,0.2,0.0)).length()>0.9 {
                if choose_mat<0.8 {
                    let albedo=Vec3::random()*Vec3::random();
+                   let checker=Arc::new(CheckerTexture::new(Vec3::new(albedo.x,albedo.y,albedo.z), Vec3::new(albedo.x,albedo.y,albedo.z)));
+
                    let center2=center+Vec3::new(0.0,range_random_double(0.0,0.5),0.0);
                    let temp = MovingSphere{
                        center0: center,
@@ -444,6 +450,11 @@ fn random_sence()->HittableList{
     world.add(
         Arc::new(material1)
     );
+
+
+
+    let checker2=Arc::new(CheckerTexture::new(Vec3::new(0.4,0.2,0.1), Vec3::new(0.4,0.2,0.2)));
+
     let material2 = Sphere {
         p: Vec3 {
             x: 0.0,

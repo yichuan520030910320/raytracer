@@ -3,23 +3,28 @@ pub use crate::vec3::Vec3;
 pub use crate::hittable::Hitrecord;
 use std::sync::Arc;
 use crate::random_doouble;
+use crate::texture::{Texture, BaseColor};
 
-fn schlick(cosin:f64,ref_idx:f64)->f64{
-    let mut r0 =(1.0-ref_idx)/(1.0+ref_idx);
-    r0*=r0;
-    return r0+(1.0-r0)*(1.0-cosin)*(1.0-cosin)*(1.0-cosin)*(1.0-cosin)*(1.0-cosin);
+fn schlick(cosin: f64, ref_idx: f64) -> f64 {
+    let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+    r0 *= r0;
+    return r0 + (1.0 - r0) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin);
 }
+
 pub trait Material {
     fn scatter(&self, r_in: &Ray, rec: &Hitrecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;//attenuation是衰减的意思
 }
 
-#[derive(Clone, Debug, PartialEq, Copy)]
+#[derive(Clone)]
 pub struct Lambertian {
-    albedo: Vec3,
+    albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
     pub fn new(albedo: Vec3) -> Self {
+        Self { albedo: Arc::new(BaseColor::new(albedo)) }
+    }
+    pub fn new1(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
     }
 }
@@ -29,16 +34,18 @@ impl Material for Lambertian {
         let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
 
         if Vec3::near_zero(scatter_direction) {
-            scatter_direction=rec.normal;
+            scatter_direction = rec.normal;
         }
 
         scattered.dic = scatter_direction;
         scattered.ori = rec.p;
-        scattered.tm=r_in.tm;
+        scattered.tm = r_in.tm;
+
+
         // scattered= &mut Ray::new(rec.p.clone(), scatter_direction.clone());
-        attenuation.x = self.albedo.x;
-        attenuation.y = self.albedo.y;
-        attenuation.z = self.albedo.z;
+        attenuation.x = self.albedo.value(rec.u, rec.v, &rec.p).x;
+        attenuation.y = self.albedo.value(rec.u, rec.v, &rec.p).y;
+        attenuation.z = self.albedo.value(rec.u, rec.v, &rec.p).z;
         // attenuation= &self.albedo;
         true
     }
@@ -62,7 +69,7 @@ impl Material for Metal {
         let reflected = Vec3::reflect(r_in.dic, rec.normal);
         scattered.dic = reflected + Vec3::random_in_unit_sphere() * self.fuzz;
         scattered.ori = rec.p;
-        scattered.tm=r_in.tm;
+        scattered.tm = r_in.tm;
         //scattered= &mut Ray::new(rec.p, reflected.clone());
         attenuation.x = self.albedo.x;
         attenuation.y = self.albedo.y;
@@ -91,7 +98,7 @@ impl Material for Dielectric {
         let mut etai_over_etat = 0.0;
         if rec.front_face { etai_over_etat = 1.0 / self.ref_idx } else { etai_over_etat = self.ref_idx }
 
-       // println!("{}", etai_over_etat);
+        // println!("{}", etai_over_etat);
 
         let unit_direction = Vec3::unit(r_in.dic);
 
@@ -107,22 +114,22 @@ impl Material for Dielectric {
             let reflected = Vec3::reflect(unit_direction, rec.normal);
             scattered.ori = rec.p;
             scattered.dic = reflected;
-            scattered.tm=r_in.tm;
+            scattered.tm = r_in.tm;
             return true;
         }
-        let reflect_pro=schlick(cos_theta,etai_over_etat);
-        if random_doouble()<reflect_pro {
-            let reflected=Vec3::reflect(unit_direction,rec.normal);
-            scattered.ori=rec.p;
-            scattered.dic=reflected;
-            scattered.tm=r_in.tm;
+        let reflect_pro = schlick(cos_theta, etai_over_etat);
+        if random_doouble() < reflect_pro {
+            let reflected = Vec3::reflect(unit_direction, rec.normal);
+            scattered.ori = rec.p;
+            scattered.dic = reflected;
+            scattered.tm = r_in.tm;
             return true;
         }
 
         let refracted = Vec3::refract(unit_direction, rec.normal, etai_over_etat);
         scattered.ori = rec.p;
         scattered.dic = refracted;
-        scattered.tm=r_in.tm;
+        scattered.tm = r_in.tm;
         return true;
     }
 }
