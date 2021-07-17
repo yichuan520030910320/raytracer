@@ -1,0 +1,88 @@
+use crate::{random_doouble, Vec3};
+use rand::Rng;
+use crate::texture::Texture;
+
+const POINT_COUNT: usize = 256;
+
+pub struct Perlin {
+    pub ranfloat: [f64; POINT_COUNT],
+    pub perm_x: [i32; POINT_COUNT],
+    pub perm_y: [i32; POINT_COUNT],
+    pub perm_z: [i32; POINT_COUNT],
+
+}
+
+impl Perlin {
+    pub fn new() -> Self {
+        let mut rancopy: [f64; POINT_COUNT] = [0.0; POINT_COUNT];
+        let mut perx: [i32; POINT_COUNT] = [0; POINT_COUNT];
+        let mut pery: [i32; POINT_COUNT] = [0; POINT_COUNT];
+        let mut perz: [i32; POINT_COUNT] = [0; POINT_COUNT];
+
+
+        for i in 0..POINT_COUNT {
+            rancopy[i] = random_doouble();
+        }
+        Perlin::perline_generate_perm(&mut perx);
+        Perlin::perline_generate_perm(&mut pery);
+        Perlin::perline_generate_perm(&mut perz);
+
+
+        return Self {
+            ranfloat: rancopy,
+            perm_x: perx,
+            perm_y: pery,
+            perm_z: perz,
+        };
+    }
+    pub fn perline_generate_perm(p: &mut [i32; POINT_COUNT]) {
+        for i in 0..POINT_COUNT {
+            p[i] = (i as i32);
+        }
+        // Perlin::permute(&mut p, POINT_COUNT as i32);
+
+        let n = POINT_COUNT;
+        for i in n - 1..0 {
+            let mut rng = rand::thread_rng();
+            let axis = rand::thread_rng().gen_range(0..i);
+            let tmp = p[i as usize];
+            p[i as usize] = p[axis as usize];
+            p[axis as usize] = tmp;
+        }
+    }
+
+
+    pub fn permute(arr: &mut [i32; POINT_COUNT], n: i32) {
+        for i in n - 1..0 {
+            let mut rng = rand::thread_rng();
+            let axis = rand::thread_rng().gen_range(0..i);
+            let tmp = arr[i as usize];
+            arr[i as usize] = arr[axis as usize];
+            arr[axis as usize] = tmp;
+        }
+    }
+    pub fn noise(&self, p: Vec3) -> f64 {
+        let i = ((4.0 * p.x) as i32) & 255;
+        let j = ((4.0 * p.y) as i32) & 255;
+        let k = ((4.0 * p.z) as i32) & 255;
+        return self.ranfloat[(self.perm_x[i as usize] ^ self.perm_y[j as usize] ^ self.perm_z[k as usize]) as usize];
+    }
+}
+
+pub struct NoiseTexture {
+    noise: Perlin,
+}
+
+impl NoiseTexture {
+    pub fn new() -> Self {
+        Self {
+            noise:Perlin::new()
+        }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
+        return Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(*p);
+    }
+}

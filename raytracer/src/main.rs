@@ -7,6 +7,7 @@ mod rtweekend;
 mod material;
 mod aabb;
 mod texture;
+mod perlin;
 
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -20,6 +21,7 @@ use rand::Rng;
 use crate::material::{Metal, Lambertian, Dielectric};
 use std::f64::consts::PI;
 use crate::texture::{CheckerTexture, Texture};
+use crate::perlin::NoiseTexture;
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -73,11 +75,15 @@ fn main() {
     let ratio: f64 = 16.0 / 9.0;
     let image_width = 400 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 10;//ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 20;//ought to be 100  可以做的更大比如500//todo
     let max_depth = 50;//an bo modifyed to lessen the time
 
     //world
-    let world=random_sence();
+  //let world=random_sence();
+
+let world=two_berlin_spheres();
+
+  // let world=two_spheres();//todo
     {
         // {
         //     let mut world = HittableList {
@@ -308,7 +314,62 @@ fn main() {
     img.save("output/test.png").unwrap();
     bar.finish();
 }
+pub fn two_spheres()->HittableList{
+    let mut world = HittableList {
+        objects: vec![],
+    };
 
+    let checker=Arc::new(CheckerTexture::new(Vec3::new(0.2,0.3,0.1), Vec3::new(0.9,0.9,0.9)));
+    let below = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: -10.0,
+            z: 0.0,
+        },
+        radius: 10.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
+    };
+    world.add(
+        Arc::new(below)
+    );
+    let checker1=Arc::new(CheckerTexture::new(Vec3::new(0.2,0.3,0.1), Vec3::new(0.9,0.9,0.9)));
+
+    let above = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: 10.0,
+            z: 0.0,
+        },
+        radius: 10.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker1)),//todo
+    };
+    world.add(
+        Arc::new(above)
+    );
+    return world;
+}
 fn random_sence()->HittableList{
     let mut world = HittableList {
         objects: vec![],
@@ -424,9 +485,6 @@ fn random_sence()->HittableList{
         }
 
     }
-
-
-
     let material1 = Sphere {
         p: Vec3 {
             x: 0.0,
@@ -502,14 +560,68 @@ fn random_sence()->HittableList{
     world.add(
         Arc::new(material3)
     );
-
-
-
-
-
     return world;
 }
+fn two_berlin_spheres()->HittableList
+{
+    let mut world = HittableList {
+        objects: vec![],
+    };
+
+    let checker=Arc::new(NoiseTexture::new());
+    let below = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: -1000.0,
+            z: 0.0,
+        },
+        radius: 1000.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
+    };
+    world.add(
+        Arc::new(below)
+    );
+
+    let checker1=Arc::new(NoiseTexture::new());
+    let above = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: 2.0,
+            z: 0.0,
+        },
+        radius: 2.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker1)),//todo
+    };
+    world.add(
+        Arc::new(above)
+    );
 
 
+//todo
+    return world;
+
+}
 
 
