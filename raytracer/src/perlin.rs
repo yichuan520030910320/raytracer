@@ -122,6 +122,21 @@ impl Perlin {
         }
         return accum;
     }
+    pub fn turb(&self, p:Vec3, mut depth:i32) ->f64{
+        depth=7;
+        let mut accum = 0.0;
+       let mut temp_p = p;
+        let mut weight = 1.0;
+        for i in 0..depth {
+            accum+=weight*Perlin::noise(&self,temp_p);
+            weight*=0.5;
+            temp_p=temp_p*2.0;
+        }
+        return accum.abs();
+
+    }
+
+
 }
 
 pub struct NoiseTexture {
@@ -140,6 +155,8 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
-        return Vec3::new(1.0, 1.0, 1.0) * ((self.noise.noise((*p)*self.scale)+1.0)*0.5);
+        //return Vec3::new(1.0, 1.0, 1.0) * ((self.noise.noise((*p)*self.scale)+1.0)*0.5);
+
+        return Vec3::new(1.0, 1.0, 1.0) *Perlin::turb(&self.noise, *p * (self.scale), 0);
     }
 }
