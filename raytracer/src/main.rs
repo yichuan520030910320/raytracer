@@ -568,7 +568,7 @@ fn two_berlin_spheres()->HittableList
         objects: vec![],
     };
 
-    let checker=Arc::new(NoiseTexture::new());
+    let checker=Arc::new(NoiseTexture::new(4.0));
     let below = Sphere {
         p: Vec3 {
             x: 0.0,
@@ -593,7 +593,7 @@ fn two_berlin_spheres()->HittableList
         Arc::new(below)
     );
 
-    let checker1=Arc::new(NoiseTexture::new());
+    let checker1=Arc::new(NoiseTexture::new(4.0));
     let above = Sphere {
         p: Vec3 {
             x: 0.0,

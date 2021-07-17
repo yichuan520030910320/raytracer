@@ -62,9 +62,16 @@ impl Perlin {
         }
     }
     pub fn noise(&self, p: Vec3) -> f64 {
-        let u = p.x - p.x.floor();
-        let v = p.y - p.y.floor();
-        let w = p.z - p.z.floor();
+        let mut u = p.x - p.x.floor();
+        let mut v = p.y - p.y.floor();
+        let mut w = p.z - p.z.floor();
+
+
+        u=u*u*(3.0-2.0*u);
+        v=v*v*(3.0-2.0*v);
+        w=w*w*(3.0-2.0*w);
+
+
         let i = (p.x.floor()) as i32;
         let j = (p.y.floor()) as i32;
         let k = (p.z.floor()) as i32;
@@ -104,18 +111,20 @@ impl Perlin {
 
 pub struct NoiseTexture {
     noise: Perlin,
+    scale:f64,
 }
 
 impl NoiseTexture {
-    pub fn new() -> Self {
+    pub fn new(sc:f64) -> Self {
         Self {
-            noise: Perlin::new()
+            noise: Perlin::new(),
+            scale: sc
         }
     }
 }
 
 impl Texture for NoiseTexture {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
-        return Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(*p);
+        return Vec3::new(1.0, 1.0, 1.0) * self.noise.noise((*p)*self.scale);
     }
 }
