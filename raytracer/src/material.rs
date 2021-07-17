@@ -13,6 +13,9 @@ fn schlick(cosin: f64, ref_idx: f64) -> f64 {
 
 pub trait Material {
     fn scatter(&self, r_in: &Ray, rec: &Hitrecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;//attenuation是衰减的意思
+fn emitted(&self,u:f64,v:f64,p:&Vec3)->Vec3{
+        return Vec3::zero();
+    }
 }
 
 #[derive(Clone)]
@@ -131,5 +134,26 @@ impl Material for Dielectric {
         scattered.dic = refracted;
         scattered.tm = r_in.tm;
         return true;
+    }
+}
+pub struct DiffuseLight {
+    emit: Arc<dyn Texture>,
+}
+impl DiffuseLight{
+    pub fn new(c:Vec3)->Self{
+        Self{
+           emit: Arc::new(BaseColor::new(c))
+        }
+    }
+    pub fn new1(emit: Arc<dyn Texture>) -> Self {
+        Self { emit}
+    }
+}
+impl Material for DiffuseLight{
+    fn emitted(&self,u: f64, v: f64, p: &Vec3) -> Vec3 {
+        return self.emit.value(u,v,p);
+    }
+    fn scatter(&self, r_in: &Ray, rec: &Hitrecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
+      return false;
     }
 }

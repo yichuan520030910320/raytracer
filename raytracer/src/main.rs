@@ -8,6 +8,7 @@ mod material;
 mod aabb;
 mod texture;
 mod perlin;
+mod aarect;
 
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -18,10 +19,11 @@ use crate::hittable::{HittableList, Sphere, Hittable, MovingSphere};
 use std::sync::Arc;
 use std::f32::INFINITY;
 use rand::Rng;
-use crate::material::{Metal, Lambertian, Dielectric};
+use crate::material::{Metal, Lambertian, Dielectric, DiffuseLight};
 use std::f64::consts::PI;
-use crate::texture::{CheckerTexture, Texture, ImageTexture};
+use crate::texture::{CheckerTexture, Texture, ImageTexture, BaseColor};
 use crate::perlin::NoiseTexture;
+use crate::aarect::XyRect;
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -49,26 +51,44 @@ fn hit_sphere(center: Vec3, radius: f64, r: Ray) -> f64 {
     if discriminant < 0.0 { -1.0 } else { (-half_b - discriminant.sqrt()) / (a) }
 }
 
-fn color(x: Ray, world: &HittableList, dep: u32) -> Vec3 {
+fn color(x: Ray,background:Vec3, world: &HittableList, dep: u32) -> Vec3 {
     if dep <= 0 { return Vec3::new(0.0, 0.0, 0.0); }
-    let mut t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, x);
-
     if let Option::Some(_rec) = world.hit(x, 0.001, INFINITY as f64) {
-        let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(),0.0);
-        let mut attenuation = Vec3::zero();
-        if _rec.mat_ptr.scatter(&x, &_rec, &mut attenuation, &mut scattered) {
-            return attenuation * color(scattered, world, dep - 1);
+    let mut scattered =  Ray::new(Vec3::zero(), Vec3::zero(), 0.0);
+        let mut attrnuation =Vec3::zero();
+        let emitted=_rec.mat_ptr.emitted(_rec.u,_rec.v,&_rec.p);
+
+        if !_rec.mat_ptr.scatter(&x, &_rec, &mut attrnuation, &mut scattered) {
+            return emitted;
         }
+        return emitted+color(scattered,background,world,dep-1)*attrnuation;
 
-        return Vec3::zero();
-        // color(Ray::new(_rec.p, _rec.p + Vec3::random_in_himisphere(_rec.normal) - _rec.p), world, dep - 1) * 0.5//apply second reflect way
 
-        //  (   _rec.normal+Vec3::new(1.0,1.0,1.0))*0.5
-    } else {
-        let unit_dir: Vec3 = Vec3::unit((x.dic));
-        t = 0.5 * ((unit_dir.y.clone() + 1.0) as f64);
-        Vec3::new(1.0, 1.0, 1.0) * ((1.0 - t) as f64) + Vec3::new(0.5, 0.7, 1.0) * t as f64
+
+
     }
+    else { return background; }
+
+
+
+
+    // let mut t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, x);
+    // if let Option::Some(_rec) = world.hit(x, 0.001, INFINITY as f64) {
+    //     let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(),0.0);
+    //     let mut attenuation = Vec3::zero();
+    //     if _rec.mat_ptr.scatter(&x, &_rec, &mut attenuation, &mut scattered) {
+    //         return attenuation * color(scattered, world, dep - 1);
+    //     }
+    //
+    //     return Vec3::zero();
+    //     // color(Ray::new(_rec.p, _rec.p + Vec3::random_in_himisphere(_rec.normal) - _rec.p), world, dep - 1) * 0.5//apply second reflect way
+    //
+    //     //  (   _rec.normal+Vec3::new(1.0,1.0,1.0))*0.5
+    // } else {
+    //     let unit_dir: Vec3 = Vec3::unit((x.dic));
+    //     t = 0.5 * ((unit_dir.y.clone() + 1.0) as f64);
+    //     Vec3::new(1.0, 1.0, 1.0) * ((1.0 - t) as f64) + Vec3::new(0.5, 0.7, 1.0) * t as f64
+    // }
 }
 
 fn main() {
@@ -78,14 +98,14 @@ fn main() {
     let ratio: f64 = 16.0 / 9.0;
     let image_width = 400 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 10;//ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 30;//ought to be 100  可以做的更大比如500//todo
     let max_depth = 50;//an bo modifyed to lessen the time
 
     //world
   //let world=random_sence();
 
-//let world=two_berlin_spheres();
-    let world=earth();
+let world=simple_light();
+   // let world=earth();
  //  let world=two_spheres();//todo
     {
         // {
@@ -260,15 +280,20 @@ fn main() {
         // }
     }
 
-
+//let backgroud=Vec3::new(0.7,0.8,1.0);
+    let backgroud=Vec3::new(0.0,0.0,0.0);
 
 
 
 
 
     //Camera
-    let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
-    let lookat=Vec3::new(0.0,0.0,0.0);
+  // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
+
+   let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
+    //let lookat=Vec3::new(0.0,0.0,0.0);
+   let lookat=Vec3::new(0.0,2.0,0.0);
+
     let vup=Vec3::new(0.0,1.0,0.0);
     let dist_to_focus=10.0;
     let aperture=0.1;//ought to be 2
@@ -294,7 +319,7 @@ fn main() {
                 let u = (i as f64 + random_doouble()) / (image_width - 1) as f64;
                 let v = (image_heigth as f64 - j as f64 + random_doouble()) / (image_heigth - 1) as f64;
                 let r = cam.get_ray(u, v);
-                pixel_color += color(r, &world, max_depth);
+                pixel_color += color(r, backgroud,&world, max_depth);
             }
 
 
@@ -658,3 +683,76 @@ fn earth()->HittableList{
     return world;
 }
 
+fn simple_light()->HittableList{
+    let mut world = HittableList {
+        objects: vec![],
+    };
+
+    let checker=Arc::new(NoiseTexture::new(4.0));
+    let below = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: -1000.0,
+            z: 0.0,
+        },
+        radius: 1000.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
+    };
+    world.add(
+        Arc::new(below)
+    );
+
+    let checker1=Arc::new(NoiseTexture::new(4.0));
+    let above = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: 2.0,
+            z: 0.0,
+        },
+        radius: 2.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker1)),//todo
+    };
+    world.add(
+        Arc::new(above)
+    );
+
+    let difflight=Arc::new(DiffuseLight::new(Vec3::new(4.0,4.0,4.0)));
+    let difflight1 = XyRect{
+        mp: Arc::new(DiffuseLight::new(Vec3::new(4.0,4.0,4.0))),
+        x0: 3.0,
+        x1: 5.0,
+        y0: 1.0,
+        y1: 3.0,
+        k: -2.0
+    };
+    world.add(
+        Arc::new(difflight1)
+    );
+
+
+
+//todo
+    return world;
+}
