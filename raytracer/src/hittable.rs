@@ -43,8 +43,10 @@ pub trait Hittable {
 impl Hitrecord {
     pub fn grt_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
         let theta = (-p.y).acos();
-        let temptheta = p.x / (-p.z);
-        let phi = (temptheta).atan();
+        let temptheta =  (-p.z)/p.x;
+
+        let mut phi = (temptheta).atan();
+        phi=phi+PI;
        *u = *&mut (phi / (2.0 * PI));
        *v = *&mut (theta / PI);
     }
