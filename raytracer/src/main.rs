@@ -23,7 +23,7 @@ use crate::material::{Metal, Lambertian, Dielectric, DiffuseLight};
 use std::f64::consts::PI;
 use crate::texture::{CheckerTexture, Texture, ImageTexture, BaseColor};
 use crate::perlin::NoiseTexture;
-use crate::aarect::XyRect;
+use crate::aarect::{XyRect, YzRect, XzRect};
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -95,8 +95,13 @@ fn main() {
     let x = Vec3::new(1.0, 1.0, 1.0);
     println!("{:?}", x);
     //image
-    let ratio: f64 = 16.0 / 9.0;
-    let image_width = 400 as u32;
+
+
+  //  let ratio: f64 = 16.0 / 9.0;
+    let ratio: f64 = 1.0;
+
+    // let image_width = 400 as u32;
+    let image_width = 600 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
     let sample_per_pixel = 30;//ought to be 100  可以做的更大比如500//todo
     let max_depth = 50;//an bo modifyed to lessen the time
@@ -104,7 +109,8 @@ fn main() {
     //world
   //let world=random_sence();
 
-let world=simple_light();
+//let world=simple_light();
+    let world=cornell_box();
    // let world=earth();
  //  let world=two_spheres();//todo
     {
@@ -288,16 +294,22 @@ let world=simple_light();
 
 
     //Camera
-  // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
 
-   let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
+    let lookfrom=Vec3::new(278.0,278.0,-800.0);//13 2 3
+
+    // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
+
+  // let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
+
+
     //let lookat=Vec3::new(0.0,0.0,0.0);
-   let lookat=Vec3::new(0.0,2.0,0.0);
+   //let lookat=Vec3::new(0.0,2.0,0.0);
+    let lookat=Vec3::new(278.0,278.0,0.0);
 
     let vup=Vec3::new(0.0,1.0,0.0);
     let dist_to_focus=10.0;
     let aperture=0.1;//ought to be 2
-    let cam = camera::Camera::new(lookfrom,lookat,vup,20.0,ratio,aperture,dist_to_focus,0.0,1.0);
+    let cam = camera::Camera::new(lookfrom,lookat,vup,40.0,ratio,aperture,dist_to_focus,0.0,1.0);
 
     let view_heigth: f64 = 2.0;
     let view_width = (view_heigth * ratio) as f64;
@@ -777,4 +789,87 @@ fn simple_light()->HittableList{
 
 //todo
     return world;
+}
+
+fn cornell_box()->HittableList {
+    let mut world = HittableList {
+        objects: vec![],
+    };
+
+    let red = YzRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.65,0.05,0.05))))),
+        y0: 0.0,
+        y1: 555.0,
+        z0: 0.0,
+        z1: 555.0,
+        k: 0.0
+    };
+    world.add(
+        Arc::new(red)
+    );
+
+    let green = YzRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.12,0.45,0.15))))),
+
+        y0: 0.0,
+        y1: 555.0,
+        z0: 0.0,
+        z1: 555.0,
+        k: 555.0
+    };
+    world.add(
+        Arc::new(green)
+    );
+    let white1 = XzRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.73,0.73,0.73))))),
+
+        x0: 0.0,
+        x1: 555.0,
+        z0: 0.0,
+        z1: 555.0,
+        k: 0.0
+    };
+    world.add(
+        Arc::new(white1)
+    );
+    let white2 = XzRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.73,0.73,0.73))))),
+
+        x0: 0.0,
+        x1: 555.0,
+        z0: 0.0,
+        z1: 555.0,
+        k: 555.0
+    };
+    world.add(
+        Arc::new(white2)
+    );
+
+    let white3 = XyRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.73,0.73,0.73))))),
+
+        x0: 0.0,
+        x1: 555.0,
+        y0: 0.0,
+        y1: 555.0,
+        k: 555.0,
+
+    };
+    world.add(
+        Arc::new(white3)
+    );
+    let light1 = XzRect{
+        mp: Arc::new(DiffuseLight::new(Vec3::new(15.0,15.0,15.0))),
+        x0: 213.0,
+        x1: 343.0,
+        z0: 227.0,
+        z1: 332.0,
+        k: 554.0,
+
+    };
+    world.add(
+        Arc::new(light1)
+    );
+    return world;
+
 }
