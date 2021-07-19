@@ -2,12 +2,30 @@ pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
 pub use crate::material::Material;
 pub use crate::aabb::Aabb;
+
 use std::sync::Arc;
 use rand::Rng;
 use std::thread::sleep;
 use std::io::empty;
 use std::f64::consts::PI;
 use crate::aarect::{XyRect, XzRect, YzRect};
+
+use std::f64::INFINITY;
+use crate::earth;
+
+fn degrees_to_radians(degrees: f64) -> f64 {
+    degrees * PI / 180.0
+}
+
+fn fmin1(a: f64, b: f64) -> f64 {
+    if a < b { return a; }
+    return b;
+}
+
+fn fmax1(a: f64, b: f64) -> f64 {
+    if a < b { return b; }
+    return a;
+}
 
 #[derive(Clone)]
 pub struct Hitrecord {
@@ -216,9 +234,7 @@ impl Hittable for Box1 {
 }
 
 impl Box1 {
-    pub fn new(&mut self, p0: &Vec3, p1: &Vec3, ptr: Arc<dyn Material>)->Self {
-        self.box_min = *p0;
-        self.box_max = *p1;
+    pub fn new( p0: &Vec3, p1: &Vec3, ptr: Arc<dyn Material>) -> Self {
         let mut world = HittableList {
             objects: vec![],
         };
@@ -288,17 +304,163 @@ impl Box1 {
         world.add(
             Arc::new(obj4)
         );
-       world.add(
+        world.add(
             Arc::new(obj5)
         );
         world.add(
             Arc::new(obj6)
         );
-        return Self{
-            box_min: self.box_min,
-            box_max: self.box_max,
-            sides: world
+        return Self {
+            box_min: *p0,
+            box_max: *p1,
+            sides: world,
+        };
+    }
+}
+
+pub struct Translate {
+    pub(crate) ptr: Arc<dyn Hittable>,
+    pub(crate) offset: Vec3,
+}
+
+impl Translate {
+    pub fn new(ptr: Arc<dyn Hittable>, offset: Vec3) -> Self {
+        Self {
+            ptr,
+            offset,
         }
+    }
+}
+
+impl Hittable for Translate {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
+        let moved_r = Ray::new(r.ori - self.offset, r.dic, r.tm);
+        if let Option::Some(mut rec)=self.ptr.hit(moved_r, t_min, t_max){
+            rec.p=rec.p+self.offset;
+            rec.set_face_normal(&moved_r,rec.normal);
+            return Some(rec);
+        }else {
+            return None;
+        }
+
+        // Option::from(if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
+        //     rec.p += self.offset;
+        //     rec.set_face_normal(&moved_r, rec.normal);
+        //     rec
+        // } else {
+        //     None
+        // })
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        if let Option::Some(mut output_box) = self.ptr.bounding_box(time0, time1) {
+            output_box = Aabb::new(output_box.minimun + self.offset, output_box.maximum + self.offset);
+            return Some(output_box);
+        } else {
+            return None;
+        }
+    }
+}
+
+pub struct RotateY {
+    //相对观察视角物体旋转的角度
+    pub(crate) ptr: Arc<dyn Hittable>,
+    pub(crate) sin_theta: f64,
+    pub(crate) cos_theta: f64,
+    pub(crate) hasbox: bool,
+    pub(crate) bbox: Aabb,
+
+}
+
+impl RotateY {
+    pub fn new( p: Arc<dyn Hittable>, angle: f64) -> Self {
+        let radians = degrees_to_radians(angle);
+
+        let sinthetatemp = radians.sin();
+        let costhetatemp = radians.cos();
+        let mut tempresult =false;
+        let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
+        if let Option::Some(bboxtemp) = p.bounding_box(0.0, 1.0) {
+           tempresult = true;
+        } else {
+           tempresult = false;
+        }
+        let mut min1 = Vec3::new(INFINITY, INFINITY, INFINITY);
+        let mut max1 = Vec3::new(-INFINITY, -INFINITY, -INFINITY);
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let x = i as f64 * bboxtemp.maximum.x + (1.0 - i as f64) * bboxtemp.minimun.x;
+                    let y = j as f64 * bboxtemp.maximum.y + (1.0 - j as f64) * bboxtemp.minimun.y;
+                    let z = k as f64 * bboxtemp.maximum.z + (1.0 - k as f64) * bboxtemp.minimun.z;
+                    let newx = costhetatemp * x + sinthetatemp* z;
+                    let newz = -sinthetatemp* x + costhetatemp * z;
+                    let tester = Vec3::new(newx, y, newz);
+                    min1.x = fmin1(min1.x, tester.x);
+                    max1.x = fmax1(max1.x, tester.x);
+                    min1.y = fmin1(min1.y, tester.y);
+                    max1.y = fmax1(max1.y, tester.y);
+                    min1.z = fmin1(min1.z, tester.z);
+                    max1.z = fmax1(max1.z, tester.z);
+                }
+            }
+        }
+        bboxtemp = Aabb::new(min1, max1);
+
+        Self {
+            ptr: p,
+            sin_theta: sinthetatemp,
+            cos_theta: costhetatemp,
+            hasbox:tempresult,
+            bbox: bboxtemp,
+        }
+    }
+}
+
+impl Hittable for RotateY {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
+        let mut origin = r.ori;
+        let mut direct = r.dic;
+        origin.x = self.cos_theta * r.ori.x - self.sin_theta * r.ori.z;
+        origin.z = self.sin_theta * r.ori.x + self.cos_theta * r.ori.z;
+        direct.x = self.cos_theta * r.dic.x - self.sin_theta * r.dic.z;
+        direct.z = self.sin_theta * r.dic.x + self.cos_theta * r.dic.z;
+        let rotated_ray = Ray::new(origin, direct, r.tm);
+        //let rec=Hitrecord::new(Vec3::zero(),Vec3::zero(),0.0,false,)
+
+
+        if let Option::Some(mut rec)=self.ptr.hit(rotated_ray, t_min, t_max){
+            let mut p = rec.p;
+            let mut nomal = rec.normal;
+            p.x = self.cos_theta * rec.p.x + self.sin_theta * rec.p.z;
+            p.z = -self.sin_theta * rec.p.x + self.cos_theta * rec.p.z;
+            nomal.x = self.cos_theta * rec.normal.x + self.sin_theta * rec.normal.z;
+            nomal.z = -self.sin_theta * rec.normal.x + self.cos_theta * rec.normal.z;
+            rec.p = p;
+            rec.set_face_normal(&rotated_ray, nomal);
+            return Some(rec)
+        }else {
+            return None;
+        }
+
+
+        // Option::from(if let Option::Some(mut rec) = self.ptr.hit(rotated_ray, t_min, t_max) {
+        //     let mut p = rec.p;
+        //     let mut nomal = rec.normal;
+        //     p.x = self.cos_theta * rec.p.x + self.sin_theta * rec.p.z;
+        //     p.z = -self.sin_theta * rec.p.x + self.cos_theta * rec.p.z;
+        //     nomal.x = self.cos_theta * rec.normal.x + self.sin_theta * rec.p.z;
+        //     nomal.z = -self.sin_theta * rec.normal.x + self.cos_theta * rec.normal.z;
+        //     rec.p = p;
+        //     rec.set_face_normal(&rotated_ray, nomal);
+        //     rec
+        // } else {
+        //     None
+        // })
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        return Option::from(self.bbox);
     }
 }
 

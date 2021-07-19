@@ -15,7 +15,7 @@ use indicatif::ProgressBar;
 
 pub use vec3::Vec3;
 pub use crate::ray::Ray;
-use crate::hittable::{HittableList, Sphere, Hittable, MovingSphere, Box1};
+use crate::hittable::{HittableList, Sphere, Hittable, MovingSphere, Box1,RotateY,Translate};
 use std::sync::Arc;
 use std::f32::INFINITY;
 use rand::Rng;
@@ -24,6 +24,7 @@ use std::f64::consts::PI;
 use crate::texture::{CheckerTexture, Texture, ImageTexture, BaseColor};
 use crate::perlin::NoiseTexture;
 use crate::aarect::{XyRect, YzRect, XzRect};
+use crate::aabb::Aabb;
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -103,7 +104,7 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 600 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 30;//ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 10;//ought to be 100  可以做的更大比如500//todo
     let max_depth = 50;//an bo modifyed to lessen the time
 
     //world
@@ -858,24 +859,42 @@ fn cornell_box()->HittableList {
     world.add(
         Arc::new(white3)
     );
+
+
     let mut whitebox4 =Box1{
         box_min: Vec3::zero(),
         box_max: Vec3::zero(),
         sides: HittableList { objects: vec![] }
     };
-    whitebox4 = Box1::new(&mut whitebox4, &Vec3::new(130.0, 0.0, 65.0), &Vec3::new(295.0, 165.0, 230.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+    // whitebox4 = Box1::new( &Vec3::new(130.0, 0.0, 65.0), &Vec3::new(295.0, 165.0, 230.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+    //
+    // world.add(
+    //     Arc::new(whitebox4)
+    // );
+
+
+    let mut whitebox1:Arc<dyn Hittable>=Arc::new(Box1::new(&Vec3::new(0.0, 0.0, 0.0), &Vec3::new(165.0, 330.0, 165.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))))));
+    whitebox1=Arc::new(RotateY::new(whitebox1,15.0));
+    whitebox1=Arc::new(Translate::new(whitebox1,Vec3::new(265.0,0.0,295.0)));
     world.add(
-        Arc::new(whitebox4)
+        whitebox1
     );
-    let mut whitebox5 =Box1{
-        box_min: Vec3::zero(),
-        box_max: Vec3::zero(),
-        sides: HittableList { objects: vec![] }
-    };
-    let whitebox5 = Box1::new(&mut whitebox5, &Vec3::new(265.0, 0.0, 295.0), &Vec3::new(430.0, 330.0, 460.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+
+
+
+    let mut whitebox2:Arc<dyn Hittable>=Arc::new(Box1::new(&Vec3::new(0.0, 0.0, 0.0), &Vec3::new(165.0, 165.0, 165.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))))));
+    whitebox2=Arc::new(RotateY::new(whitebox2,-18.0));
+    whitebox2=Arc::new(Translate::new(whitebox2,Vec3::new(130.0,0.0,65.0)));
     world.add(
-        Arc::new(whitebox5)
+        whitebox2
     );
+
+    // let whitebox5 = Box1::new( &Vec3::new(265.0, 0.0, 295.0), &Vec3::new(430.0, 330.0, 460.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+    // world.add(
+    //     Arc::new(whitebox5)
+    // );
+
+
 
 
 
