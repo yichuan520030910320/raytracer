@@ -15,7 +15,7 @@ use indicatif::ProgressBar;
 
 pub use vec3::Vec3;
 pub use crate::ray::Ray;
-use crate::hittable::{HittableList, Sphere, Hittable, MovingSphere, Box1,RotateY,Translate};
+use crate::hittable::{HittableList, Sphere, Hittable, MovingSphere, Box1, RotateY, Translate, ConstantMedium};
 use std::sync::Arc;
 use std::f32::INFINITY;
 use rand::Rng;
@@ -104,14 +104,14 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 600 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 10;//ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 400;//ought to be 100  可以做的更大比如500//todo
     let max_depth = 50;//an bo modifyed to lessen the time
 
     //world
   //let world=random_sence();
 
 //let world=simple_light();
-    let world=cornell_box();
+    let world=cornell_smoke();
    // let world=earth();
  //  let world=two_spheres();//todo
     {
@@ -916,5 +916,141 @@ fn cornell_box()->HittableList {
         Arc::new(light1)
     );
     return world;
+
+}
+
+fn cornell_smoke()->HittableList {
+    let mut world = HittableList {
+        objects: vec![],
+    };
+
+
+
+
+
+    let red = YzRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.65,0.05,0.05))))),
+        y0: 0.0,
+        y1: 555.0,
+        z0: 0.0,
+        z1: 555.0,
+        k: 0.0
+    };
+    world.add(
+        Arc::new(red)
+    );
+
+    let green = YzRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.12,0.45,0.15))))),
+
+        y0: 0.0,
+        y1: 555.0,
+        z0: 0.0,
+        z1: 555.0,
+        k: 555.0
+    };
+    world.add(
+        Arc::new(green)
+    );
+    let white1 = XzRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.73,0.73,0.73))))),
+
+        x0: 0.0,
+        x1: 555.0,
+        z0: 0.0,
+        z1: 555.0,
+        k: 0.0
+    };
+    world.add(
+        Arc::new(white1)
+    );
+    let white2 = XzRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.73,0.73,0.73))))),
+
+        x0: 0.0,
+        x1: 555.0,
+        z0: 0.0,
+        z1: 555.0,
+        k: 555.0
+    };
+    world.add(
+        Arc::new(white2)
+    );
+
+    let white3 = XyRect {
+        mp: Arc::new(((Lambertian::new(Vec3::new(0.73,0.73,0.73))))),
+
+        x0: 0.0,
+        x1: 555.0,
+        y0: 0.0,
+        y1: 555.0,
+        k: 555.0,
+
+    };
+    world.add(
+        Arc::new(white3)
+    );
+
+
+    let mut whitebox4 =Box1{
+        box_min: Vec3::zero(),
+        box_max: Vec3::zero(),
+        sides: HittableList { objects: vec![] }
+    };
+    // whitebox4 = Box1::new( &Vec3::new(130.0, 0.0, 65.0), &Vec3::new(295.0, 165.0, 230.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+    //
+    // world.add(
+    //     Arc::new(whitebox4)
+    // );
+
+
+    let mut whitebox1:Arc<dyn Hittable>=Arc::new(Box1::new(&Vec3::new(0.0, 0.0, 0.0), &Vec3::new(165.0, 330.0, 165.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))))));
+    whitebox1=Arc::new(RotateY::new(whitebox1,15.0));
+    whitebox1=Arc::new(Translate::new(whitebox1,Vec3::new(265.0,0.0,295.0)));
+    whitebox1=Arc::new(ConstantMedium::new(whitebox1,0.01,Vec3::new(0.0,0.0,0.0)));
+    world.add(
+        whitebox1
+    );
+
+
+
+    let mut whitebox2:Arc<dyn Hittable>=Arc::new(Box1::new(&Vec3::new(0.0, 0.0, 0.0), &Vec3::new(165.0, 165.0, 165.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))))));
+    whitebox2=Arc::new(RotateY::new(whitebox2,-18.0));
+    whitebox2=Arc::new(Translate::new(whitebox2,Vec3::new(130.0,0.0,65.0)));
+    whitebox2=Arc::new(ConstantMedium::new(whitebox2,0.01,Vec3::new(1.0,1.0,1.0)));
+    world.add(
+        whitebox2
+    );
+
+    // let whitebox5 = Box1::new( &Vec3::new(265.0, 0.0, 295.0), &Vec3::new(430.0, 330.0, 460.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+    // world.add(
+    //     Arc::new(whitebox5)
+    // );
+
+
+
+
+
+
+
+
+
+
+    let light1 = XzRect{
+        mp: Arc::new(DiffuseLight::new(Vec3::new(7.0,7.0,7.0))),
+        x0: 113.0,
+        x1: 443.0,
+        z0: 127.0,
+        z1: 432.0,
+        k: 554.0,
+
+    };
+    world.add(
+        Arc::new(light1)
+    );
+    return world;
+
+
+
 
 }

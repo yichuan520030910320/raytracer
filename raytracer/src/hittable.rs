@@ -12,6 +12,8 @@ use crate::aarect::{XyRect, XzRect, YzRect};
 
 use std::f64::INFINITY;
 use crate::earth;
+use crate::texture::Texture;
+use crate::material::Isotropic;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
@@ -234,7 +236,7 @@ impl Hittable for Box1 {
 }
 
 impl Box1 {
-    pub fn new( p0: &Vec3, p1: &Vec3, ptr: Arc<dyn Material>) -> Self {
+    pub fn new(p0: &Vec3, p1: &Vec3, ptr: Arc<dyn Material>) -> Self {
         let mut world = HittableList {
             objects: vec![],
         };
@@ -335,11 +337,11 @@ impl Translate {
 impl Hittable for Translate {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let moved_r = Ray::new(r.ori - self.offset, r.dic, r.tm);
-        if let Option::Some(mut rec)=self.ptr.hit(moved_r, t_min, t_max){
-            rec.p=rec.p+self.offset;
-            rec.set_face_normal(&moved_r,rec.normal);
+        if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
+            rec.p = rec.p + self.offset;
+            rec.set_face_normal(&moved_r, rec.normal);
             return Some(rec);
-        }else {
+        } else {
             return None;
         }
 
@@ -373,17 +375,17 @@ pub struct RotateY {
 }
 
 impl RotateY {
-    pub fn new( p: Arc<dyn Hittable>, angle: f64) -> Self {
+    pub fn new(p: Arc<dyn Hittable>, angle: f64) -> Self {
         let radians = degrees_to_radians(angle);
 
         let sinthetatemp = radians.sin();
         let costhetatemp = radians.cos();
-        let mut tempresult =false;
+        let mut tempresult = false;
         let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
         if let Option::Some(bboxtemp) = p.bounding_box(0.0, 1.0) {
-           tempresult = true;
+            tempresult = true;
         } else {
-           tempresult = false;
+            tempresult = false;
         }
         let mut min1 = Vec3::new(INFINITY, INFINITY, INFINITY);
         let mut max1 = Vec3::new(-INFINITY, -INFINITY, -INFINITY);
@@ -393,8 +395,8 @@ impl RotateY {
                     let x = i as f64 * bboxtemp.maximum.x + (1.0 - i as f64) * bboxtemp.minimun.x;
                     let y = j as f64 * bboxtemp.maximum.y + (1.0 - j as f64) * bboxtemp.minimun.y;
                     let z = k as f64 * bboxtemp.maximum.z + (1.0 - k as f64) * bboxtemp.minimun.z;
-                    let newx = costhetatemp * x + sinthetatemp* z;
-                    let newz = -sinthetatemp* x + costhetatemp * z;
+                    let newx = costhetatemp * x + sinthetatemp * z;
+                    let newz = -sinthetatemp * x + costhetatemp * z;
                     let tester = Vec3::new(newx, y, newz);
                     min1.x = fmin1(min1.x, tester.x);
                     max1.x = fmax1(max1.x, tester.x);
@@ -411,7 +413,7 @@ impl RotateY {
             ptr: p,
             sin_theta: sinthetatemp,
             cos_theta: costhetatemp,
-            hasbox:tempresult,
+            hasbox: tempresult,
             bbox: bboxtemp,
         }
     }
@@ -429,7 +431,7 @@ impl Hittable for RotateY {
         //let rec=Hitrecord::new(Vec3::zero(),Vec3::zero(),0.0,false,)
 
 
-        if let Option::Some(mut rec)=self.ptr.hit(rotated_ray, t_min, t_max){
+        if let Option::Some(mut rec) = self.ptr.hit(rotated_ray, t_min, t_max) {
             let mut p = rec.p;
             let mut nomal = rec.normal;
             p.x = self.cos_theta * rec.p.x + self.sin_theta * rec.p.z;
@@ -438,8 +440,8 @@ impl Hittable for RotateY {
             nomal.z = -self.sin_theta * rec.normal.x + self.cos_theta * rec.normal.z;
             rec.p = p;
             rec.set_face_normal(&rotated_ray, nomal);
-            return Some(rec)
-        }else {
+            return Some(rec);
+        } else {
             return None;
         }
 
@@ -605,5 +607,62 @@ impl Hittable for BvhNode {
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
         todo!()
+    }
+}
+
+pub struct ConstantMedium {
+    pub boundary: Arc<dyn Hittable>,
+    pub phase_function: Arc<dyn Material>,
+    neg_inv_density: f64,
+}
+
+impl Hittable for ConstantMedium {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
+        let mut rec1 = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.phase_function.clone());
+        let mut rec2 = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.phase_function.clone());
+
+        if  let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INFINITY, INFINITY) {//todo
+            if let Option::Some(mut rec2) = self.boundary.hit(r.clone(), rec1.t.clone() + 0.0001, INFINITY) {
+                if rec1.t < t_min { rec1.t = t_min };
+                if rec2.t > t_max { rec2.t = t_max };
+
+                if rec1.t >= rec2.t {
+                    return None;
+                }
+                if rec1.t < 0.0 {
+                    rec1.t = 0.0;
+                }
+                let ray_length = r.dic.length();
+                let distangce_inside_boundary = (rec2.t.clone() - rec1.t.clone()) * ray_length;
+                let hit_distance = self.neg_inv_density * random_doouble().ln();
+
+                if hit_distance > distangce_inside_boundary {
+                    return None;
+                }
+                let mut recreturn = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.phase_function.clone());
+                recreturn.t = rec1.t.clone() + hit_distance / ray_length;
+                recreturn.p = r.at(recreturn.t);
+                recreturn.normal = Vec3::new(1.0, 0.0, 0.0);
+                recreturn.front_face = true;
+                recreturn.mat_ptr = self.phase_function.clone();
+                return Some(recreturn);
+            } else { return None; }
+        } else {
+            return None;
+        }
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        return self.boundary.bounding_box(time0, time1);
+    }
+}
+
+impl ConstantMedium {
+    pub fn new(b: Arc<dyn Hittable>, d: f64, c: Vec3) -> Self {
+        Self {
+            boundary: b,
+            phase_function: Arc::new(Isotropic::new(c)),
+            neg_inv_density: (-1.0 / d),
+        }
     }
 }
