@@ -102,16 +102,16 @@ fn main() {
     let ratio: f64 = 1.0;
 
     // let image_width = 400 as u32;
-    let image_width = 600 as u32;
+    let image_width = 800 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 400;//ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 10;//ought to be 100  可以做的更大比如500//todo
     let max_depth = 50;//an bo modifyed to lessen the time
 
     //world
   //let world=random_sence();
 
 //let world=simple_light();
-    let world=cornell_smoke();
+    let world=final_book2_scence();
    // let world=earth();
  //  let world=two_spheres();//todo
     {
@@ -297,6 +297,7 @@ fn main() {
     //Camera
 
     let lookfrom=Vec3::new(278.0,278.0,-800.0);//13 2 3
+    let lookfrom=Vec3::new(478.0,278.0,-600.0);//13 2 3
 
     // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
 
@@ -923,11 +924,6 @@ fn cornell_smoke()->HittableList {
     let mut world = HittableList {
         objects: vec![],
     };
-
-
-
-
-
     let red = YzRect {
         mp: Arc::new(((Lambertian::new(Vec3::new(0.65,0.05,0.05))))),
         y0: 0.0,
@@ -976,7 +972,6 @@ fn cornell_smoke()->HittableList {
     world.add(
         Arc::new(white2)
     );
-
     let white3 = XyRect {
         mp: Arc::new(((Lambertian::new(Vec3::new(0.73,0.73,0.73))))),
 
@@ -990,8 +985,6 @@ fn cornell_smoke()->HittableList {
     world.add(
         Arc::new(white3)
     );
-
-
     let mut whitebox4 =Box1{
         box_min: Vec3::zero(),
         box_max: Vec3::zero(),
@@ -1002,8 +995,6 @@ fn cornell_smoke()->HittableList {
     // world.add(
     //     Arc::new(whitebox4)
     // );
-
-
     let mut whitebox1:Arc<dyn Hittable>=Arc::new(Box1::new(&Vec3::new(0.0, 0.0, 0.0), &Vec3::new(165.0, 330.0, 165.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))))));
     whitebox1=Arc::new(RotateY::new(whitebox1,15.0));
     whitebox1=Arc::new(Translate::new(whitebox1,Vec3::new(265.0,0.0,295.0)));
@@ -1011,9 +1002,6 @@ fn cornell_smoke()->HittableList {
     world.add(
         whitebox1
     );
-
-
-
     let mut whitebox2:Arc<dyn Hittable>=Arc::new(Box1::new(&Vec3::new(0.0, 0.0, 0.0), &Vec3::new(165.0, 165.0, 165.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))))));
     whitebox2=Arc::new(RotateY::new(whitebox2,-18.0));
     whitebox2=Arc::new(Translate::new(whitebox2,Vec3::new(130.0,0.0,65.0)));
@@ -1021,21 +1009,10 @@ fn cornell_smoke()->HittableList {
     world.add(
         whitebox2
     );
-
     // let whitebox5 = Box1::new( &Vec3::new(265.0, 0.0, 295.0), &Vec3::new(430.0, 330.0, 460.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
     // world.add(
     //     Arc::new(whitebox5)
     // );
-
-
-
-
-
-
-
-
-
-
     let light1 = XzRect{
         mp: Arc::new(DiffuseLight::new(Vec3::new(7.0,7.0,7.0))),
         x0: 113.0,
@@ -1049,8 +1026,180 @@ fn cornell_smoke()->HittableList {
         Arc::new(light1)
     );
     return world;
+}
+fn final_book2_scence()->HittableList {
+    let mut world = HittableList {
+        objects: vec![],
+    };
+    let light1 = XzRect{
+        mp: Arc::new(DiffuseLight::new(Vec3::new(7.0,7.0,7.0))),
+        x0: 113.0,
+        x1: 443.0,
+        z0: 127.0,
+        z1: 432.0,
+        k: 554.0,
+
+    };
+    world.add(
+        Arc::new(light1)
+    );
+
+
+
+    let center1=Vec3::new(400.0,400.0,200.0);
+    let center2=center1+Vec3::new(30.0,0.0,0.0);
+    let temp = MovingSphere{
+        center0: center1,
+        center1: center2,
+        time0: 0.0, time1: 1.0,
+        radius: 50.0,
+        mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.7,0.3,0.1))),
+
+    };
+    world.add(
+        Arc::new(temp)
+    );
+
+
+    let tempmetal = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: 150.0,
+            z: 145.0,
+        },
+        radius: 50.0,
+        mat_ptr: Arc::new((Metal::new(Vec3::new(0.8,0.8,0.9),1.0))),
+    };
+    world.add(
+        Arc::new(tempmetal)
+    );
+
+
+    let tempdielectric = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 260.0,
+            y: 150.0,
+            z: 45.0,
+        },
+        radius: 50.0,
+        mat_ptr: Arc::new((Dielectric::new(1.5))),
+    };
+
+
+    world.add(
+        Arc::new(tempdielectric)
+    );
+
+    let tempdielectric2 = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 360.0,
+            y: 150.0,
+            z: 145.0,
+        },
+        radius: 70.0,
+        mat_ptr: Arc::new((Dielectric::new(1.5))),
+    };
+
+
+    world.add(
+        Arc::new(tempdielectric2)
+    );
+    let mut boudary:Arc<dyn Hittable>=Arc::new(Sphere::new(Vec3::zero(), Vec3::zero(), 0.0, Vec3::new(360.0,150.0,145.0), 70.0, Arc::new((Dielectric::new(1.5)))));
+    boudary=Arc::new(ConstantMedium::new(boudary,0.2,Vec3::new(0.2,0.4,0.9)));
+    world.add(
+        boudary
+    );
+    let mut boudary2:Arc<dyn Hittable>=Arc::new(Sphere::new(Vec3::zero(), Vec3::zero(), 0.0, Vec3::new(0.0,0.0,0.0), 5000.0, Arc::new((Dielectric::new(1.5)))));
+    boudary2=Arc::new(ConstantMedium::new(boudary2,0.0001,Vec3::new(1.0,1.0,1.0)));
+    world.add(
+        boudary2
+    );
+    let checker=Arc::new(ImageTexture::new("earthmap.jpg"));
+    let below = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 400.0,
+            y: 200.0,
+            z: 400.0,
+        },
+        radius: 100.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
+    };
+    world.add(
+        Arc::new(below)
+    );
+    let checker=Arc::new(NoiseTexture::new(0.1));
+    let pertext = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 220.0,
+            y: 280.0,
+            z: 300.0,
+        },
+        radius:80.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
+    };
+    world.add(
+        Arc::new(pertext)
+    );
 
 
 
 
+
+
+    return world;
 }
