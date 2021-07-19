@@ -419,6 +419,7 @@ impl RotateY {
     }
 }
 
+
 impl Hittable for RotateY {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let mut origin = r.ori;
@@ -510,106 +511,6 @@ impl Hittable for HittableList {
     }
 }
 
-pub struct BvhNode {
-    pub left: Arc<dyn Hittable>,
-    pub right: Arc<dyn Hittable>,
-    pub box1: Aabb,
-
-}
-
-impl BvhNode {
-    pub fn bouding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let outout = self.box1.clone();
-        return Some(outout);
-    }
-    pub fn new(
-        src_objects: &mut Vec<Arc<dyn Hittable>>, span: i32, time0: f64, time1: f64,
-    ) -> Self {
-        let mut objects = src_objects;
-        let mut rng = rand::thread_rng();
-        let axis = rand::thread_rng().gen_range(0..3);
-        //todo
-        let left: Arc<dyn Hittable>;
-        let right: Arc<dyn Hittable>;
-        if span == 1 {
-            left = objects.remove(0);
-            right = left.clone();
-        } else if span == 2 {
-            left = objects.remove(0);
-            right = objects.remove(0);
-        } else {
-            objects.sort_by(|a, b| {
-                let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
-                let y = b.bounding_box(time0, time1).unwrap().maximum.get(axis);
-                x.partial_cmp(&y).unwrap()
-            });
-            let mid = span / 2;
-            let (object0, object1) = objects.split_at_mut(mid as usize);
-            left = Arc::new(BvhNode::new(&mut object0.to_vec(), mid, time0, time1));
-            right = Arc::new(BvhNode::new(&mut object1.to_vec(), span - mid, time0, time1));
-        }
-        let box11 = left.bounding_box(time0, time1).unwrap();
-        let box22 = right.bounding_box(time0, time1).unwrap();
-        Self {
-            left,
-            right,
-            box1: Aabb::surrounding_box(box11, box22),
-        }
-    }
-}
-// fn box_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>, axis: i32) -> bool {
-//     let box_a = Aabb::new(Vec3::zero(), Vec3::zero());
-//     let box_b = Aabb::new(Vec3::zero(), Vec3::zero());
-//     let Option::Some(box_a) = a.bounding_box(0.0, 0.0);
-//     let Option::Some( box_b) = b.bounding_box(0.0, 0.0);
-//     //may need to add
-//     if axis == 0 {
-//         return box_a.minimun.x < box_b.minimun.x;
-//     } else if axis == 1 {
-//         return box_a.minimun.y < box_b.minimun.y;
-//     } else {
-//         return box_a.minimun.z < box_b.minimun.z;
-//     }
-// }
-//
-// fn box_x_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
-//     return box_compare(a, b, 0);
-// }
-//
-// fn box_y_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
-//     return box_compare(a, b, 1);
-// }
-//
-// fn box_z_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
-//     return box_compare(a, b, 2);
-// }
-
-impl Hittable for BvhNode {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
-        if self.box1.hit(&r, t_min, t_max) { return None; }
-        let _temp = self.left.hit(r, t_min, t_max);
-        if let Option::Some(_temp1) = _temp {
-            let hit_right = self.right.hit(r, t_min, _temp1.t);
-            if let Option::Some(_temp2right) = hit_right {
-                Some(_temp2right)
-            } else {
-                Some(_temp1)
-            }
-        } else {
-            let hit_right = self.right.hit(r, t_min, t_max);
-            if let Option::Some(_temp2right) = hit_right {
-                Some(_temp2right)
-            } else {
-                None
-            }
-        }
-    }
-
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        todo!()
-    }
-}
-
 pub struct ConstantMedium {
     pub boundary: Arc<dyn Hittable>,
     pub phase_function: Arc<dyn Material>,
@@ -666,3 +567,106 @@ impl ConstantMedium {
         }
     }
 }
+pub struct BvhNode {
+    pub left: Arc<dyn Hittable>,
+    pub right: Arc<dyn Hittable>,
+    pub box1: Aabb,
+
+}
+
+impl BvhNode {
+    pub fn new(
+        src_objects:  Vec<Arc<dyn Hittable>>, time0: f64, time1: f64,
+    ) -> Self {
+        let span=src_objects.len();
+        let mut objects = src_objects;
+        let axis = rand::thread_rng().gen_range(0..3);
+        //todo
+        let left: Arc<dyn Hittable>;
+        let right: Arc<dyn Hittable>;
+        if span == 1 {
+            left = objects.remove(0);
+            right = left.clone();
+        } else if span == 2 {
+            objects.sort_by(|a, b| {
+                let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
+                let y=b.bounding_box(time0,time1).unwrap().minimun.get(axis);
+                x.partial_cmp(&y).unwrap()
+            });
+            right = objects.remove(1);
+            left = objects.remove(0);
+
+        } else {
+            objects.sort_by(|a, b| {
+                let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
+                let y=b.bounding_box(time0,time1).unwrap().minimun.get(axis);
+                x.partial_cmp(&y).unwrap()
+            });
+            let mid = span / 2;
+            let (object0, object1) = objects.split_at_mut(mid as usize);
+            left = Arc::new(BvhNode::new( object0.to_vec(),  time0, time1));
+            right = Arc::new(BvhNode::new( object1.to_vec(),  time0, time1));
+        }
+        let box11 = left.bounding_box(time0, time1).unwrap();
+        let box22 = right.bounding_box(time0, time1).unwrap();
+        Self {
+            left,
+            right,
+            box1: Aabb::surrounding_box(box11, box22),
+        }
+    }
+}
+
+
+impl Hittable for BvhNode {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
+        if self.box1.hit(&r, t_min, t_max) { return None; }
+        let _temp = self.left.hit(r, t_min, t_max);
+        if let Option::Some(_temp1) = _temp {
+            let hit_right = self.right.hit(r, t_min, _temp1.t);
+            if let Option::Some(_temp2right) = hit_right {
+                Some(_temp2right)
+            } else {
+                Some(_temp1)
+            }
+        } else {
+            let hit_right = self.right.hit(r, t_min, t_max);
+            if let Option::Some(_temp2right) = hit_right {//todo
+                Some(_temp2right)
+            } else {
+                None
+            }
+        }
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let outout = self.box1.clone();
+        return Some(outout);
+    }
+}
+// fn box_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>, axis: i32) -> bool {
+//     let box_a = Aabb::new(Vec3::zero(), Vec3::zero());
+//     let box_b = Aabb::new(Vec3::zero(), Vec3::zero());
+//     let Option::Some(box_a) = a.bounding_box(0.0, 0.0);
+//     let Option::Some( box_b) = b.bounding_box(0.0, 0.0);
+//     //may need to add
+//     if axis == 0 {
+//         return box_a.minimun.x < box_b.minimun.x;
+//     } else if axis == 1 {
+//         return box_a.minimun.y < box_b.minimun.y;
+//     } else {
+//         return box_a.minimun.z < box_b.minimun.z;
+//     }
+// }
+//
+// fn box_x_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
+//     return box_compare(a, b, 0);
+// }
+//
+// fn box_y_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
+//     return box_compare(a, b, 1);
+// }
+//
+// fn box_z_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
+//     return box_compare(a, b, 2);
+// }
