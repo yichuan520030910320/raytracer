@@ -99,7 +99,7 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 800 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 10;//ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 1000;//ought to be 100  可以做的更大比如500//todo
     let max_depth = 50;//an bo modifyed to lessen the time
 
     //world
@@ -651,37 +651,37 @@ fn two_berlin_spheres() -> HittableList
     return world;
 }
 
-fn earth() -> HittableList {
-    let mut world = HittableList {
-        objects: vec![],
-    };
-
-    let checker = Arc::new(ImageTexture::new("earthmap.jpg"));
-    let below = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        radius: 2.0,
-        mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
-    };
-    world.add(
-        Arc::new(below)
-    );
-    return world;
-}
+// fn earth() -> HittableList {
+//     let mut world = HittableList {
+//         objects: vec![],
+//     };
+//
+//     let checker = Arc::new(ImageTexture::new("earthmap.jpg"));
+//     let below = Sphere {
+//         p: Vec3 {
+//             x: 0.0,
+//             y: 0.0,
+//             z: 0.0,
+//         },
+//         normal: Vec3 {
+//             x: 0.0,
+//             y: 0.0,
+//             z: 0.0,
+//         },
+//         t: 0.0,
+//         center: Vec3 {
+//             x: 0.0,
+//             y: 0.0,
+//             z: 0.0,
+//         },
+//         radius: 2.0,
+//         mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
+//     };
+//     world.add(
+//         Arc::new(below)
+//     );
+//     return world;
+// }
 
 fn simple_light() -> HittableList {
     let mut world = HittableList {
@@ -1146,30 +1146,30 @@ fn final_book2_scence() -> HittableList {
     world.add(
         boudary2
     );
-    let checker = Arc::new(ImageTexture::new("earthmap.jpg"));
-    let below = Sphere {
-        p: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        normal: Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        },
-        t: 0.0,
-        center: Vec3 {
-            x: 400.0,
-            y: 200.0,
-            z: 400.0,
-        },
-        radius: 100.0,
-        mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
-    };
-    world.add(
-        Arc::new(below)
-    );
+    // let checker = Arc::new(ImageTexture::new("earthmap.jpg"));
+    // let below = Sphere {
+    //     p: Vec3 {
+    //         x: 0.0,
+    //         y: 0.0,
+    //         z: 0.0,
+    //     },
+    //     normal: Vec3 {
+    //         x: 0.0,
+    //         y: 0.0,
+    //         z: 0.0,
+    //     },
+    //     t: 0.0,
+    //     center: Vec3 {
+    //         x: 400.0,
+    //         y: 200.0,
+    //         z: 400.0,
+    //     },
+    //     radius: 100.0,
+    //     mat_ptr: Arc::new(Lambertian::new1(checker)),//todo
+    // };
+    // world.add(
+    //     Arc::new(below)
+    // );
     let checker = Arc::new(NoiseTexture::new(0.1));
     let pertext = Sphere {
         p: Vec3 {
