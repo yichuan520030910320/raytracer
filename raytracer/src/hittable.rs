@@ -7,6 +7,7 @@ use rand::Rng;
 use std::thread::sleep;
 use std::io::empty;
 use std::f64::consts::PI;
+use crate::aarect::{XyRect, XzRect, YzRect};
 
 #[derive(Clone)]
 pub struct Hitrecord {
@@ -43,12 +44,12 @@ pub trait Hittable {
 impl Hitrecord {
     pub fn grt_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
         let theta = (-p.y).acos();
-        let temptheta =  (-p.z)/p.x;
+        let temptheta = (-p.z) / p.x;
 
         let mut phi = (temptheta).atan();
-        phi=phi+PI;
-       *u = *&mut (phi / (2.0 * PI));
-       *v = *&mut (theta / PI);
+        phi = phi + PI;
+        *u = *&mut (phi / (2.0 * PI));
+        *v = *&mut (theta / PI);
     }
     pub fn new(p: Vec3, normal: Vec3, t: f64, front_face: bool, mat_ptr: Arc<dyn Material>) -> Self { Self { p, normal, t, u: 0.0, v: 0.0, front_face, mat_ptr } }
 
@@ -112,7 +113,7 @@ impl Hittable for MovingSphere {
                 normal: Vec3::zero(),
                 front_face: false,
                 mat_ptr: self.mat_ptr.clone(),
-                v: 0.0
+                v: 0.0,
             };
 
             rec.t = root;
@@ -184,7 +185,7 @@ impl Hittable for Sphere {
             rec.p = Ray::at(&r, rec.t);
             let outward_normal = (rec.p - self.center) / self.radius;
             rec.set_face_normal(&r, outward_normal);
-            Hitrecord::grt_sphere_uv( outward_normal, &mut rec.u, &mut rec.v);
+            Hitrecord::grt_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
             Some(rec)
         }
     }
@@ -195,6 +196,109 @@ impl Hittable for Sphere {
             self.center + Vec3::new(self.radius, self.radius, self.radius),
         );
         return Some(output);
+    }
+}
+
+pub struct Box1 {
+    pub(crate) box_min: Vec3,
+    pub(crate) box_max: Vec3,
+    pub(crate) sides: HittableList,
+}
+
+impl Hittable for Box1 {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
+        return self.sides.hit(r, t_min, t_max);
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        return Option::from(Aabb::new(self.box_min, self.box_max));
+    }
+}
+
+impl Box1 {
+    pub fn new(&mut self, p0: &Vec3, p1: &Vec3, ptr: Arc<dyn Material>)->Self {
+        self.box_min = *p0;
+        self.box_max = *p1;
+        let mut world = HittableList {
+            objects: vec![],
+        };
+        let obj1 = XyRect {
+            mp: ptr.clone(),
+            x0: p0.x,
+            x1: p1.x,
+            y0: p0.y,
+            y1: p1.y,
+            k: p1.z,
+
+        };
+        let obj2 = XyRect {
+            mp: ptr.clone(),
+            x0: p0.x,
+            x1: p1.x,
+            y0: p0.y,
+            y1: p1.y,
+            k: p0.z,
+
+        };
+        let obj3 = XzRect {
+            mp: ptr.clone(),
+            x0: p0.x,
+            x1: p1.x,
+            z0: p0.z,
+            z1: p1.z,
+            k: p1.y,
+
+        };
+        let obj4 = XzRect {
+            mp: ptr.clone(),
+            x0: p0.x,
+            x1: p1.x,
+            z0: p0.z,
+            z1: p1.z,
+            k: p0.z,
+
+        };
+        let obj5 = YzRect {
+            mp: ptr.clone(),
+            y0: p0.y,
+            y1: p1.y,
+            z0: p0.z,
+            z1: p1.z,
+            k: p1.x,
+
+        };
+        let obj6 = YzRect {
+            mp: ptr.clone(),
+            y0: p0.y,
+            y1: p1.y,
+            z0: p0.z,
+            z1: p1.z,
+            k: p0.x,
+
+        };
+        world.add(
+            Arc::new(obj1)
+        );
+        world.add(
+            Arc::new(obj2)
+        );
+        world.add(
+            Arc::new(obj3)
+        );
+        world.add(
+            Arc::new(obj4)
+        );
+       world.add(
+            Arc::new(obj5)
+        );
+        world.add(
+            Arc::new(obj6)
+        );
+        return Self{
+            box_min: self.box_min,
+            box_max: self.box_max,
+            sides: world
+        }
     }
 }
 
@@ -248,13 +352,14 @@ pub struct BvhNode {
     pub box1: Aabb,
 
 }
+
 impl BvhNode {
     pub fn bouding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
         let outout = self.box1.clone();
         return Some(outout);
     }
     pub fn new(
-        src_objects:&mut Vec<Arc<dyn Hittable>>, span: i32, time0: f64, time1: f64,
+        src_objects: &mut Vec<Arc<dyn Hittable>>, span: i32, time0: f64, time1: f64,
     ) -> Self {
         let mut objects = src_objects;
         let mut rng = rand::thread_rng();
@@ -276,8 +381,8 @@ impl BvhNode {
             });
             let mid = span / 2;
             let (object0, object1) = objects.split_at_mut(mid as usize);
-            left = Arc::new(BvhNode::new(& mut object0.to_vec(), mid, time0, time1));
-            right = Arc::new(BvhNode::new(& mut object1.to_vec(), span - mid, time0, time1));
+            left = Arc::new(BvhNode::new(&mut object0.to_vec(), mid, time0, time1));
+            right = Arc::new(BvhNode::new(&mut object1.to_vec(), span - mid, time0, time1));
         }
         let box11 = left.bounding_box(time0, time1).unwrap();
         let box22 = right.bounding_box(time0, time1).unwrap();

@@ -15,7 +15,7 @@ use indicatif::ProgressBar;
 
 pub use vec3::Vec3;
 pub use crate::ray::Ray;
-use crate::hittable::{HittableList, Sphere, Hittable, MovingSphere};
+use crate::hittable::{HittableList, Sphere, Hittable, MovingSphere, Box1};
 use std::sync::Arc;
 use std::f32::INFINITY;
 use rand::Rng;
@@ -858,6 +858,32 @@ fn cornell_box()->HittableList {
     world.add(
         Arc::new(white3)
     );
+    let mut whitebox4 =Box1{
+        box_min: Vec3::zero(),
+        box_max: Vec3::zero(),
+        sides: HittableList { objects: vec![] }
+    };
+    whitebox4 = Box1::new(&mut whitebox4, &Vec3::new(130.0, 0.0, 65.0), &Vec3::new(295.0, 165.0, 230.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+    world.add(
+        Arc::new(whitebox4)
+    );
+    let mut whitebox5 =Box1{
+        box_min: Vec3::zero(),
+        box_max: Vec3::zero(),
+        sides: HittableList { objects: vec![] }
+    };
+    let whitebox5 = Box1::new(&mut whitebox5, &Vec3::new(265.0, 0.0, 295.0), &Vec3::new(430.0, 330.0, 460.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+    world.add(
+        Arc::new(whitebox5)
+    );
+
+
+
+
+
+
+
+
     let light1 = XzRect{
         mp: Arc::new(DiffuseLight::new(Vec3::new(15.0,15.0,15.0))),
         x0: 213.0,
