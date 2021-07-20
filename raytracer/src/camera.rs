@@ -1,6 +1,6 @@
+use crate::range_random_double;
 pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
-use crate::{ range_random_double};
 use std::f64::consts::PI;
 
 #[derive(Clone, Debug, PartialEq, Copy)]

@@ -27,10 +27,9 @@ pub trait Material {
     ) -> bool;
     //attenuation是衰减的意思
     fn emitted(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
-        let aa=u;
-        let bb=v;
-     let m=p.x;
-
+        let aa = u;
+        let bb = v;
+        let m = p.x;
 
         return Vec3::zero();
     }

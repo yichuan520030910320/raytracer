@@ -94,7 +94,6 @@ impl Vec3 {
             }
             return p;
         }
-
     }
 }
 
@@ -122,7 +121,6 @@ impl Vec3 {
             }
             return p;
         }
-
     }
     pub fn random_in_himisphere(normal: Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
@@ -130,7 +128,7 @@ impl Vec3 {
             in_unit_sphere
         } else {
             -in_unit_sphere
-        }
+        };
     }
 }
 
