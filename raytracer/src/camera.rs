@@ -1,7 +1,7 @@
-pub use crate::vec3::Vec3;
 pub use crate::ray::Ray;
+pub use crate::vec3::Vec3;
+use crate::{ range_random_double};
 use std::f64::consts::PI;
-use crate::{random_doouble, range_random_double};
 
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Camera {
@@ -17,17 +17,22 @@ pub struct Camera {
     time1: f64,
 }
 
-
 fn degree_to_radians(degrees: f64) -> f64 {
     return degrees * PI / 180.0;
 }
 
 impl Camera {
     pub fn new(
-        lookfrom: Vec3, lookat: Vec3, vup: Vec3,
-        vfov: f64, aspect_ratio: f64,
-        aperture: f64, focus_dist: f64,
-        _time0: f64, _time1: f64) -> Self {
+        lookfrom: Vec3,
+        lookat: Vec3,
+        vup: Vec3,
+        vfov: f64,
+        aspect_ratio: f64,
+        aperture: f64,
+        focus_dist: f64,
+        _time0: f64,
+        _time1: f64,
+    ) -> Self {
         let theta = degree_to_radians(vfov);
         let h = (theta / 2.0).tan();
         let view_heigth = 2.0 * h;
@@ -39,11 +44,9 @@ impl Camera {
         let horizontemp = u * view_width * focus_dist;
         let verticaltemp = v * view_heigth * focus_dist;
 
-
         // let ratio: f64 = 16.0 / 9.0;
         // let view_heigth: f64 = 2.0;
         // let view_width = (view_heigth * ratio) as f64;
-        let focallength = 1.0;
         Self {
             origin: Vec3 {
                 x: lookfrom.x,
@@ -66,7 +69,6 @@ impl Camera {
                 x: lookfrom.x - horizontemp.x / 2.0 - verticaltemp.x / 2.0 - w.x * focus_dist,
                 y: lookfrom.y - horizontemp.y / 2.0 - verticaltemp.y / 2.0 - w.y * focus_dist,
                 z: lookfrom.z - horizontemp.z / 2.0 - verticaltemp.z / 2.0 - w.z * focus_dist,
-
             },
             u,
             v,
@@ -80,7 +82,8 @@ impl Camera {
         let rd = Vec3::random_in_unit_disk() * self.lens_radius;
         let offset = self.u * rd.x.clone() + self.v * rd.y.clone();
         Ray::new(
-            self.origin + offset, self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin - offset,
+            self.origin + offset,
+            self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin - offset,
             range_random_double(self.time0, self.time1),
         )
     }

@@ -1,6 +1,6 @@
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Neg};
 use rand::Rng;
 use std::f32::consts::PI;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -19,7 +19,6 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
@@ -36,10 +35,16 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn length(&self) -> f64 { { (self.x * self.x + self.y * self.y + self.z * self.z) as f64 }.sqrt() }
+    pub fn length(&self) -> f64 {
+        { (self.x * self.x + self.y * self.y + self.z * self.z) as f64 }.sqrt()
+    }
 
     pub fn unit(self) -> Self {
-        Self::new(self.x / self.length(), self.y / self.length(), self.z / self.length())
+        Self::new(
+            self.x / self.length(),
+            self.y / self.length(),
+            self.z / self.length(),
+        )
     }
 
     pub fn dot(a: Self, b: Self) -> f64 {
@@ -50,7 +55,11 @@ impl Vec3 {
         Self::new(random_doouble(), random_doouble(), random_doouble())
     }
     pub fn randomrange(min: f64, max: f64) -> Self {
-        Self::new(range_random_double(min, max), range_random_double(min, max), range_random_double(min, max))
+        Self::new(
+            range_random_double(min, max),
+            range_random_double(min, max),
+            range_random_double(min, max),
+        )
     }
     pub fn near_zero(self) -> bool {
         let s = 1e-8;
@@ -67,26 +76,38 @@ impl Vec3 {
         return r_out_perp + r_out_parallel;
     }
     pub fn cross(u: Self, v: Self) -> Self {
-        return Vec3::new(u.y * v.z - u.z * v.y,
-                         u.z * v.x - u.x * v.z,
-                         u.x * v.y - u.y * v.x,
+        return Vec3::new(
+            u.y * v.z - u.z * v.y,
+            u.z * v.x - u.x * v.z,
+            u.x * v.y - u.y * v.x,
         );
     }
-    pub fn random_in_unit_disk()->Self{
-        while true {
-            let p=Vec3::new(range_random_double(-1.0,1.0),range_random_double(-1.0,1.0),0.0);
-        if p.squared_length()>=1.0 {continue; }
+    pub fn random_in_unit_disk() -> Self {
+        loop {
+            let p = Vec3::new(
+                range_random_double(-1.0, 1.0),
+                range_random_double(-1.0, 1.0),
+                0.0,
+            );
+            if p.squared_length() >= 1.0 {
+                continue;
+            }
             return p;
-
         }
-        return Vec3::new(0.0,0.0,0.0);
+
     }
 }
 
-impl Vec3
-{ pub fn get( &self,demesion:i32)->f64{
-    return if demesion == 0 { self.x } else if demesion == 1 { self.y } else { self.z }
-}
+impl Vec3 {
+    pub fn get(&self, demesion: i32) -> f64 {
+        return if demesion == 0 {
+            self.x
+        } else if demesion == 1 {
+            self.y
+        } else {
+            self.z
+        };
+    }
     pub fn random_unit_vector() -> Vec3 {
         let a = range_random_double(0.0, (2.0 * PI) as f64);
         let z = range_random_double(-1.0, 1.0);
@@ -94,16 +115,22 @@ impl Vec3
         return Vec3::new(r * a.cos(), r * a.sin(), z);
     }
     pub fn random_in_unit_sphere() -> Vec3 {
-        while true {
+        loop {
             let p = Vec3::randomrange(-1.0, 1.0);
-            if p.squared_length() >= 1.0 { continue; }
+            if p.squared_length() >= 1.0 {
+                continue;
+            }
             return p;
         }
-        return Vec3::new(0.0, 0.0, 0.0);
+
     }
     pub fn random_in_himisphere(normal: Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
-        if Vec3::dot(in_unit_sphere, normal) > 0.0 { return in_unit_sphere; } else { return -in_unit_sphere; }
+        return if Vec3::dot(in_unit_sphere, normal) > 0.0 {
+            in_unit_sphere
+        } else {
+            -in_unit_sphere
+        }
     }
 }
 
@@ -141,7 +168,6 @@ impl AddAssign for Vec3 {
     }
 }
 
-
 impl Sub for Vec3 {
     type Output = Self;
 
@@ -176,7 +202,6 @@ impl SubAssign for Vec3 {
     }
 }
 
-
 impl Mul for Vec3 {
     type Output = Self;
 
@@ -210,7 +235,6 @@ impl MulAssign for Vec3 {
         };
     }
 }
-
 
 impl Div for Vec3 {
     type Output = Self;
@@ -256,7 +280,6 @@ impl DivAssign for Vec3 {
         };
     }
 }
-
 
 #[cfg(test)]
 mod tests {

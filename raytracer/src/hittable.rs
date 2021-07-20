@@ -1,31 +1,31 @@
+pub use crate::aabb::Aabb;
+pub use crate::material::Material;
 pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
-pub use crate::material::Material;
-pub use crate::aabb::Aabb;
-
-use std::sync::Arc;
-use rand::Rng;
-use std::thread::sleep;
-use std::io::empty;
-use std::f64::consts::PI;
 use crate::aarect::{XyRect, XzRect, YzRect};
-
-use std::f64::INFINITY;
+use rand::Rng;
+use std::f64::consts::PI;
+use std::sync::Arc;
 use crate::earth;
-use crate::texture::Texture;
 use crate::material::Isotropic;
+use crate::texture::Texture;
+use std::f64::INFINITY;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
 }
 
 fn fmin1(a: f64, b: f64) -> f64 {
-    if a < b { return a; }
+    if a < b {
+        return a;
+    }
     return b;
 }
 
 fn fmax1(a: f64, b: f64) -> f64 {
-    if a < b { return b; }
+    if a < b {
+        return b;
+    }
     return a;
 }
 
@@ -59,7 +59,7 @@ fn random_int(min: i32, max: i32) -> i32 {
 pub trait Hittable {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
-}//相当于一个基类 在列表里面会去看是谁将它实例化（如圆等图形）
+} //相当于一个基类 在列表里面会去看是谁将它实例化（如圆等图形）
 
 impl Hitrecord {
     pub fn grt_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
@@ -71,7 +71,23 @@ impl Hitrecord {
         *u = *&mut (phi / (2.0 * PI));
         *v = *&mut (theta / PI);
     }
-    pub fn new(p: Vec3, normal: Vec3, t: f64, front_face: bool, mat_ptr: Arc<dyn Material>) -> Self { Self { p, normal, t, u: 0.0, v: 0.0, front_face, mat_ptr } }
+    pub fn new(
+        p: Vec3,
+        normal: Vec3,
+        t: f64,
+        front_face: bool,
+        mat_ptr: Arc<dyn Material>,
+    ) -> Self {
+        Self {
+            p,
+            normal,
+            t,
+            u: 0.0,
+            v: 0.0,
+            front_face,
+            mat_ptr,
+        }
+    }
 
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
         self.front_face = Vec3::dot(r.dic, outward_normal) < 0.0;
@@ -93,7 +109,14 @@ pub struct MovingSphere {
 }
 
 impl MovingSphere {
-    pub fn new(cen0: Vec3, cen1: Vec3, _time0: f64, _time1: f64, r: f64, mat_ptr: Arc<dyn Material>) -> Self {
+    pub fn new(
+        cen0: Vec3,
+        cen1: Vec3,
+        _time0: f64,
+        _time1: f64,
+        r: f64,
+        mat_ptr: Arc<dyn Material>,
+    ) -> Self {
         Self {
             center0: cen0,
             center1: cen1,
@@ -104,7 +127,8 @@ impl MovingSphere {
         }
     }
     pub fn center(&self, time: f64) -> Vec3 {
-        return self.center0 + (self.center1 - self.center0) * ((time - self.time0) / (self.time1 - self.time0));
+        return self.center0
+            + (self.center1 - self.center0) * ((time - self.time0) / (self.time1 - self.time0));
     }
 }
 
@@ -168,9 +192,24 @@ pub struct Sphere {
     pub mat_ptr: Arc<dyn Material>,
 }
 
-
 impl Sphere {
-    pub fn new(p: Vec3, normal: Vec3, t: f64, center: Vec3, radius: f64, mat_ptr: Arc<dyn Material>) -> Self { Self { p, normal, t, center, radius, mat_ptr } }
+    pub fn new(
+        p: Vec3,
+        normal: Vec3,
+        t: f64,
+        center: Vec3,
+        radius: f64,
+        mat_ptr: Arc<dyn Material>,
+    ) -> Self {
+        Self {
+            p,
+            normal,
+            t,
+            center,
+            radius,
+            mat_ptr,
+        }
+    }
 }
 
 //实例化trait在圆中
@@ -211,6 +250,9 @@ impl Hittable for Sphere {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let aa=time0;
+        let bb=time1;
+        //println!("sphere srrounding");
         let output = Aabb::new(
             self.center - Vec3::new(self.radius, self.radius, self.radius),
             self.center + Vec3::new(self.radius, self.radius, self.radius),
@@ -231,15 +273,15 @@ impl Hittable for Box1 {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let aa=time0;
+        let bb=time1;
         return Option::from(Aabb::new(self.box_min, self.box_max));
     }
 }
 
 impl Box1 {
     pub fn new(p0: &Vec3, p1: &Vec3, ptr: Arc<dyn Material>) -> Self {
-        let mut world = HittableList {
-            objects: vec![],
-        };
+        let mut world = HittableList { objects: vec![] };
         let obj1 = XyRect {
             mp: ptr.clone(),
             x0: p0.x,
@@ -247,7 +289,6 @@ impl Box1 {
             y0: p0.y,
             y1: p1.y,
             k: p1.z,
-
         };
         let obj2 = XyRect {
             mp: ptr.clone(),
@@ -256,7 +297,6 @@ impl Box1 {
             y0: p0.y,
             y1: p1.y,
             k: p0.z,
-
         };
         let obj3 = XzRect {
             mp: ptr.clone(),
@@ -265,7 +305,6 @@ impl Box1 {
             z0: p0.z,
             z1: p1.z,
             k: p1.y,
-
         };
         let obj4 = XzRect {
             mp: ptr.clone(),
@@ -274,7 +313,6 @@ impl Box1 {
             z0: p0.z,
             z1: p1.z,
             k: p0.z,
-
         };
         let obj5 = YzRect {
             mp: ptr.clone(),
@@ -283,7 +321,6 @@ impl Box1 {
             z0: p0.z,
             z1: p1.z,
             k: p1.x,
-
         };
         let obj6 = YzRect {
             mp: ptr.clone(),
@@ -292,26 +329,13 @@ impl Box1 {
             z0: p0.z,
             z1: p1.z,
             k: p0.x,
-
         };
-        world.add(
-            Arc::new(obj1)
-        );
-        world.add(
-            Arc::new(obj2)
-        );
-        world.add(
-            Arc::new(obj3)
-        );
-        world.add(
-            Arc::new(obj4)
-        );
-        world.add(
-            Arc::new(obj5)
-        );
-        world.add(
-            Arc::new(obj6)
-        );
+        world.add(Arc::new(obj1));
+        world.add(Arc::new(obj2));
+        world.add(Arc::new(obj3));
+        world.add(Arc::new(obj4));
+        world.add(Arc::new(obj5));
+        world.add(Arc::new(obj6));
         return Self {
             box_min: *p0,
             box_max: *p1,
@@ -327,10 +351,7 @@ pub struct Translate {
 
 impl Translate {
     pub fn new(ptr: Arc<dyn Hittable>, offset: Vec3) -> Self {
-        Self {
-            ptr,
-            offset,
-        }
+        Self { ptr, offset }
     }
 }
 
@@ -356,7 +377,10 @@ impl Hittable for Translate {
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
         if let Option::Some(mut output_box) = self.ptr.bounding_box(time0, time1) {
-            output_box = Aabb::new(output_box.minimun + self.offset, output_box.maximum + self.offset);
+            output_box = Aabb::new(
+                output_box.minimun + self.offset,
+                output_box.maximum + self.offset,
+            );
             return Some(output_box);
         } else {
             return None;
@@ -371,7 +395,6 @@ pub struct RotateY {
     pub(crate) cos_theta: f64,
     pub(crate) hasbox: bool,
     pub(crate) bbox: Aabb,
-
 }
 
 impl RotateY {
@@ -419,7 +442,6 @@ impl RotateY {
     }
 }
 
-
 impl Hittable for RotateY {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let mut origin = r.ori;
@@ -430,7 +452,6 @@ impl Hittable for RotateY {
         direct.z = self.sin_theta * r.dic.x + self.cos_theta * r.dic.z;
         let rotated_ray = Ray::new(origin, direct, r.tm);
         //let rec=Hitrecord::new(Vec3::zero(),Vec3::zero(),0.0,false,)
-
 
         if let Option::Some(mut rec) = self.ptr.hit(rotated_ray, t_min, t_max) {
             let mut p = rec.p;
@@ -445,7 +466,6 @@ impl Hittable for RotateY {
         } else {
             return None;
         }
-
 
         // Option::from(if let Option::Some(mut rec) = self.ptr.hit(rotated_ray, t_min, t_max) {
         //     let mut p = rec.p;
@@ -463,14 +483,16 @@ impl Hittable for RotateY {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let aa=time0;
+        let bb=time1;
         return Option::from(self.bbox);
     }
 }
 
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
-//todo
-//传出bool值可以用引用传递，先完善hittable 和add 函数
+    //todo
+    //传出bool值可以用引用传递，先完善hittable 和add 函数
 }
 
 impl HittableList {
@@ -493,9 +515,10 @@ impl Hittable for HittableList {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        if self.objects.is_empty() { return None; }
+        if self.objects.is_empty() {
+            return None;
+        }
         let mut output = Aabb::new(Vec3::zero(), Vec3::zero());
-        let tempbox = Aabb::new(Vec3::zero(), Vec3::zero());
         let mut first_box = true;
         for object in self.objects.iter() {
             if let Option::Some(tempbox) = object.bounding_box(time0, time1) {
@@ -505,7 +528,9 @@ impl Hittable for HittableList {
                     output = Aabb::surrounding_box(output, tempbox);
                 }
                 first_box = false;
-            } else { return None; }
+            } else {
+                return None;
+            }
         }
         Some(output)
     }
@@ -519,13 +544,18 @@ pub struct ConstantMedium {
 
 impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
-        let mut rec1 = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.phase_function.clone());
-        let mut rec2 = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.phase_function.clone());
-
-        if  let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INFINITY, INFINITY) {//todo
-            if let Option::Some(mut rec2) = self.boundary.hit(r.clone(), rec1.t.clone() + 0.0001, INFINITY) {
-                if rec1.t < t_min { rec1.t = t_min };
-                if rec2.t > t_max { rec2.t = t_max };
+        if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INFINITY, INFINITY) {
+            //todo
+            if let Option::Some(mut rec2) =
+            self.boundary
+                .hit(r.clone(), rec1.t.clone() + 0.0001, INFINITY)
+            {
+                if rec1.t < t_min {
+                    rec1.t = t_min
+                };
+                if rec2.t > t_max {
+                    rec2.t = t_max
+                };
 
                 if rec1.t >= rec2.t {
                     return None;
@@ -540,14 +570,22 @@ impl Hittable for ConstantMedium {
                 if hit_distance > distangce_inside_boundary {
                     return None;
                 }
-                let mut recreturn = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.phase_function.clone());
+                let mut recreturn = Hitrecord::new(
+                    Vec3::zero(),
+                    Vec3::zero(),
+                    0.0,
+                    false,
+                    self.phase_function.clone(),
+                );
                 recreturn.t = rec1.t.clone() + hit_distance / ray_length;
                 recreturn.p = r.at(recreturn.t);
                 recreturn.normal = Vec3::new(1.0, 0.0, 0.0);
                 recreturn.front_face = true;
                 recreturn.mat_ptr = self.phase_function.clone();
                 return Some(recreturn);
-            } else { return None; }
+            } else {
+                return None;
+            }
         } else {
             return None;
         }
@@ -567,18 +605,16 @@ impl ConstantMedium {
         }
     }
 }
+
 pub struct BvhNode {
     pub left: Arc<dyn Hittable>,
     pub right: Arc<dyn Hittable>,
     pub box1: Aabb,
-
 }
 
 impl BvhNode {
-    pub fn new(
-        src_objects:  Vec<Arc<dyn Hittable>>, time0: f64, time1: f64,
-    ) -> Self {
-        let span=src_objects.len();
+    pub fn new(src_objects: Vec<Arc<dyn Hittable>>, time0: f64, time1: f64) -> Self {
+        let span = src_objects.len();
         let mut objects = src_objects;
         let axis = rand::thread_rng().gen_range(0..3);
         //todo
@@ -590,25 +626,32 @@ impl BvhNode {
         } else if span == 2 {
             objects.sort_by(|a, b| {
                 let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
-                let y=b.bounding_box(time0,time1).unwrap().minimun.get(axis);
+                let y = b.bounding_box(time0, time1).unwrap().minimun.get(axis);
                 x.partial_cmp(&y).unwrap()
             });
             right = objects.remove(1);
             left = objects.remove(0);
-
         } else {
+            //println!("span is {}", span);
             objects.sort_by(|a, b| {
                 let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
-                let y=b.bounding_box(time0,time1).unwrap().minimun.get(axis);
+                let y = b.bounding_box(time0, time1).unwrap().minimun.get(axis);
                 x.partial_cmp(&y).unwrap()
             });
             let mid = span / 2;
             let (object0, object1) = objects.split_at_mut(mid as usize);
-            left = Arc::new(BvhNode::new( object0.to_vec(),  time0, time1));
-            right = Arc::new(BvhNode::new( object1.to_vec(),  time0, time1));
+            left = Arc::new(BvhNode::new(object0.to_vec(), time0, time1));
+            right = Arc::new(BvhNode::new(object1.to_vec(), time0, time1));
         }
         let box11 = left.bounding_box(time0, time1).unwrap();
         let box22 = right.bounding_box(time0, time1).unwrap();
+
+        // println!("new bvh");
+        // println!("{:?}",box11.maximum);
+        // println!("{:?}",box11.minimun);
+        // println!("{:?}",box22.maximum);
+        // println!("{:?}",box22.minimun);
+        // println!("new end");
         Self {
             left,
             right,
@@ -617,29 +660,40 @@ impl BvhNode {
     }
 }
 
-
 impl Hittable for BvhNode {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
-        if self.box1.hit(&r, t_min, t_max) { return None; }
+        // println!("bvh   hit1  {}",t_min);
+        // println!("bvh   hit2  {}",t_max);
+        if (!self.box1.hit(&r, t_min, t_max)) {
+            //println!("bvh wrong 1");
+            return None;
+        }
         let _temp = self.left.hit(r, t_min, t_max);
         if let Option::Some(_temp1) = _temp {
             let hit_right = self.right.hit(r, t_min, _temp1.t);
             if let Option::Some(_temp2right) = hit_right {
+                //println!("bvh ac 1");
                 Some(_temp2right)
             } else {
+                //println!("bvh ac 2");
                 Some(_temp1)
             }
         } else {
             let hit_right = self.right.hit(r, t_min, t_max);
-            if let Option::Some(_temp2right) = hit_right {//todo
+            if let Option::Some(_temp2right) = hit_right {
+                //todo
+               // println!("bvh ac 3");
                 Some(_temp2right)
             } else {
+                //println!("bvh wrong 2");
                 None
             }
         }
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let aa=time0;
+        let bb=time1;
         let outout = self.box1.clone();
         return Some(outout);
     }
