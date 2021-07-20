@@ -43,7 +43,7 @@ impl Aabb {
                     t_max = t1;
                 }
                 if t_max <= t_min {
-                   // println!("aabb wa 1");
+                    // println!("aabb wa 1");
                     return false;
                 }
             } else if a == 1 {
@@ -64,7 +64,7 @@ impl Aabb {
                     t_max = t1;
                 }
                 if t_max <= t_min {
-                   // println!("aabb wa 2");
+                    // println!("aabb wa 2");
                     return false;
                 }
             } else if a == 2 {
@@ -90,7 +90,7 @@ impl Aabb {
                 }
             }
         }
-       // println!("aabb ac");
+        // println!("aabb ac");
         return true;
     }
     pub fn surrounding_box(box0: Aabb, box1: Aabb) -> Self {

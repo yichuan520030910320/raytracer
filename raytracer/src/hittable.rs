@@ -1,15 +1,15 @@
 pub use crate::aabb::Aabb;
-pub use crate::material::Material;
-pub use crate::ray::Ray;
-pub use crate::vec3::Vec3;
 use crate::aarect::{XyRect, XzRect, YzRect};
-use rand::Rng;
-use std::f64::consts::PI;
-use std::sync::Arc;
 use crate::earth;
 use crate::material::Isotropic;
+pub use crate::material::Material;
+pub use crate::ray::Ray;
 use crate::texture::Texture;
+pub use crate::vec3::Vec3;
+use rand::Rng;
+use std::f64::consts::PI;
 use std::f64::INFINITY;
+use std::sync::Arc;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
@@ -250,8 +250,8 @@ impl Hittable for Sphere {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa=time0;
-        let bb=time1;
+        let aa = time0;
+        let bb = time1;
         //println!("sphere srrounding");
         let output = Aabb::new(
             self.center - Vec3::new(self.radius, self.radius, self.radius),
@@ -273,8 +273,8 @@ impl Hittable for Box1 {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa=time0;
-        let bb=time1;
+        let aa = time0;
+        let bb = time1;
         return Option::from(Aabb::new(self.box_min, self.box_max));
     }
 }
@@ -483,12 +483,13 @@ impl Hittable for RotateY {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa=time0;
-        let bb=time1;
+        let aa = time0;
+        let bb = time1;
         return Option::from(self.bbox);
     }
 }
-
+unsafe impl Send for HittableList {}
+unsafe impl Sync for HittableList {}
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
     //todo
@@ -547,8 +548,8 @@ impl Hittable for ConstantMedium {
         if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INFINITY, INFINITY) {
             //todo
             if let Option::Some(mut rec2) =
-            self.boundary
-                .hit(r.clone(), rec1.t.clone() + 0.0001, INFINITY)
+                self.boundary
+                    .hit(r.clone(), rec1.t.clone() + 0.0001, INFINITY)
             {
                 if rec1.t < t_min {
                     rec1.t = t_min
@@ -682,7 +683,7 @@ impl Hittable for BvhNode {
             let hit_right = self.right.hit(r, t_min, t_max);
             if let Option::Some(_temp2right) = hit_right {
                 //todo
-               // println!("bvh ac 3");
+                // println!("bvh ac 3");
                 Some(_temp2right)
             } else {
                 //println!("bvh wrong 2");
@@ -692,8 +693,8 @@ impl Hittable for BvhNode {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa=time0;
-        let bb=time1;
+        let aa = time0;
+        let bb = time1;
         let outout = self.box1.clone();
         return Some(outout);
     }

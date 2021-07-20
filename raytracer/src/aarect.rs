@@ -47,8 +47,8 @@ impl Hittable for XyRect {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa=time0;
-        let bb=time1;
+        let aa = time0;
+        let bb = time1;
 
         Some(Aabb::new(
             Vec3::new(self.x0, self.y0, self.k - 0.0001),
@@ -101,8 +101,8 @@ impl Hittable for XzRect {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa=time0;
-        let bb=time1;
+        let aa = time0;
+        let bb = time1;
         Some(Aabb::new(
             Vec3::new(self.x0, self.k - 0.0001, self.z0),
             Vec3::new(self.x1, self.k + 0.0001, self.z1),
@@ -154,8 +154,8 @@ impl Hittable for YzRect {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa=time0;
-        let bb=time1;
+        let aa = time0;
+        let bb = time1;
         Some(Aabb::new(
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),

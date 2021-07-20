@@ -145,5 +145,5 @@ impl Texture for NoiseTexture {
         return Vec3::new(1.0, 1.0, 1.0)
             * 0.5
             * ((self.scale * p.z + 10.0 * self.noise.turb(*p, 0)).sin() + 1.0);
-        }
+    }
 }
