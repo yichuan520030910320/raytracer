@@ -10,10 +10,6 @@ mod texture;
 #[allow(clippy::float_cmp)]
 mod vec3;
 
-use image::{ImageBuffer, RgbImage};
-use indicatif::ProgressBar;
-use std::sync::mpsc::channel;
-use threadpool::ThreadPool;
 use crate::aabb::Aabb;
 use crate::aarect::{XyRect, XzRect, YzRect};
 use crate::hittable::{
@@ -23,10 +19,14 @@ use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::perlin::NoiseTexture;
 pub use crate::ray::Ray;
 use crate::texture::{BaseColor, CheckerTexture, ImageTexture, Texture};
+use image::{ImageBuffer, RgbImage};
+use indicatif::ProgressBar;
 use rand::Rng;
 use std::f32::INFINITY;
 use std::f64::consts::PI;
+use std::sync::mpsc::channel;
 use std::sync::Arc;
+use threadpool::ThreadPool;
 pub use vec3::Vec3;
 
 //let secret_number = ;
@@ -70,7 +70,7 @@ fn hit_sphere(center: Vec3, radius: f64, r: Ray) -> f64 {
 }
 
 fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
-    if dep<=0 {
+    if dep <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
     if let Option::Some(_rec) = world.hit(x, 0.001, INFINITY as f64) {
@@ -109,7 +109,6 @@ fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
 }
 
 fn main() {
-
     let is_ci = match std::env::var("CI") {
         Ok(x) => x == "true",
         Err(_) => false,
@@ -136,7 +135,7 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 800 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 2; //ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 100; //ought to be 100  可以做的更大比如500//todo
     let max_depth = 50; //an bo modifyed to lessen the time
 
     //world
@@ -322,14 +321,14 @@ fn main() {
     //Camera
     //let lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let lookfrom = Vec3::new(478.0, 278.0, -600.0); //13 2 3
-    // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
-    // let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
-    //let lookat=Vec3::new(0.0,0.0,0.0);
-    //let lookat=Vec3::new(0.0,2.0,0.0);
+                                                    // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
+                                                    // let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
+                                                    //let lookat=Vec3::new(0.0,0.0,0.0);
+                                                    //let lookat=Vec3::new(0.0,2.0,0.0);
     let lookat = Vec3::new(278.0, 278.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
-    let aperture = 0.1; //ought to be 2
+    let aperture = 0.0; //ought to be 2
     let cam = camera::Camera::new(
         lookfrom,
         lookat,
@@ -353,18 +352,18 @@ fn main() {
     let mut img: RgbImage = ImageBuffer::new(image_width, image_heigth);
     let bar = ProgressBar::new(1024);
 
-let world_inthread=Arc::new(world);
+    let world_inthread = Arc::new(world);
 
     for i in 0..n_jobs {
+        println!("yyy");
         let tx = tx.clone();
-        let worldptr=world_inthread.clone();
+        let worldptr = world_inthread.clone();
         pool.execute(move || {
             let row_begin = image_heigth as usize * i / n_jobs;
             let row_end = image_heigth as usize * (i + 1) / n_jobs;
             let render_height = row_end - row_begin;
             let mut img: RgbImage = ImageBuffer::new(image_width, render_height as u32);
             for x in 0..image_width {
-
                 for (img_y, y) in (row_begin..row_end).enumerate() {
                     let y = y as u32;
                     let pixel = img.get_pixel_mut(x, img_y as u32);
@@ -372,8 +371,8 @@ let world_inthread=Arc::new(world);
                     let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
                     for _ in 0..sample_per_pixel {
                         let u = (x as f64 + random_doouble()) / (image_width - 1) as f64;
-                        let v =
-                            (image_heigth as f64 - y as f64 + random_doouble()) / (image_heigth - 1) as f64;
+                        let v = (image_heigth as f64 - y as f64 + random_doouble())
+                            / (image_heigth - 1) as f64;
                         let r = cam.get_ray(u, v);
                         pixel_color += color(r, backgroud, &worldptr, max_depth);
                     }
@@ -400,7 +399,7 @@ let world_inthread=Arc::new(world);
 
     for (rows, data) in rx.iter().take(n_jobs) {
         for (idx, row) in rows.enumerate() {
-            for col in 0..image_width{
+            for col in 0..image_width {
                 let row = row as u32;
                 let idx = idx as u32;
                 *img.get_pixel_mut(col, row) = *data.get_pixel(col, idx);
@@ -408,10 +407,6 @@ let world_inthread=Arc::new(world);
         }
         bar.inc(1);
     }
-
-
-
-
 
     // pre edit
 
@@ -892,7 +887,6 @@ fn cornell_box() -> HittableList {
         k: 555.0,
     };
     world.add(Arc::new(white3));
-
 
     // whitebox4 = Box1::new( &Vec3::new(130.0, 0.0, 65.0), &Vec3::new(295.0, 165.0, 230.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
     //
