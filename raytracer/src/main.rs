@@ -10,6 +10,7 @@ mod texture;
 #[allow(clippy::float_cmp)]
 mod vec3;
 mod onb;
+mod pdf;
 
 use crate::aabb::Aabb;
 use crate::aarect::{XyRect, XzRect, YzRect};
@@ -29,6 +30,7 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
 pub use vec3::Vec3;
+use crate::pdf::{CosinePdf, Pdf};
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -78,45 +80,46 @@ fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
         // println!("color got in in main");
         let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(), 0.0);
         let emitted = _rec.mat_ptr.emitted( &_rec, _rec.u, _rec.v, &_rec.p);
-        let mut pdf =0.0;
+        let mut pdf_val =0.0;
         let mut aldedo =Vec3::zero();
 
         if !_rec
             .mat_ptr
-            .scatter(&x, &_rec, &mut aldedo, &mut scattered,&mut pdf)
+            .scatter(&x, &_rec, &mut aldedo, &mut scattered,&mut pdf_val)
         {
             return emitted;
         }
 
 
-        let on_light=Vec3::new(range_random_double(213.0,343.0),554.0,range_random_double(227.0,332.0));
-        let mut to_light =on_light-_rec.p;
-        let distance_squared=to_light.squared_length();
-        to_light=to_light.unit();
-        if Vec3::dot(to_light,_rec.normal)<0.0 {
-            //println!("wa 1");
-            return emitted;
-        }
-        let lightarea=(343.0-213.0)*(332.0-227.0);
-        let light_cosine=to_light.y.abs();
-        if light_cosine<0.000001 {
-            //println!("wa 2");
-            return emitted;
-        }
-        pdf=distance_squared/(light_cosine*lightarea);
 
-        //println!("pdf is {}",pdf);
-        scattered.ori=_rec.p;
-        scattered.dic=to_light;
-        scattered.tm=x.tm;
 
-//pdf is too big
+        let p=CosinePdf::new(&_rec.normal);
+        scattered=Ray::new(_rec.p,p.generate(),x.tm);
+        pdf_val=p.value(&scattered.dic);
 
-        //println!("pdf is {}",pdf);
 
-        //println!("ac 1");
 
-        return emitted + aldedo*_rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)*color(scattered, background, world, dep - 1) /pdf;
+        // let on_light=Vec3::new(range_random_double(213.0,343.0),554.0,range_random_double(227.0,332.0));
+        // let mut to_light =on_light-_rec.p;
+        // let distance_squared=to_light.squared_length();
+        // to_light=to_light.unit();
+        // if Vec3::dot(to_light,_rec.normal)<0.0 {
+        //     //println!("wa 1");
+        //     return emitted;
+        // }
+        // let lightarea=(343.0-213.0)*(332.0-227.0);
+        // let light_cosine=to_light.y.abs();
+        // if light_cosine<0.000001 {
+        //     //println!("wa 2");
+        //     return emitted;
+        // }
+        // pdf=distance_squared/(light_cosine*lightarea);
+        // scattered.ori=_rec.p;
+        // scattered.dic=to_light;
+        // scattered.tm=x.tm;
+
+
+        return emitted + aldedo*_rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)*color(scattered, background, world, dep - 1) /pdf_val;
     } else {
         return background;
     }
