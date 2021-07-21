@@ -16,7 +16,7 @@ use crate::aarect::{XyRect, XzRect, YzRect};
 use crate::hittable::{
     Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, Sphere, Translate,
 };
-use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, FlipFace};
 use crate::perlin::NoiseTexture;
 pub use crate::ray::Ray;
 use crate::texture::{BaseColor, CheckerTexture, ImageTexture, Texture};
@@ -77,7 +77,7 @@ fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
     if let Option::Some(_rec) = world.hit(x, 0.001, INFINITY as f64) {
         // println!("color got in in main");
         let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(), 0.0);
-        let emitted = _rec.mat_ptr.emitted(_rec.u, _rec.v, &_rec.p);
+        let emitted = _rec.mat_ptr.emitted( &_rec, _rec.u, _rec.v, &_rec.p);
         let mut pdf =0.0;
         let mut aldedo =Vec3::zero();
 
@@ -103,12 +103,8 @@ fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
             //println!("wa 2");
             return emitted;
         }
-
-
         pdf=distance_squared/(light_cosine*lightarea);
-        // println!("dis is {}",distance_squared);
-        // println!(" cos  is{}",light_cosine);
-        // println!("pdf  :{}", pdf);
+
         //println!("pdf is {}",pdf);
         scattered.ori=_rec.p;
         scattered.dic=to_light;
@@ -960,7 +956,8 @@ fn cornell_box() -> HittableList {
         z1: 332.0,
         k: 554.0,
     };
-    world.add(Arc::new(light1));
+    let light1_bonus=Arc::new(FlipFace::new(Arc::new(light1)));
+    world.add(light1_bonus);
     return world;
 }
 

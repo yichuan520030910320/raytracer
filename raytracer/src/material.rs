@@ -7,6 +7,8 @@ use std::sync::Arc;
 use std::f64::consts::PI;
 use crate::onb::Onb;
 use std::collections::hash_map::Entry::Vacant;
+use crate::hittable::Hittable;
+use crate::aabb::Aabb;
 
 const HALFNUM: f64 = 0.5;
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
@@ -45,7 +47,7 @@ pub trait Material {
         return false;
     }
     //attenuation是衰减的意思
-    fn emitted(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
+    fn emitted(&self,rec:&Hitrecord, u: f64, v: f64,p:&Vec3) -> Vec3 {
         let aa = u;
         let bb = v;
         let m = p.x;
@@ -116,6 +118,7 @@ impl Material for Lambertian {
         }
 
     }
+
 
 }
 
@@ -242,8 +245,13 @@ impl DiffuseLight {
 }
 
 impl Material for DiffuseLight {
-    fn emitted(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
-        return self.emit.value(u, v, p);
+    fn emitted(&self,rec:&Hitrecord, u: f64, v: f64,p:&Vec3)  -> Vec3 {
+        if rec.front_face {
+            //println!("1");
+             return self.emit.value(u, v, p);
+        }
+        //println!("0");
+        return Vec3::zero();
     }
     fn scatter(
         &self,
@@ -289,5 +297,26 @@ impl Material for Isotropic {
         attenuation.y = temp.y;
         attenuation.z = temp.z;
         return true;
+    }
+}
+pub struct FlipFace {
+    ptr:Arc<dyn Hittable>,
+}
+impl FlipFace{
+    pub fn new(ptr:Arc<dyn Hittable>)->Self{
+        Self{ptr}
+    }
+}
+impl Hittable for FlipFace{
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
+       if let Option::Some (mut rec)=self.ptr.hit(r, t_min, t_max){
+           rec.front_face=!rec.front_face;
+          return Some(rec);
+       }
+        None
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+       self.ptr.bounding_box(time0,time1)
     }
 }
