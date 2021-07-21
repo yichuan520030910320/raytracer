@@ -35,7 +35,8 @@ impl Onb{
         Self{
             axis0: axiss0,
             axis1: axiss1,
-            axis2: axiss2}
+            axis2: axiss2,
+        }
 
     }
 }

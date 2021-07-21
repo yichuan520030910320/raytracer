@@ -87,6 +87,39 @@ fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
         {
             return emitted;
         }
+
+
+        let on_light=Vec3::new(range_random_double(213.0,343.0),554.0,range_random_double(227.0,332.0));
+        let mut to_light =on_light-_rec.p;
+        let distance_squared=to_light.squared_length();
+        to_light=to_light.unit();
+        if Vec3::dot(to_light,_rec.normal)<0.0 {
+            //println!("wa 1");
+            return emitted;
+        }
+        let lightarea=(343.0-213.0)*(332.0-227.0);
+        let light_cosine=to_light.y.abs();
+        if light_cosine<0.000001 {
+            //println!("wa 2");
+            return emitted;
+        }
+
+
+        pdf=distance_squared/(light_cosine*lightarea);
+        // println!("dis is {}",distance_squared);
+        // println!(" cos  is{}",light_cosine);
+        // println!("pdf  :{}", pdf);
+        //println!("pdf is {}",pdf);
+        scattered.ori=_rec.p;
+        scattered.dic=to_light;
+        scattered.tm=x.tm;
+
+//pdf is too big
+
+        //println!("pdf is {}",pdf);
+
+        //println!("ac 1");
+
         return emitted + aldedo*_rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)*color(scattered, background, world, dep - 1) /pdf;
     } else {
         return background;
@@ -136,7 +169,7 @@ fn main() {
     let ratio: f64 = 1.0;
 
     // let image_width = 400 as u32;
-    let image_width = 800 as u32;
+    let image_width = 600 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
     let sample_per_pixel = 50; //ought to be 100  可以做的更大比如500//todo
     let max_depth = 50; //an bo modifyed to lessen the time

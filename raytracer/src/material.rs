@@ -6,6 +6,7 @@ pub use crate::vec3::Vec3;
 use std::sync::Arc;
 use std::f64::consts::PI;
 use crate::onb::Onb;
+use std::collections::hash_map::Entry::Vacant;
 
 const HALFNUM: f64 = 0.5;
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
@@ -29,6 +30,18 @@ pub trait Material {
         scattered: &mut Ray,
         pdf:& mut f64,
     ) -> bool{
+
+        // let uvw=Onb::build_from(&rec
+        //     .normal);
+        // let tempvec=Vec3::random_cosine_direction();
+        // let direction=uvw.local(tempvec.x,tempvec.y,tempvec.z);
+        // scattered.ori=rec.p;
+        // scattered.dic=direction.unit();
+        // scattered.tm=r_in.tm;
+
+
+
+
         return false;
     }
     //attenuation是衰减的意思
@@ -73,9 +86,9 @@ impl Material for Lambertian {
 
         let temp=Vec3::random_cosine_direction();
         let mut scatter_direction =uvw.local(temp.x,temp.y,temp.z);
-        if Vec3::near_zero(scatter_direction) {
-            scatter_direction = rec.normal;
-        }
+        // if Vec3::near_zero(scatter_direction) {
+        //     scatter_direction = rec.normal;
+        // }
         scattered.ori = rec.p;
         scattered.dic = scatter_direction.unit();
 
@@ -88,13 +101,13 @@ impl Material for Lambertian {
        // let mut temp =  (HALFNUM/PI);
        //
        //  *pdf=  temp;
-        *pdf=  (Vec3::dot(uvw.w(), scatter_direction) / PI);
+        *pdf=  (Vec3::dot(uvw.w(),scatter_direction) / PI);
 
         // attenuation= &self.albedo;
         true
     }
     fn scattering_odf(&self,_:&Ray,rec:&Hitrecord,scattered:&Ray)->f64{
-        let cosine=Vec3::dot(rec.normal,Vec3::unit(scattered.dic));
+        let cosine=Vec3::dot(rec.normal,scattered.dic.clone().unit());
         if cosine<0.0 {
             return 0.0;
         }
