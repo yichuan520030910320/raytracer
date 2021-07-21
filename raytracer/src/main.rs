@@ -30,7 +30,7 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
 pub use vec3::Vec3;
-use crate::pdf::{CosinePdf, Pdf, HittablePdf};
+use crate::pdf::{CosinePdf, Pdf, HittablePdf, MixturePdf};
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -99,9 +99,26 @@ fn color(x: Ray, background: Vec3, world: &HittableList, lights:&Arc<dyn Hittabl
 
 
 
-        let lightpdf=HittablePdf::new(lights.clone(), &_rec.p);
-        scattered=Ray::new(_rec.p,lightpdf.generate(),x.tm);
-        pdf_val=lightpdf.value(&scattered.dic);
+
+
+
+
+        //
+        // let lightpdf=HittablePdf::new(lights.clone(), &_rec.p);
+        // scattered=Ray::new(_rec.p,lightpdf.generate(),x.tm);
+        // pdf_val=lightpdf.value(&scattered.dic);
+        //
+
+
+
+
+        let p0=Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
+        let p1=Arc::new(CosinePdf::new(&_rec.normal));
+        let mixed_pdf=MixturePdf::new(p0,p1);
+        scattered=Ray::new(_rec.p,mixed_pdf.generate(),x.tm);
+        pdf_val=mixed_pdf.value(&scattered.dic);
+
+
 
 
 

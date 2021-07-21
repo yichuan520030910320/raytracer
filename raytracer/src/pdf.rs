@@ -1,4 +1,4 @@
-use crate::Vec3;
+use crate::{Vec3, random_doouble};
 use crate::onb::Onb;
 use std::f64::consts::PI;
 use std::sync::Arc;
@@ -53,5 +53,29 @@ impl Pdf for HittablePdf{
 
     fn generate(&self) -> Vec3 {
       return self.ptr.random(&self.o);
+    }
+}
+pub struct MixturePdf {
+    p0:Arc<dyn Pdf>,
+    p1:Arc<dyn Pdf>
+}
+impl MixturePdf{
+    pub fn new(p0:Arc<dyn Pdf>,p1:Arc<dyn Pdf>)->Self{
+        Self{
+            p0,p1
+        }
+    }
+}
+impl Pdf for MixturePdf{
+    fn value(&self, direction: &Vec3) -> f64 {
+        return self.p0.value(direction)*0.5+self.p1.value(direction)*0.5;
+    }
+
+    fn generate(&self) -> Vec3 {
+
+        if random_doouble()<0.5 {
+            return self.p0.generate();
+        }
+        else { return self.p1.generate(); }
     }
 }
