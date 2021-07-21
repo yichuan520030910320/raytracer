@@ -9,6 +9,7 @@ mod rtweekend;
 mod texture;
 #[allow(clippy::float_cmp)]
 mod vec3;
+mod onb;
 
 use crate::aabb::Aabb;
 use crate::aarect::{XyRect, XzRect, YzRect};

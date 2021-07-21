@@ -5,6 +5,8 @@ use crate::texture::{BaseColor, Texture};
 pub use crate::vec3::Vec3;
 use std::sync::Arc;
 use std::f64::consts::PI;
+use crate::onb::Onb;
+
 const HALFNUM: f64 = 0.5;
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
@@ -67,8 +69,10 @@ impl Material for Lambertian {
         mut scattered: &mut Ray,
         mut pdf: &mut f64,
     ) -> bool {
-        let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
-        let mut scatter_direction = Vec3::random_in_himisphere(rec.normal);
+     let uvw=Onb::build_from(&rec.normal);
+
+        let temp=Vec3::random_cosine_direction();
+        let mut scatter_direction =uvw.local(temp.x,temp.y,temp.z);
         if Vec3::near_zero(scatter_direction) {
             scatter_direction = rec.normal;
         }
@@ -81,8 +85,10 @@ impl Material for Lambertian {
         attenuation.x = self.albedo.value(rec.u, rec.v, &rec.p).x;
         attenuation.y = self.albedo.value(rec.u, rec.v, &rec.p).y;
         attenuation.z = self.albedo.value(rec.u, rec.v, &rec.p).z;
-       let mut temp =  (HALFNUM/PI);
-        *pdf=  temp;
+       // let mut temp =  (HALFNUM/PI);
+       //
+       //  *pdf=  temp;
+        *pdf=  (Vec3::dot(uvw.w(), scatter_direction) / PI);
 
         // attenuation= &self.albedo;
         true
