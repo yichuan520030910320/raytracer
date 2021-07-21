@@ -4,7 +4,8 @@ pub use crate::ray::Ray;
 use crate::texture::{BaseColor, Texture};
 pub use crate::vec3::Vec3;
 use std::sync::Arc;
-
+use std::f64::consts::PI;
+const HALFNUM: f64 = 0.5;
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     r0 *= r0;
@@ -24,7 +25,10 @@ pub trait Material {
         rec: &Hitrecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
-    ) -> bool;
+        pdf:& mut f64,
+    ) -> bool{
+        return false;
+    }
     //attenuation是衰减的意思
     fn emitted(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
         let aa = u;
@@ -32,6 +36,9 @@ pub trait Material {
         let m = p.x;
 
         return Vec3::zero();
+    }
+     fn scattering_odf(&self,r_in:&Ray,rec:&Hitrecord,scattered:&Ray)->f64{
+        return 0.0;
     }
 }
 
@@ -58,24 +65,39 @@ impl Material for Lambertian {
         rec: &Hitrecord,
         attenuation: &mut Vec3,
         mut scattered: &mut Ray,
+        mut pdf: &mut f64,
     ) -> bool {
         let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
-
+        let mut scatter_direction = Vec3::random_in_himisphere(rec.normal);
         if Vec3::near_zero(scatter_direction) {
             scatter_direction = rec.normal;
         }
-
-        scattered.dic = scatter_direction;
         scattered.ori = rec.p;
+        scattered.dic = scatter_direction.unit();
+
         scattered.tm = r_in.tm;
 
         // scattered= &mut Ray::new(rec.p.clone(), scatter_direction.clone());
         attenuation.x = self.albedo.value(rec.u, rec.v, &rec.p).x;
         attenuation.y = self.albedo.value(rec.u, rec.v, &rec.p).y;
         attenuation.z = self.albedo.value(rec.u, rec.v, &rec.p).z;
+       let mut temp =  (HALFNUM/PI);
+        *pdf=  temp;
+
         // attenuation= &self.albedo;
         true
     }
+    fn scattering_odf(&self,_:&Ray,rec:&Hitrecord,scattered:&Ray)->f64{
+        let cosine=Vec3::dot(rec.normal,Vec3::unit(scattered.dic));
+        if cosine<0.0 {
+            return 0.0;
+        }
+        else {
+            return cosine/PI;
+        }
+
+    }
+
 }
 
 #[derive(Clone, Debug, PartialEq, Copy)]
@@ -101,6 +123,7 @@ impl Material for Metal {
         rec: &Hitrecord,
         attenuation: &mut Vec3,
         mut scattered: &mut Ray,
+        mut pdf: &mut f64,
     ) -> bool {
         let reflected = Vec3::reflect(r_in.dic, rec.normal);
         scattered.dic = reflected + Vec3::random_in_unit_sphere() * self.fuzz;
@@ -131,6 +154,7 @@ impl Material for Dielectric {
         rec: &Hitrecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
+        mut pdf: &mut f64,
     ) -> bool {
         // attenuation=Vec3::new(1.0,1.0,1.0);
         attenuation.x = 1.0;
@@ -208,6 +232,7 @@ impl Material for DiffuseLight {
         rec: &Hitrecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
+        mut pdf: &mut f64,
     ) -> bool {
         return false;
     }
@@ -235,6 +260,7 @@ impl Material for Isotropic {
         rec: &Hitrecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
+        mut pdf: &mut f64,
     ) -> bool {
         scattered.ori = rec.p;
         scattered.dic = Vec3::random_in_unit_sphere();

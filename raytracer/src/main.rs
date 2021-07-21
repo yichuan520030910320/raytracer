@@ -76,15 +76,17 @@ fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
     if let Option::Some(_rec) = world.hit(x, 0.001, INFINITY as f64) {
         // println!("color got in in main");
         let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(), 0.0);
-        let mut attrnuation = Vec3::zero();
         let emitted = _rec.mat_ptr.emitted(_rec.u, _rec.v, &_rec.p);
+        let mut pdf =0.0;
+        let mut aldedo =Vec3::zero();
+
         if !_rec
             .mat_ptr
-            .scatter(&x, &_rec, &mut attrnuation, &mut scattered)
+            .scatter(&x, &_rec, &mut aldedo, &mut scattered,&mut pdf)
         {
             return emitted;
         }
-        return emitted + color(scattered, background, world, dep - 1) * attrnuation;
+        return emitted + aldedo*_rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)*color(scattered, background, world, dep - 1) /pdf;
     } else {
         return background;
     }
@@ -135,13 +137,13 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 800 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 100; //ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 50; //ought to be 100  可以做的更大比如500//todo
     let max_depth = 50; //an bo modifyed to lessen the time
 
     //world
     //let world=random_sence();
     //let world=simple_light();
-    let world = final_book2_scence();
+    let world = cornell_box();
     // let world=earth();
     //  let world=two_spheres();//todo
     {
@@ -319,8 +321,8 @@ fn main() {
     //let backgroud=Vec3::new(0.7,0.8,1.0);
     let backgroud = Vec3::new(0.0, 0.0, 0.0);
     //Camera
-    //let lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
-    let lookfrom = Vec3::new(478.0, 278.0, -600.0); //13 2 3
+    let lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
+    //let lookfrom = Vec3::new(478.0, 278.0, -600.0); //13 2 3
                                                     // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
                                                     // let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
                                                     //let lookat=Vec3::new(0.0,0.0,0.0);
@@ -349,13 +351,12 @@ fn main() {
     //let vertical: Vec3 = Vec3::new(0.0, view_heigth, 0.0);
     //let leftcorner = origin - horizon / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focallength);
 
-    let mut img: RgbImage = ImageBuffer::new(image_width, image_heigth);
     let bar = ProgressBar::new(1024);
 
     let world_inthread = Arc::new(world);
 
     for i in 0..n_jobs {
-        println!("yyy");
+        //println!("yyy");
         let tx = tx.clone();
         let worldptr = world_inthread.clone();
         pool.execute(move || {
