@@ -1,8 +1,10 @@
 use crate::Vec3;
 use crate::onb::Onb;
 use std::f64::consts::PI;
+use std::sync::Arc;
+use crate::hittable::{Hitrecord, Hittable};
 
-pub trait Pdf {
+pub trait Pdf: Send + Sync {
     fn value(&self, direction: &Vec3) -> f64;
     fn generate(&self) -> Vec3;
 }
@@ -30,5 +32,26 @@ impl CosinePdf{
         Self{
             uvw:ans,
         }
+    }
+}
+pub struct HittablePdf{
+    o:Vec3,
+    ptr:Arc<dyn Hittable>,
+}
+impl HittablePdf{
+    pub fn new(p:Arc<dyn Hittable>,orgin:&Vec3)->Self{
+       Self{
+           o: *orgin,
+           ptr: p
+       }
+    }
+}
+impl Pdf for HittablePdf{
+    fn value(&self, direction: &Vec3) -> f64 {
+        return self.ptr.pdf_value(&self.o, direction);
+    }
+
+    fn generate(&self) -> Vec3 {
+      return self.ptr.random(&self.o);
     }
 }

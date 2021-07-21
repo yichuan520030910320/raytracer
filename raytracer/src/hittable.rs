@@ -10,6 +10,7 @@ use rand::Rng;
 use std::f64::consts::PI;
 use std::f64::INFINITY;
 use std::sync::Arc;
+use std::thread;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
@@ -56,9 +57,18 @@ fn random_int(min: i32, max: i32) -> i32 {
     return range_random_double(min as f64, (max + 1) as f64) as i32;
 }
 
-pub trait Hittable {
+pub trait Hittable : Send + Sync {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
+    fn pdf_value(&self,o:&Vec3,v:&Vec3)->f64{
+        return 0.0;
+    }
+    fn random(&self,o:&Vec3)->Vec3{
+        return Vec3::zero();
+    }
+
+
+
 } //相当于一个基类 在列表里面会去看是谁将它实例化（如圆等图形）
 
 impl Hitrecord {

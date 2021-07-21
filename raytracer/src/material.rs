@@ -23,7 +23,7 @@ fn schlick(cosin: f64, ref_idx: f64) -> f64 {
             * (1.0 - cosin);
 }
 
-pub trait Material {
+pub trait Material : Send + Sync{
     fn scatter(
         &self,
         r_in: &Ray,

@@ -11,7 +11,7 @@ mod texture;
 mod vec3;
 mod onb;
 mod pdf;
-
+use std::thread;
 use crate::aabb::Aabb;
 use crate::aarect::{XyRect, XzRect, YzRect};
 use crate::hittable::{
@@ -30,7 +30,7 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
 pub use vec3::Vec3;
-use crate::pdf::{CosinePdf, Pdf};
+use crate::pdf::{CosinePdf, Pdf, HittablePdf};
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -72,7 +72,7 @@ fn hit_sphere(center: Vec3, radius: f64, r: Ray) -> f64 {
     }
 }
 
-fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
+fn color(x: Ray, background: Vec3, world: &HittableList, lights:&Arc<dyn Hittable+Send>, dep: u32) -> Vec3 {
     if dep <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
@@ -92,10 +92,16 @@ fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
 
 
 
+        //
+        // let p=CosinePdf::new(&_rec.normal);
+        // scattered=Ray::new(_rec.p,p.generate(),x.tm);
+        // pdf_val=p.value(&scattered.dic);
 
-        let p=CosinePdf::new(&_rec.normal);
-        scattered=Ray::new(_rec.p,p.generate(),x.tm);
-        pdf_val=p.value(&scattered.dic);
+
+
+        let lightpdf=HittablePdf::new(lights.clone(), &_rec.p);
+        scattered=Ray::new(_rec.p,lightpdf.generate(),x.tm);
+        pdf_val=lightpdf.value(&scattered.dic);
 
 
 
@@ -119,7 +125,7 @@ fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
         // scattered.tm=x.tm;
 
 
-        return emitted + aldedo*_rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)*color(scattered, background, world, dep - 1) /pdf_val;
+        return emitted + aldedo*_rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)*color(scattered, background, world,lights, dep - 1) /pdf_val;
     } else {
         return background;
     }
@@ -177,6 +183,9 @@ fn main() {
     //let world=random_sence();
     //let world=simple_light();
     let world = cornell_box();
+    let lights:Arc<dyn Hittable +Send>=Arc::new(XzRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Arc::new(Lambertian::new(Vec3::zero()))));
+
+
     // let world=earth();
     //  let world=two_spheres();//todo
     {
@@ -392,6 +401,7 @@ fn main() {
         //println!("yyy");
         let tx = tx.clone();
         let worldptr = world_inthread.clone();
+        let lightsptr=lights.clone();
         pool.execute(move || {
             let row_begin = image_heigth as usize * i / n_jobs;
             let row_end = image_heigth as usize * (i + 1) / n_jobs;
@@ -408,7 +418,7 @@ fn main() {
                         let v = (image_heigth as f64 - y as f64 + random_doouble())
                             / (image_heigth - 1) as f64;
                         let r = cam.get_ray(u, v);
-                        pixel_color += color(r, backgroud, &worldptr, max_depth);
+                        pixel_color += color(r, backgroud, &worldptr, &lightsptr, max_depth);
                     }
                     // let aa: f32 = ((i) as f32 / (image_width-1)as f32) as f32;
                     // let bb: f32 = ((image_heigth-j) as f32 / (image_heigth-1)as f32) as f32;

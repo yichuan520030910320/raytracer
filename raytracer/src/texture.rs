@@ -3,7 +3,7 @@ use image::{RgbImage, RgbaImage};
 use std::ptr::{null, null_mut};
 use std::sync::Arc;
 
-pub trait Texture {
+pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3;
 }
 
