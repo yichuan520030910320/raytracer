@@ -70,7 +70,7 @@ fn hit_sphere(center: Vec3, radius: f64, r: Ray) -> f64 {
 }
 
 fn color(x: Ray, background: Vec3, world: &HittableList, dep: u32) -> Vec3 {
-    if dep <= 0 {
+    if dep<=0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
     if let Option::Some(_rec) = world.hit(x, 0.001, INFINITY as f64) {
@@ -115,7 +115,7 @@ fn main() {
         Err(_) => false,
     };
 
-    let (n_jobs, n_workers): (usize, usize) = if is_ci { (32, 2) } else { (16, 2) };
+    let (n_jobs, n_workers): (usize, usize) = if is_ci { (32, 2) } else { (16, 8) };
 
     println!(
         "CI: {}, using {} jobs and {} workers",
@@ -136,7 +136,7 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 800 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 1; //ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 2; //ought to be 100  可以做的更大比如500//todo
     let max_depth = 50; //an bo modifyed to lessen the time
 
     //world
@@ -358,8 +358,6 @@ let world_inthread=Arc::new(world);
     for i in 0..n_jobs {
         let tx = tx.clone();
         let worldptr=world_inthread.clone();
-
-
         pool.execute(move || {
             let row_begin = image_heigth as usize * i / n_jobs;
             let row_end = image_heigth as usize * (i + 1) / n_jobs;
