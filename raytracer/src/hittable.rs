@@ -64,7 +64,7 @@ pub trait Hittable: Send + Sync {
         return 0.0;
     }
     fn random(&self, o: &Vec3) -> Vec3 {
-        return Vec3::zero();
+        return Vec3::new(1.0,0.0,0.0);
     }
 } //相当于一个基类 在列表里面会去看是谁将它实例化（如圆等图形）
 
@@ -542,6 +542,29 @@ impl Hittable for HittableList {
         }
         Some(output)
     }
+
+    fn pdf_value(&self,o:&Vec3,v:&Vec3)->f64{
+
+        let weight=1.0/self.objects.len()as f64;
+        let mut sum =0.0;
+        for object in self.objects.iter(){
+            sum+=weight*object.pdf_value(o, v);
+        }
+
+
+        return sum;
+
+    }
+    fn random(&self,o:&Vec3)->Vec3{
+
+        let int_size=self.objects.len() as i32;
+        if self.objects.len()==1 {
+            return self.objects[0].random(o);
+        }else { let k=(rand::thread_rng().gen_range(0..int_size) )as usize;
+            return self.objects[k].random(o);
+        }
+    }
+
 }
 
 pub struct ConstantMedium {

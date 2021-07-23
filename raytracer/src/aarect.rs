@@ -95,8 +95,8 @@ impl Hittable for XzRect {
     }
 
     fn random(&self, o: &Vec3) -> Vec3 {
-        println!("xz  o");
-        println!("{:?}",*o);
+        //println!("xz  o");
+       // println!("{:?}",*o);
         let randompoint = Vec3::new(
             range_random_double(self.x0, self.x1),
             self.k,

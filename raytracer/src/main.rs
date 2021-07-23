@@ -100,15 +100,16 @@ fn color(
                 return scatterrecord.attenuation*color(scatterrecord.specular_ray,background,world,lights,dep-1);
             }
 
+
             let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
             let p = MixturePdf::new(lightptr, scatterrecord.pdf_ptr);
             // let p0 = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
             // let p1 = Arc::new(CosinePdf::new(&_rec.normal));
             // let mixed_pdf = MixturePdf::new(p0, p1);
             scattered = Ray::new(_rec.p, p.generate(), x.tm);
-            println!("{:?}",scattered.dic);
+           // println!("{:?}",scattered.dic);
             pdf_val = p.value(&scattered.dic);
-            println!("pdf is {}",pdf_val);
+           // println!("pdf is {}",pdf_val);
 
 
             return emitted
