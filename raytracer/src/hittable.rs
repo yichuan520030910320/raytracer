@@ -65,7 +65,7 @@ pub trait Hittable: Send + Sync {
         return 0.0;
     }
     fn random(&self, o: &Vec3) -> Vec3 {
-        return Vec3::new(1.0,0.0,0.0);
+        return Vec3::new(1.0, 0.0, 0.0);
     }
 } //相当于一个基类 在列表里面会去看是谁将它实例化（如圆等图形）
 
@@ -268,38 +268,46 @@ impl Hittable for Sphere {
         return Some(output);
     }
 
-    fn pdf_value(&self,o:&Vec3,v:&Vec3)->f64{
-        if let Option::Some(rec)=self.hit(Ray::new(*o, *v,0.0), 0.001, INFINITY){
-            return 0.0;
-        }else {
-
-            let costheta_max=((1.0-self.radius*self.radius)/(self.center-*o).squared_length()).sqrt();
-            let solid_angle=2.0*PI*(1.0-costheta_max);
-            return 1.0/solid_angle;
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
+            let costheta_max = ((1.0 -( self.radius * self.radius) / (self.center - *o).squared_length())).sqrt();
+            let solid_angle = 2.0 * PI * (1.0 - costheta_max);
+            //println!("solid is {}",solid_angle);
+            return 1.0 / solid_angle;
+        } else {
+           return 0.0;
         }
     }
-    fn random(&self,o:&Vec3)->Vec3{
+    fn random(&self, o: &Vec3) -> Vec3 {
+        // println!("here");
+        // println!("{:?}", self.center);
+        // println!("{:?}", *o);
+        let mut direction = self.center - *o;
+        //println!("{:?}", direction);
+        let distance_squared = direction.squared_length();
+        let uvw = Onb::build_from(&direction);
 
-        let mut direction=self.center-*o;
-        let distance_squared=direction.squared_length();
-        let uvw=Onb::build_from(&direction);
-        let temp=random_to_sphere(self.radius,distance_squared);
-        return uvw.local(temp.x,temp.y,temp.z);
-
-
+        let temp = random_to_sphere(self.radius, distance_squared);
+        // println!("{:?}", temp);
+        // println!("{:?}", uvw.local(temp.x, temp.y, temp.z));
+        return uvw.local(temp.x, temp.y, temp.z);
     }
 }
-pub fn random_to_sphere(radius:f64,diatance_squared:f64)->Vec3{
 
-    let r1=random_doouble();
-    let r2=random_doouble();
-    let z=1.0+r2*((1.0-radius*radius/diatance_squared).sqrt()-1.0);
-    let phi=2.0*PI*r1;
-    let x=phi.cos()*(1.0-z*z).sqrt();
-    let y=phi.sin()*(1.0-z*z).sqrt();
-    return Vec3::new(x,y,z);
-
+pub fn random_to_sphere(radius: f64, diatance_squared: f64) -> Vec3 {
+    let r1 = random_doouble();
+    let r2 = random_doouble();
+    // println!("{}", radius);
+    // println!("{}", diatance_squared);
+    // println!("{}", (1.0 - radius * radius / diatance_squared).sqrt());
+    let z = 1.0 + r2 * ((1.0 - radius * radius / diatance_squared).sqrt() - 1.0);
+    let phi = 2.0 * PI * r1;
+    let x = phi.cos() * (1.0 - z * z).sqrt();
+    let y = phi.sin() * (1.0 - z * z).sqrt();
+  //  println!("{}{}{}{}{}{}", r1, r2, z, phi, x, y);
+    return Vec3::new(x, y, z);
 }
+
 pub struct Box1 {
     pub(crate) box_min: Vec3,
     pub(crate) box_max: Vec3,
@@ -527,8 +535,11 @@ impl Hittable for RotateY {
         return Option::from(self.bbox);
     }
 }
+
 unsafe impl Send for HittableList {}
+
 unsafe impl Sync for HittableList {}
+
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
     //todo
@@ -575,28 +586,25 @@ impl Hittable for HittableList {
         Some(output)
     }
 
-    fn pdf_value(&self,o:&Vec3,v:&Vec3)->f64{
-
-        let weight=1.0/self.objects.len()as f64;
-        let mut sum =0.0;
-        for object in self.objects.iter(){
-            sum+=weight*object.pdf_value(o, v);
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        let weight = 1.0 / self.objects.len() as f64;
+        let mut sum = 0.0;
+        for object in self.objects.iter() {
+            sum += weight * object.pdf_value(o, v);
         }
 
 
         return sum;
-
     }
-    fn random(&self,o:&Vec3)->Vec3{
-
-        let int_size=self.objects.len() as i32;
-        if self.objects.len()==1 {
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let int_size = self.objects.len() as i32;
+        if self.objects.len() == 1 {
             return self.objects[0].random(o);
-        }else { let k=(rand::thread_rng().gen_range(0..int_size) )as usize;
+        } else {
+            let k = (rand::thread_rng().gen_range(0..int_size)) as usize;
             return self.objects[k].random(o);
         }
     }
-
 }
 
 pub struct ConstantMedium {
@@ -610,8 +618,8 @@ impl Hittable for ConstantMedium {
         if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INFINITY, INFINITY) {
             //todo
             if let Option::Some(mut rec2) =
-                self.boundary
-                    .hit(r.clone(), rec1.t.clone() + 0.0001, INFINITY)
+            self.boundary
+                .hit(r.clone(), rec1.t.clone() + 0.0001, INFINITY)
             {
                 if rec1.t < t_min {
                     rec1.t = t_min

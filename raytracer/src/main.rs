@@ -103,13 +103,10 @@ fn color(
 
             let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
             let p = MixturePdf::new(lightptr, scatterrecord.pdf_ptr);
-            // let p0 = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
-            // let p1 = Arc::new(CosinePdf::new(&_rec.normal));
-            // let mixed_pdf = MixturePdf::new(p0, p1);
             scattered = Ray::new(_rec.p, p.generate(), x.tm);
-           // println!("{:?}",scattered.dic);
+            //println!("{:?}",scattered.dic);
             pdf_val = p.value(&scattered.dic);
-           // println!("pdf is {}",pdf_val);
+            //println!("pdf is {}",pdf_val);
 
 
             return emitted
@@ -169,7 +166,7 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 600 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 50; //ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 5000; //ought to be 100  可以做的更大比如500//todo
     let max_depth = 50; //an bo modifyed to lessen the time
 
     //world
@@ -189,6 +186,7 @@ fn main() {
     let tmp:Arc<dyn Hittable +Send>=Arc::new(Sphere::new(Vec3::zero(), Vec3::zero(), 0.0, Vec3::new(190.0,90.0,190.0), 90.0, Arc::new(Lambertian::new(Vec3::zero()))));
 
     lightworld.add(light1);
+    lightworld.add(tmp);
     let lights:Arc<dyn Hittable +Send>=Arc::new(lightworld);
     // let world=earth();
     //  let world=two_spheres();//todo
@@ -423,6 +421,15 @@ fn main() {
                             / (image_heigth - 1) as f64;
                         let r = cam.get_ray(u, v);
                         pixel_color += color(r, backgroud, &worldptr, &lightsptr, max_depth);
+                    }
+                    if pixel_color.x!=pixel_color.x {
+                        pixel_color.x=0.0;
+                    }
+                    if pixel_color.y!=pixel_color.y {
+                        pixel_color.y=0.0;
+                    }
+                    if pixel_color.z!=pixel_color.z {
+                        pixel_color.z=0.0;
                     }
                     // let aa: f32 = ((i) as f32 / (image_width-1)as f32) as f32;
                     // let bb: f32 = ((image_heigth-j) as f32 / (image_heigth-1)as f32) as f32;
@@ -961,14 +968,36 @@ fn cornell_box() -> HittableList {
     whitebox1 = Arc::new(Translate::new(whitebox1, Vec3::new(265.0, 0.0, 295.0)));
     world.add(whitebox1);
 
-    let mut whitebox2: Arc<dyn Hittable> = Arc::new(Box1::new(
-        &Vec3::new(0.0, 0.0, 0.0),
-        &Vec3::new(165.0, 165.0, 165.0),
-        Arc::new((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))),
-    ));
-    whitebox2 = Arc::new(RotateY::new(whitebox2, -18.0));
-    whitebox2 = Arc::new(Translate::new(whitebox2, Vec3::new(130.0, 0.0, 65.0)));
-    world.add(whitebox2);
+    let material1 = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 190.0,
+            y: 90.0,
+            z: 190.0,
+        },
+        radius: 90.0,
+        mat_ptr: Arc::new((Dielectric::new(1.5))),
+    };
+    world.add(Arc::new(material1));
+
+    // let mut whitebox2: Arc<dyn Hittable> = Arc::new(Box1::new(
+    //     &Vec3::new(0.0, 0.0, 0.0),
+    //     &Vec3::new(165.0, 165.0, 165.0),
+    //     Arc::new((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))),
+    // ));
+    // whitebox2 = Arc::new(RotateY::new(whitebox2, -18.0));
+    // whitebox2 = Arc::new(Translate::new(whitebox2, Vec3::new(130.0, 0.0, 65.0)));
+    // world.add(whitebox2);
 
     // let whitebox5 = Box1::new( &Vec3::new(265.0, 0.0, 295.0), &Vec3::new(430.0, 330.0, 460.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
     // world.add(
