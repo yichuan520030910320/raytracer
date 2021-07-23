@@ -11,6 +11,7 @@ use std::f64::consts::PI;
 use std::f64::INFINITY;
 use std::sync::Arc;
 use std::thread;
+use crate::onb::Onb;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
@@ -266,8 +267,39 @@ impl Hittable for Sphere {
         );
         return Some(output);
     }
-}
 
+    fn pdf_value(&self,o:&Vec3,v:&Vec3)->f64{
+        if let Option::Some(rec)=self.hit(Ray::new(*o, *v,0.0), 0.001, INFINITY){
+            return 0.0;
+        }else {
+
+            let costheta_max=((1.0-self.radius*self.radius)/(self.center-*o).squared_length()).sqrt();
+            let solid_angle=2.0*PI*(1.0-costheta_max);
+            return 1.0/solid_angle;
+        }
+    }
+    fn random(&self,o:&Vec3)->Vec3{
+
+        let mut direction=self.center-*o;
+        let distance_squared=direction.squared_length();
+        let uvw=Onb::build_from(&direction);
+        let temp=random_to_sphere(self.radius,distance_squared);
+        return uvw.local(temp.x,temp.y,temp.z);
+
+
+    }
+}
+pub fn random_to_sphere(radius:f64,diatance_squared:f64)->Vec3{
+
+    let r1=random_doouble();
+    let r2=random_doouble();
+    let z=1.0+r2*((1.0-radius*radius/diatance_squared).sqrt()-1.0);
+    let phi=2.0*PI*r1;
+    let x=phi.cos()*(1.0-z*z).sqrt();
+    let y=phi.sin()*(1.0-z*z).sqrt();
+    return Vec3::new(x,y,z);
+
+}
 pub struct Box1 {
     pub(crate) box_min: Vec3,
     pub(crate) box_max: Vec3,

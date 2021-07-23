@@ -186,6 +186,8 @@ fn main() {
         554.0,
         Arc::new(Lambertian::new(Vec3::zero())),
     ));
+    let tmp:Arc<dyn Hittable +Send>=Arc::new(Sphere::new(Vec3::zero(), Vec3::zero(), 0.0, Vec3::new(190.0,90.0,190.0), 90.0, Arc::new(Lambertian::new(Vec3::zero()))));
+
     lightworld.add(light1);
     let lights:Arc<dyn Hittable +Send>=Arc::new(lightworld);
     // let world=earth();
