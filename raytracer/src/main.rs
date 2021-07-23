@@ -166,13 +166,13 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 600 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 5000; //ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 50; //ought to be 100  可以做的更大比如500//todo
     let max_depth = 50; //an bo modifyed to lessen the time
 
     //world
     //let world=random_sence();
     //let world=simple_light();
-    let world = cornell_box();
+    let world = final_book2_scence();
     let mut lightworld: HittableList =HittableList{ objects: vec![] };
 
     let light1: Arc<dyn Hittable + Send> = Arc::new(XzRect::new(
