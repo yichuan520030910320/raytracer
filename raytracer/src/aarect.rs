@@ -1,8 +1,8 @@
 use crate::aabb::Aabb;
 use crate::hittable::{Hitrecord, Hittable, Material};
-use crate::{Ray, Vec3, range_random_double};
-use std::sync::Arc;
+use crate::{range_random_double, Ray, Vec3};
 use std::f64::INFINITY;
+use std::sync::Arc;
 
 pub struct XyRect {
     pub(crate) mp: Arc<dyn Material>,
@@ -83,21 +83,26 @@ impl XzRect {
 
 impl Hittable for XzRect {
     fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
+            let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+            let distance_squared = rec.t * rec.t * v.squared_length();
+            let cosine = Vec3::dot(*v, rec.normal).abs() / v.length();
 
-        if let Option::Some (rec)=self.hit(Ray::new(*o, *v, 0.0),0.001,INFINITY){
-            let area=(self.x1-self.x0)*(self.z1-self.z0);
-            let distance_squared=rec.t*rec.t*v.squared_length();
-            let cosine=Vec3::dot(*v, rec.normal).abs()/v.length();
-
-
-
-            return distance_squared/(cosine*area);
-        }else { return 0.0; }
+            return distance_squared / (cosine * area);
+        } else {
+            return 0.0;
+        }
     }
 
     fn random(&self, o: &Vec3) -> Vec3 {
-        let randompoint=Vec3::new(range_random_double(self.x0,self.x1),self.k,range_random_double(self.z0,self.z1));
-        return randompoint-*o;
+        println!("xz  o");
+        println!("{:?}",*o);
+        let randompoint = Vec3::new(
+            range_random_double(self.x0, self.x1),
+            self.k,
+            range_random_double(self.z0, self.z1),
+        );
+        return randompoint - *o;
     }
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let t = (self.k - r.ori.y) / r.dic.y;

@@ -57,18 +57,15 @@ fn random_int(min: i32, max: i32) -> i32 {
     return range_random_double(min as f64, (max + 1) as f64) as i32;
 }
 
-pub trait Hittable : Send + Sync {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
-    fn pdf_value(&self,o:&Vec3,v:&Vec3)->f64{
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
         return 0.0;
     }
-    fn random(&self,o:&Vec3)->Vec3{
+    fn random(&self, o: &Vec3) -> Vec3 {
         return Vec3::zero();
     }
-
-
-
 } //相当于一个基类 在列表里面会去看是谁将它实例化（如圆等图形）
 
 impl Hitrecord {
@@ -684,6 +681,7 @@ impl Hittable for BvhNode {
             let hit_right = self.right.hit(r, t_min, _temp1.t);
             if let Option::Some(_temp2right) = hit_right {
                 //println!("bvh ac 1");
+
                 Some(_temp2right)
             } else {
                 //println!("bvh ac 2");

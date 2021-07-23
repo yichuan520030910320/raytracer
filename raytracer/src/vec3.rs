@@ -130,14 +130,14 @@ impl Vec3 {
             -in_unit_sphere
         };
     }
-    pub fn random_cosine_direction()->Vec3{
-        let r1=random_doouble();
-        let r2=random_doouble();
-        let z=(1.0-r2).sqrt();
-        let phi=2.0*PI*r1;
-        let x=phi.cos()*r2.sqrt();
-        let y=phi.sin()*r2.sqrt();
-        return Vec3::new(x,y,z);
+    pub fn random_cosine_direction() -> Vec3 {
+        let r1 = random_doouble();
+        let r2 = random_doouble();
+        let z = (1.0 - r2).sqrt();
+        let phi = 2.0 * PI * r1;
+        let x = phi.cos() * r2.sqrt();
+        let y = phi.sin() * r2.sqrt();
+        return Vec3::new(x, y, z);
     }
 }
 

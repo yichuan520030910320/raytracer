@@ -3,21 +3,22 @@ mod aarect;
 mod camera;
 mod hittable;
 mod material;
+mod onb;
+mod pdf;
 mod perlin;
 mod ray;
 mod rtweekend;
 mod texture;
 #[allow(clippy::float_cmp)]
 mod vec3;
-mod onb;
-mod pdf;
-use std::thread;
+
 use crate::aabb::Aabb;
 use crate::aarect::{XyRect, XzRect, YzRect};
 use crate::hittable::{
     Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, Sphere, Translate,
 };
-use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, FlipFace};
+use crate::material::{Dielectric, DiffuseLight, FlipFace, Lambertian, Metal};
+use crate::pdf::{CosinePdf, HittablePdf, MixturePdf, Pdf};
 use crate::perlin::NoiseTexture;
 pub use crate::ray::Ray;
 use crate::texture::{BaseColor, CheckerTexture, ImageTexture, Texture};
@@ -28,9 +29,9 @@ use std::f32::INFINITY;
 use std::f64::consts::PI;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
+use std::thread;
 use threadpool::ThreadPool;
 pub use vec3::Vec3;
-use crate::pdf::{CosinePdf, Pdf, HittablePdf, MixturePdf};
 
 //let secret_number = ;
 fn random_doouble() -> f64 {
@@ -72,77 +73,51 @@ fn hit_sphere(center: Vec3, radius: f64, r: Ray) -> f64 {
     }
 }
 
-fn color(x: Ray, background: Vec3, world: &HittableList, lights:&Arc<dyn Hittable+Send>, dep: u32) -> Vec3 {
+fn color(
+    x: Ray,
+    background: Vec3,
+    world: &HittableList,
+    lights: &Arc<dyn Hittable + Send>,
+    dep: u32,
+) -> Vec3 {
     if dep <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
     if let Option::Some(_rec) = world.hit(x, 0.001, INFINITY as f64) {
-        // println!("color got in in main");
+
         let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(), 0.0);
-        let emitted = _rec.mat_ptr.emitted( &_rec, _rec.u, _rec.v, &_rec.p);
-        let mut pdf_val =0.0;
-        let mut aldedo =Vec3::zero();
-
-        if !_rec
+        let emitted = _rec.mat_ptr.emitted(&_rec, _rec.u, _rec.v, &_rec.p);
+        let mut pdf_val = 0.0;
+        let mut aldedo = Vec3::zero();
+        let scatterrecord = _rec
             .mat_ptr
-            .scatter(&x, &_rec, &mut aldedo, &mut scattered,&mut pdf_val)
+            .scatter(&x, &_rec, &mut aldedo, &mut scattered, &mut pdf_val);
+
+
+        if  scatterrecord.isget
         {
-            return emitted;
+            if scatterrecord.is_specular {
+                return scatterrecord.attenuation*color(scatterrecord.specular_ray,background,world,lights,dep-1);
+            }
+
+            let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
+            let p = MixturePdf::new(lightptr, scatterrecord.pdf_ptr);
+            // let p0 = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
+            // let p1 = Arc::new(CosinePdf::new(&_rec.normal));
+            // let mixed_pdf = MixturePdf::new(p0, p1);
+            scattered = Ray::new(_rec.p, p.generate(), x.tm);
+            println!("{:?}",scattered.dic);
+            pdf_val = p.value(&scattered.dic);
+            println!("pdf is {}",pdf_val);
+
+
+            return emitted
+                + scatterrecord.attenuation
+                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                * color(scattered, background, world, lights, dep - 1)
+                / pdf_val;
         }
-
-
-
-        //
-        // let p=CosinePdf::new(&_rec.normal);
-        // scattered=Ray::new(_rec.p,p.generate(),x.tm);
-        // pdf_val=p.value(&scattered.dic);
-
-
-
-
-
-
-
-        //
-        // let lightpdf=HittablePdf::new(lights.clone(), &_rec.p);
-        // scattered=Ray::new(_rec.p,lightpdf.generate(),x.tm);
-        // pdf_val=lightpdf.value(&scattered.dic);
-        //
-
-
-
-
-        let p0=Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
-        let p1=Arc::new(CosinePdf::new(&_rec.normal));
-        let mixed_pdf=MixturePdf::new(p0,p1);
-        scattered=Ray::new(_rec.p,mixed_pdf.generate(),x.tm);
-        pdf_val=mixed_pdf.value(&scattered.dic);
-
-
-
-
-
-        // let on_light=Vec3::new(range_random_double(213.0,343.0),554.0,range_random_double(227.0,332.0));
-        // let mut to_light =on_light-_rec.p;
-        // let distance_squared=to_light.squared_length();
-        // to_light=to_light.unit();
-        // if Vec3::dot(to_light,_rec.normal)<0.0 {
-        //     //println!("wa 1");
-        //     return emitted;
-        // }
-        // let lightarea=(343.0-213.0)*(332.0-227.0);
-        // let light_cosine=to_light.y.abs();
-        // if light_cosine<0.000001 {
-        //     //println!("wa 2");
-        //     return emitted;
-        // }
-        // pdf=distance_squared/(light_cosine*lightarea);
-        // scattered.ori=_rec.p;
-        // scattered.dic=to_light;
-        // scattered.tm=x.tm;
-
-
-        return emitted + aldedo*_rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)*color(scattered, background, world,lights, dep - 1) /pdf_val;
+        return emitted;
     } else {
         return background;
     }
@@ -200,9 +175,18 @@ fn main() {
     //let world=random_sence();
     //let world=simple_light();
     let world = cornell_box();
-    let lights:Arc<dyn Hittable +Send>=Arc::new(XzRect::new(213.0, 343.0, 227.0, 332.0, 554.0, Arc::new(Lambertian::new(Vec3::zero()))));
+    let mut lightworld: HittableList =HittableList{ objects: vec![] };
 
-
+    let light1: Arc<dyn Hittable + Send> = Arc::new(XzRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        Arc::new(Lambertian::new(Vec3::zero())),
+    ));
+    lightworld.add(light1);
+    let lights:Arc<dyn Hittable +Send>=Arc::new(lightworld);
     // let world=earth();
     //  let world=two_spheres();//todo
     {
@@ -382,10 +366,10 @@ fn main() {
     //Camera
     let lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     //let lookfrom = Vec3::new(478.0, 278.0, -600.0); //13 2 3
-                                                    // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
-                                                    // let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
-                                                    //let lookat=Vec3::new(0.0,0.0,0.0);
-                                                    //let lookat=Vec3::new(0.0,2.0,0.0);
+    // let lookfrom=Vec3::new(13.0,2.0,3.0);//13 2 3
+    // let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
+    //let lookat=Vec3::new(0.0,0.0,0.0);
+    //let lookat=Vec3::new(0.0,2.0,0.0);
     let lookat = Vec3::new(278.0, 278.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
@@ -418,7 +402,7 @@ fn main() {
         //println!("yyy");
         let tx = tx.clone();
         let worldptr = world_inthread.clone();
-        let lightsptr=lights.clone();
+        let lightsptr = lights.clone();
         pool.execute(move || {
             let row_begin = image_heigth as usize * i / n_jobs;
             let row_end = image_heigth as usize * (i + 1) / n_jobs;
@@ -955,10 +939,20 @@ fn cornell_box() -> HittableList {
     //     Arc::new(whitebox4)
     // );
 
+    // let mut whitebox1: Arc<dyn Hittable> = Arc::new(Box1::new(
+    //     &Vec3::new(0.0, 0.0, 0.0),
+    //     &Vec3::new(165.0, 330.0, 165.0),
+    //     Arc::new((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))),
+    // ));
+    // whitebox1 = Arc::new(RotateY::new(whitebox1, 15.0));
+    // whitebox1 = Arc::new(Translate::new(whitebox1, Vec3::new(265.0, 0.0, 295.0)));
+    // world.add(whitebox1);
+
+
     let mut whitebox1: Arc<dyn Hittable> = Arc::new(Box1::new(
         &Vec3::new(0.0, 0.0, 0.0),
         &Vec3::new(165.0, 330.0, 165.0),
-        Arc::new((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))),
+        Arc::new(Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0)),
     ));
     whitebox1 = Arc::new(RotateY::new(whitebox1, 15.0));
     whitebox1 = Arc::new(Translate::new(whitebox1, Vec3::new(265.0, 0.0, 295.0)));
@@ -986,7 +980,7 @@ fn cornell_box() -> HittableList {
         z1: 332.0,
         k: 554.0,
     };
-    let light1_bonus=Arc::new(FlipFace::new(Arc::new(light1)));
+    let light1_bonus = Arc::new(FlipFace::new(Arc::new(light1)));
     world.add(light1_bonus);
     return world;
 }
