@@ -1,6 +1,5 @@
-use crate::{clamp, clamp1, Vec3};
-use image::{RgbImage, RgbaImage};
-use std::ptr::{null, null_mut};
+use crate::{clamp,  Vec3};
+use image::{RgbImage};
 use std::sync::Arc;
 
 pub trait Texture: Send + Sync {
@@ -24,7 +23,7 @@ impl BaseColor {
 }
 
 impl Texture for BaseColor {
-    fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
+    fn value(&self, _: f64, _: f64, _: &Vec3) -> Vec3 {
         self.color
     }
 }
@@ -42,16 +41,13 @@ impl CheckerTexture {
 impl Texture for CheckerTexture {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
         let sines = (10.0 * p.x).sin() * (10.0 * p.y).sin() * (10.0 * p.z).sin();
-        if sines < 0.0 {
-            return self.odd.value(u, v, &p);
+        return if sines < 0.0 {
+            self.odd.value(u, v, &p)
         } else {
-            return self.even.value(u, v, &p);
+            self.even.value(u, v, &p)
         }
     }
 }
-
-const BYTES_PER_PIXEL: i32 = 3;
-
 pub struct ImageTexture {
     pub width: i32,
     pub height: i32,
@@ -72,7 +68,7 @@ impl ImageTexture {
 }
 
 impl Texture for ImageTexture {
-    fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
+    fn value(&self, u: f64, v: f64, _: &Vec3) -> Vec3 {
         //         let u = clamp(u, 0.0, 1.0);
         //         let v = clamp(v, 0.0, 1.0);
         //         let x = clamp1(((u * self.img.width()as f64) as u32), 0, (self.img.width() - 1));

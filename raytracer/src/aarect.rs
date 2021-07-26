@@ -47,9 +47,8 @@ impl Hittable for XyRect {
         Some(rec)
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa = time0;
-        let bb = time1;
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+
 
         Some(Aabb::new(
             Vec3::new(self.x0, self.y0, self.k - 0.0001),
@@ -82,28 +81,6 @@ impl XzRect {
 }
 
 impl Hittable for XzRect {
-    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
-        if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
-            let area = (self.x1 - self.x0) * (self.z1 - self.z0);
-            let distance_squared = rec.t * rec.t * v.squared_length();
-            let cosine = Vec3::dot(*v, rec.normal).abs() / v.length();
-
-            return distance_squared / (cosine * area);
-        } else {
-            return 0.0;
-        }
-    }
-
-    fn random(&self, o: &Vec3) -> Vec3 {
-        //println!("xz  o");
-       // println!("{:?}",*o);
-        let randompoint = Vec3::new(
-            range_random_double(self.x0, self.x1),
-            self.k,
-            range_random_double(self.z0, self.z1),
-        );
-        return randompoint - *o;
-    }
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let t = (self.k - r.ori.y) / r.dic.y;
         if t < t_min || t > t_max {
@@ -126,13 +103,33 @@ impl Hittable for XzRect {
         Some(rec)
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa = time0;
-        let bb = time1;
+    fn bounding_box(&self,_: f64, _: f64) -> Option<Aabb> {
+
         Some(Aabb::new(
             Vec3::new(self.x0, self.k - 0.0001, self.z0),
             Vec3::new(self.x1, self.k + 0.0001, self.z1),
         ))
+    }
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        return if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
+            let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+            let distance_squared = rec.t * rec.t * v.squared_length();
+            let cosine = Vec3::dot(*v, rec.normal).abs() / v.length();
+
+            distance_squared / (cosine * area)
+        } else {
+            0.0
+        }
+    }
+
+    fn random(&self, o: &Vec3) -> Vec3 {
+
+        let randompoint = Vec3::new(
+            range_random_double(self.x0, self.x1),
+            self.k,
+            range_random_double(self.z0, self.z1),
+        );
+        return randompoint - *o;
     }
 }
 
@@ -179,9 +176,8 @@ impl Hittable for YzRect {
         Some(rec)
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
-        let aa = time0;
-        let bb = time1;
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+
         Some(Aabb::new(
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),

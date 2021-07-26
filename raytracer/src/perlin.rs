@@ -38,7 +38,7 @@ impl Perlin {
     }
     pub fn perline_generate_perm(p: &mut [i32; POINT_COUNT]) {
         for i in 0..POINT_COUNT {
-            p[i] = (i as i32);
+            p[i] = i as i32;
         }
         // Perlin::permute(&mut p, POINT_COUNT as i32);
 
@@ -60,9 +60,9 @@ impl Perlin {
         }
     }
     pub fn noise(&self, p: Vec3) -> f64 {
-        let mut u = p.x - p.x.floor();
-        let mut v = p.y - p.y.floor();
-        let mut w = p.z - p.z.floor();
+        let  u = p.x - p.x.floor();
+        let  v = p.y - p.y.floor();
+        let  w = p.z - p.z.floor();
 
         // u=u*u*(3.0-2.0*u);
         // v=v*v*(3.0-2.0*v);
@@ -92,7 +92,7 @@ impl Perlin {
         // return self.ranfloat[(self.perm_x[i as usize] ^ self.perm_y[j as usize] ^ self.perm_z[k as usize]) as usize];
     }
 
-    pub fn trilinear_interp(mut my_sz: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    pub fn trilinear_interp( my_sz: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         let uu = u * u * (3.0 - 2.0 * u);
         let vv = v * v * (3.0 - 2.0 * v);
         let ww = w * w * (3.0 - 2.0 * w);
@@ -117,7 +117,7 @@ impl Perlin {
         let mut accum = 0.0;
         let mut temp_p = p;
         let mut weight = 1.0;
-        for i in 0..depth {
+        for _ in 0..depth {
             accum += weight * Perlin::noise(&self, temp_p);
             weight *= 0.5;
             temp_p = temp_p * 2.0;
@@ -141,7 +141,7 @@ impl NoiseTexture {
 }
 
 impl Texture for NoiseTexture {
-    fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
+    fn value(&self, _: f64, _: f64, p: &Vec3) -> Vec3 {
         return Vec3::new(1.0, 1.0, 1.0)
             * 0.5
             * ((self.scale * p.z + 10.0 * self.noise.turb(*p, 0)).sin() + 1.0);

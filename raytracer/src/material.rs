@@ -1,19 +1,13 @@
 use crate::aabb::Aabb;
 pub use crate::hittable::Hitrecord;
 use crate::hittable::Hittable;
-use crate::onb::Onb;
 use crate::random_doouble;
 pub use crate::ray::Ray;
 use crate::texture::{BaseColor, Texture};
 pub use crate::vec3::Vec3;
-use std::collections::hash_map::Entry::Vacant;
 use std::f64::consts::PI;
 use std::sync::Arc;
 use crate::pdf::{Pdf, CosinePdf, NoPdf};
-use imageproc::distance_transform::Norm::L1;
-
-const HALFNUM: f64 = 0.5;
-
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     r0 *= r0;
@@ -44,10 +38,10 @@ pub trait Material: Send + Sync {
         pdf: &mut f64,
     ) -> ScatterRecord;
     //attenuation是衰减的意思
-    fn emitted(&self, rec: &Hitrecord, u: f64, v: f64, p: &Vec3) -> Vec3 {
+    fn emitted(&self, _: &Hitrecord, _: f64, _: f64, _: &Vec3) -> Vec3 {
         return Vec3::zero();
     }
-    fn scattering_odf(&self, r_in: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
+    fn scattering_odf(&self, _: &Ray, _: &Hitrecord, _: &Ray) -> f64 {
         return 0.0;
     }
 }
@@ -71,11 +65,11 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(
         &self,
-        r_in: &Ray,
+        _: &Ray,
         rec: &Hitrecord,
-        attenuation: &mut Vec3,
-        mut scattered: &mut Ray,
-        mut pdf: &mut f64,
+        _: &mut Vec3,
+        _: &mut Ray,
+        _: &mut f64,
     ) -> ScatterRecord {
         ScatterRecord {
             specular_ray: Ray::new(Vec3::zero(), Vec3::zero(), 0.0),
@@ -114,10 +108,10 @@ impl Material for Lambertian {
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
         let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
-        if cosine < 0.0 {
-            return 0.0;
+        return if cosine < 0.0 {
+            0.0
         } else {
-            return cosine / PI;
+            cosine / PI
         }
     }
 }
@@ -142,9 +136,9 @@ impl Material for Metal {
         &self,
         r_in: &Ray,
         rec: &Hitrecord,
-        attenuation: &mut Vec3,
-        mut scattered: &mut Ray,
-        mut pdf: &mut f64,
+        _: &mut Vec3,
+        _: &mut Ray,
+        _: &mut f64,
     ) -> ScatterRecord {
         let reflected = Vec3::reflect(r_in.dic, rec.normal);
 
@@ -174,8 +168,8 @@ impl Material for Dielectric {
         r_in: &Ray,
         rec: &Hitrecord,
         attenuation: &mut Vec3,
-        scattered: &mut Ray,
-        mut pdf: &mut f64,
+        _: &mut Ray,
+        _: &mut f64,
     ) -> ScatterRecord {
         let mut srec: ScatterRecord = ScatterRecord {
             specular_ray: Ray {
@@ -210,22 +204,16 @@ impl Material for Dielectric {
         attenuation.y = 1.0;
         attenuation.z = 1.0; //glass dont absorb ray so the attenuation is constly 1
 
-        let mut etai_over_etat = 0.0;
+        let  etai_over_etat:f64;
         if rec.front_face {
             etai_over_etat = 1.0 / self.ref_idx
         } else {
             etai_over_etat = self.ref_idx
         }
 
-        // println!("{}", etai_over_etat);
 
         let unit_direction = Vec3::unit(r_in.dic);
-
-        // let refracted=Vec3::refract(unit_direction,rec.normal,etai_over_etat);
-        // scattered.ori=rec.p;
-        // scattered.dic=refracted;
-        // return  true;
-        let mut cos_theta = 0.0;
+        let  cos_theta :f64;
         if Vec3::dot(-unit_direction, rec.normal) < 1.0 {
             cos_theta = Vec3::dot(-unit_direction, rec.normal)
         } else {
@@ -269,21 +257,13 @@ impl DiffuseLight {
 }
 
 impl Material for DiffuseLight {
-    fn emitted(&self, rec: &Hitrecord, u: f64, v: f64, p: &Vec3) -> Vec3 {
-        if rec.front_face {
-            //println!("1");
-            return self.emit.value(u, v, p);
-        }
-        //println!("0");
-        return Vec3::zero();
-    }
     fn scatter(
         &self,
-        r_in: &Ray,
-        rec: &Hitrecord,
-        attenuation: &mut Vec3,
-        scattered: &mut Ray,
-        mut pdf: &mut f64,
+        _: &Ray,
+        _: &Hitrecord,
+        _: &mut Vec3,
+        _: &mut Ray,
+        _: &mut f64,
     ) -> ScatterRecord {
         ScatterRecord {
             specular_ray: Ray {
@@ -296,6 +276,13 @@ impl Material for DiffuseLight {
             pdf_ptr: Arc::new(NoPdf::new()),
             isget: false,
         }
+    }
+    fn emitted(&self, rec: &Hitrecord, u: f64, v: f64, p: &Vec3) -> Vec3 {
+        if rec.front_face {
+            return self.emit.value(u, v, p);
+        }
+
+        return Vec3::zero();
     }
 }
 
@@ -320,8 +307,8 @@ impl Material for Isotropic {
         r_in: &Ray,
         rec: &Hitrecord,
         attenuation: &mut Vec3,
-        scattered: &mut Ray,
-        mut pdf: &mut f64,
+        _: &mut Ray,
+        _: &mut f64,
     ) -> ScatterRecord {
         let temp = self.albedo.value(rec.u, rec.v, &rec.p);
         attenuation.x = temp.x;

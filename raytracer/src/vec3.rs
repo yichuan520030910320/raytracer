@@ -17,7 +17,7 @@ pub struct Vec3 {
     pub y: f64,
     pub z: f64,
 }
-
+#[warn(unused_parens)]
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
@@ -72,7 +72,7 @@ impl Vec3 {
     pub fn refract(uv: Self, n: Self, etai_over_etat: f64) -> Self {
         let costhta = Vec3::dot(-uv, n);
         let r_out_perp = (uv + n * costhta) * etai_over_etat;
-        let r_out_parallel = (n * (-(1.0 - Vec3::squared_length(&r_out_perp)).abs().sqrt()));
+        let r_out_parallel = n * (-(1.0 - Vec3::squared_length(&r_out_perp)).abs().sqrt());
         return r_out_perp + r_out_parallel;
     }
     pub fn cross(u: Self, v: Self) -> Self {
