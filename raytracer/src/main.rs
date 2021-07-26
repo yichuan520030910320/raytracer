@@ -11,14 +11,16 @@ mod rtweekend;
 mod texture;
 #[allow(clippy::float_cmp)]
 mod vec3;
-const INF:f64=1000000.0;
+
+const INF: f64 = 1000000.0;
+
 use crate::aarect::{XyRect, XzRect, YzRect};
 use crate::hittable::{Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, Sphere, Translate, RotateZ};
 use crate::material::{Dielectric, DiffuseLight, FlipFace, Lambertian, Metal};
-use crate::pdf::{ HittablePdf, MixturePdf, Pdf};
+use crate::pdf::{HittablePdf, MixturePdf, Pdf};
 use crate::perlin::NoiseTexture;
 pub use crate::ray::Ray;
-use crate::texture::{ CheckerTexture, ImageTexture};
+use crate::texture::{CheckerTexture, ImageTexture};
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use rand::Rng;
@@ -26,12 +28,15 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
 pub use vec3::Vec3;
+
 fn random_doouble() -> f64 {
     rand::thread_rng().gen_range(1..101) as f64 / 102.0
 }
+
 fn range_random_double(min: f64, max: f64) -> f64 {
     min + (max - min) * random_doouble()
 }
+
 fn clamp(x: f64, min: f64, max: f64) -> f64 {
     if x < min {
         return min;
@@ -40,6 +45,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
     }
     return x;
 }
+
 fn color(
     x: Ray,
     background: Vec3,
@@ -50,7 +56,7 @@ fn color(
     if dep <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
-    return if let Option::Some(_rec) = world.hit(x, 0.001, INF ) {
+    return if let Option::Some(_rec) = world.hit(x, 0.001, INF) {
         let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(), 0.0);
         let emitted = _rec.mat_ptr.emitted(&_rec, _rec.u, _rec.v, &_rec.p);
         let mut pdf_val = 0.0;
@@ -85,9 +91,7 @@ fn color(
         emitted
     } else {
         background
-    }
-
-
+    };
 }
 
 fn main() {
@@ -95,9 +99,7 @@ fn main() {
         Ok(x) => x == "true",
         Err(_) => false,
     };
-
     let (n_jobs, n_workers): (usize, usize) = if is_ci { (32, 2) } else { (16, 8) };
-
     println!(
         "CI: {}, using {} jobs and {} workers",
         is_ci, n_jobs, n_workers
@@ -105,29 +107,27 @@ fn main() {
     let (tx, rx) = channel();
     let pool = ThreadPool::new(n_workers);
     //image
-
-    //  let ratio: f64 = 16.0 / 9.0;
     let ratio: f64 = 1.0;
-
     // let image_width = 400 as u32;
     let image_width = 800 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 1000; //ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 1; //ought to be 100  可以做的更大比如500//todo
     let max_depth = 50; //an bo modifyed to lessen the time
-
-    //world
-    //let world=random_sence();
-    //let world=simple_light();
-    let world = my_scence_ball_world();
-
-
-
-
-
-
-
+    let number = 9;
+    let mut world = HittableList { objects: vec![] };
+    match number {
+        1 => world = two_spheres(),
+        2 => world = random_sence(),
+        3 => world = two_berlin_spheres(),
+        4 => world = earth(),
+        5 => world = simple_light(),
+        6 => world = cornell_box(),
+        7 => world = cornell_smoke(),
+        8 => world = final_book2_scence(),
+        9 => world = my_scence_ball_world(),
+        _ => println!("you are wrong !! please choose the wonderful world you want to see again."),
+    }
     let mut lightworld: HittableList = HittableList { objects: vec![] };
-
     let light1: Arc<dyn Hittable + Send> = Arc::new(XzRect::new(
         213.0,
         343.0,
@@ -231,7 +231,7 @@ fn main() {
     bar.finish();
 }
 
-pub fn two_spheres() -> HittableList {
+fn two_spheres() -> HittableList {
     let mut world = HittableList { objects: vec![] };
 
     let checker = Arc::new(CheckerTexture::new(
@@ -1060,8 +1060,9 @@ fn final_book2_scence() -> HittableList {
 
     return world;
 }
-fn my_scence_ball_world()->HittableList{
-    let cam=Vec3::new(13.0,2.0,0.0);
+
+fn my_scence_ball_world() -> HittableList {
+    let cam = Vec3::new(13.0, 2.0, 0.0);
     let mut world = HittableList { objects: vec![] };
     let light1 = XyRect {
         mp: Arc::new(DiffuseLight::new(Vec3::new(0.0, 0.0, -1.0))),
@@ -1070,33 +1071,33 @@ fn my_scence_ball_world()->HittableList{
         y0: 0.0,
 
         k: 20.0,//高度
-        y1: 6.0
+        y1: 6.0,
     };
     world.add(Arc::new(light1));
 
     let floortexture = Arc::new(ImageTexture::new("wondersky.jpg"));
-    let floor=Sphere::new(Vec3 {
+    let floor = Sphere::new(Vec3 {
         x: 0.0,
         y: 0.0,
-        z: 0.0
+        z: 0.0,
     }, Vec3 {
         x: 0.0,
         y: 0.0,
-        z: 0.0
+        z: 0.0,
     }, 0.0, Vec3 {
         x: 0.0,
         y: 0.0,
-        z: 0.0
+        z: 0.0,
     }, 100.0, Arc::new(Lambertian::new1(floortexture)));
-    let terminalfloor=Arc::new(Translate::new(Arc::new(RotateZ::new(Arc::new(floor),60.0)),Vec3::new(0.0,-100.0,0.0)));
+    let terminalfloor = Arc::new(Translate::new(Arc::new(RotateZ::new(Arc::new(floor), 60.0)), Vec3::new(0.0, -100.0, 0.0)));
 
     world.add(terminalfloor);
     let mut boxes2 = HittableList { objects: vec![] };
     for _ in 0..2500 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.01,0.05);
-        a.z=range_random_double(-50.0,50.0);
-        a.x=range_random_double(-50.0,150.0);
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.01, 0.05);
+        a.z = range_random_double(-50.0, 50.0);
+        a.x = range_random_double(-50.0, 150.0);
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1111,15 +1112,15 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.05,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.3125,0.0,0.50)),), //todo
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.3125, 0.0, 0.50))), //todo
         };
         boxes2.add(Arc::new(ground));
     }
-    for _ in 0..500{
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.00,0.02);
-        a.z=range_random_double(-10.0,10.0);
-        a.x=range_random_double(-10.0,10.0);
+    for _ in 0..500 {
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.00, 0.02);
+        a.z = range_random_double(-10.0, 10.0);
+        a.x = range_random_double(-10.0, 10.0);
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1134,15 +1135,15 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.05,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.3125,0.0,0.50)),), //todo
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.3125, 0.0, 0.50))), //todo
         };
         boxes2.add(Arc::new(ground));
     }
-    for _ in 0..500{
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.00,0.02);
-        a.z=range_random_double(-10.0,10.0);
-        a.x=range_random_double(-1.0,12.0);
+    for _ in 0..500 {
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.00, 0.02);
+        a.z = range_random_double(-10.0, 10.0);
+        a.x = range_random_double(-1.0, 12.0);
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1157,15 +1158,15 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.05,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.0,0.99,0.0)),), //green
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.0, 0.99, 0.0))), //green
         };
         boxes2.add(Arc::new(ground));
     }
-    for _ in 0..600{
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.01,0.04);
-        a.z=range_random_double(-10.0,10.0);
-        a.x=range_random_double(1.0,13.0);
+    for _ in 0..600 {
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.01, 0.04);
+        a.z = range_random_double(-10.0, 10.0);
+        a.x = range_random_double(1.0, 13.0);
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1180,16 +1181,16 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.03,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99,0.00,0.0)),), //red
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99, 0.00, 0.0))), //red
         };
         boxes2.add(Arc::new(ground));
     }
 
-    for _ in 0..1000{
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.03,0.04);
-        a.z=range_random_double(-10.0,10.0);
-        a.x=range_random_double(-10.0,14.0);
+    for _ in 0..1000 {
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.03, 0.04);
+        a.z = range_random_double(-10.0, 10.0);
+        a.x = range_random_double(-10.0, 14.0);
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1204,17 +1205,17 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.03,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99,0.41100,0.7058)),), //pink
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99, 0.41100, 0.7058))), //pink
         };
         boxes2.add(Arc::new(ground));
     }
 
     let sky1 = Arc::new(ImageTexture::new("sky.png"));
     for _ in 0..500 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.03,0.04)+0.005;
-        a.z=range_random_double(-10.0,10.0);
-        a.x=range_random_double(-1.0,14.0);
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.03, 0.04) + 0.005;
+        a.z = range_random_double(-10.0, 10.0);
+        a.x = range_random_double(-1.0, 14.0);
         let sky_sphere = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1235,10 +1236,10 @@ fn my_scence_ball_world()->HittableList{
     }
     let redtexture = Arc::new(ImageTexture::new("red2.jpg"));
     for _ in 0..500 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.03,0.04)+2.305;
-        a.z=range_random_double(-10.0,10.0);
-        a.x=range_random_double(-1.0,14.0);
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.03, 0.04) + 2.305;
+        a.z = range_random_double(-10.0, 10.0);
+        a.x = range_random_double(-1.0, 14.0);
         let sky_sphere = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1260,10 +1261,10 @@ fn my_scence_ball_world()->HittableList{
 
     let universetexture = Arc::new(ImageTexture::new("universal.jpg"));
     for _ in 0..500 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.03,0.04)+1.305;
-        a.z=range_random_double(-10.0,10.0);
-        a.x=range_random_double(-1.0,10.0);
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.03, 0.04) + 1.305;
+        a.z = range_random_double(-10.0, 10.0);
+        a.x = range_random_double(-1.0, 10.0);
         let sky_sphere = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1285,10 +1286,10 @@ fn my_scence_ball_world()->HittableList{
 
     let universetexture = Arc::new(ImageTexture::new("universal2.jpg"));
     for _ in 0..500 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.03,0.04)+1.305-0.5;
-        a.z=range_random_double(-10.0,10.0);
-        a.x=range_random_double(-1.0,10.0);
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.03, 0.04) + 1.305 - 0.5;
+        a.z = range_random_double(-10.0, 10.0);
+        a.x = range_random_double(-1.0, 10.0);
         let sky_sphere = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1310,11 +1311,10 @@ fn my_scence_ball_world()->HittableList{
 
 
     let allin = Arc::new(Translate::new(
-
-        Arc::new (RotateZ::new(Arc::new(RotateY::new(
+        Arc::new(RotateZ::new(Arc::new(RotateY::new(
             Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
             0.0,
-        )),0.0) ),
+        )), 0.0)),
         Vec3::new(0.0, 0.0, 0.0),
     ));
     world.add(allin);
@@ -1322,10 +1322,10 @@ fn my_scence_ball_world()->HittableList{
 
     let mut boxes_red = HittableList { objects: vec![] };
     for _ in 0..500 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.0,2.0);
-        a.z=range_random_double(-5.0,5.0);
-        a.x=range_random_double(-10.0,9.0);
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.0, 2.0);
+        a.z = range_random_double(-5.0, 5.0);
+        a.x = range_random_double(-10.0, 9.0);
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1340,21 +1340,21 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.055,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99,0.27,0.0)),), //todo
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99, 0.27, 0.0))), //todo
         };
         boxes_red.add(Arc::new(ground));
     }
-    let allinred=Arc::new(BvhNode::new(boxes_red.objects,0.0,1.0));
+    let allinred = Arc::new(BvhNode::new(boxes_red.objects, 0.0, 1.0));
     world.add(allinred);
 
 
     let mut boxes_yellow = HittableList { objects: vec![] };
     for _ in 0..400 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(1.90,2.50);
-        a.z=range_random_double(-5.0,5.0);
-        a.x=range_random_double(-20.0,6.0);
-        if (a-cam).length()<0.1 {continue; }
+        let mut a = Vec3::zero();
+        a.y = range_random_double(1.90, 2.50);
+        a.z = range_random_double(-5.0, 5.0);
+        a.x = range_random_double(-20.0, 6.0);
+        if (a - cam).length() < 0.1 { continue; }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1369,21 +1369,21 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.0592,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99,0.388,0.27801)),), //todo
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99, 0.388, 0.27801))), //todo
         };
         boxes_yellow.add(Arc::new(ground));
     }
-    let allinyellow=Arc::new(BvhNode::new(boxes_yellow.objects,0.0,1.0));
+    let allinyellow = Arc::new(BvhNode::new(boxes_yellow.objects, 0.0, 1.0));
     world.add(allinyellow);
 
 
     let mut boxes_pink = HittableList { objects: vec![] };
     for _ in 0..400 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(3.90,4.50)-0.5;
-        a.z=range_random_double(-9.0,9.0);
-        a.x=range_random_double(-20.0,9.0);
-        if (a-cam).length()<0.1 {continue; }
+        let mut a = Vec3::zero();
+        a.y = range_random_double(3.90, 4.50) - 0.5;
+        a.z = range_random_double(-9.0, 9.0);
+        a.x = range_random_double(-20.0, 9.0);
+        if (a - cam).length() < 0.1 { continue; }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1398,21 +1398,21 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.0592,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.901,0.541,0.727)),), //todo
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.901, 0.541, 0.727))), //todo
         };
         boxes_pink.add(Arc::new(ground));
     }
-    let allinyellow=Arc::new(BvhNode::new(boxes_pink.objects,0.0,1.0));
+    let allinyellow = Arc::new(BvhNode::new(boxes_pink.objects, 0.0, 1.0));
     world.add(allinyellow);
 
 
     let mut boxes_white = HittableList { objects: vec![] };
     for _ in 0..400 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(1.70,2.90);
-        a.z=range_random_double(-5.0,5.0);
-        a.x=range_random_double(-20.0,11.0);
-        if (a-cam).length()<0.1 {continue; }
+        let mut a = Vec3::zero();
+        a.y = range_random_double(1.70, 2.90);
+        a.z = range_random_double(-5.0, 5.0);
+        a.x = range_random_double(-20.0, 11.0);
+        if (a - cam).length() < 0.1 { continue; }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1427,21 +1427,21 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.0792,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99,0.99,0.99)),), //todo
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.99, 0.99, 0.99))), //todo
         };
         boxes_white.add(Arc::new(ground));
     }
-    let allinyellow=Arc::new(BvhNode::new(boxes_white.objects,0.0,1.0));
+    let allinyellow = Arc::new(BvhNode::new(boxes_white.objects, 0.0, 1.0));
     world.add(allinyellow);
 
-    let mut boxes_greenblue= HittableList { objects: vec![] };
+    let mut boxes_greenblue = HittableList { objects: vec![] };
     for i in -12..12 {
-        for j in -12..12  {
-            let mut a =Vec3::zero();
-            a.y=range_random_double(2.8,4.90);
-            a.z=i as f64*0.5;
-            a.x=j as f64*0.5;
-            if (a-cam).length()<0.1 {continue; }
+        for j in -12..12 {
+            let mut a = Vec3::zero();
+            a.y = range_random_double(2.8, 4.90);
+            a.z = i as f64 * 0.5;
+            a.x = j as f64 * 0.5;
+            if (a - cam).length() < 0.1 { continue; }
             let ground = Sphere {
                 p: Vec3 {
                     x: 0.0,
@@ -1456,18 +1456,18 @@ fn my_scence_ball_world()->HittableList{
                 t: 0.0,
                 center: a,
                 radius: 0.0792,
-                mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.529,0.8078,0.9215)),), //todo
+                mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.529, 0.8078, 0.9215))), //todo
             };
             boxes_greenblue.add(Arc::new(ground));
         }
     }
     for i in -11..11 {
-        for j in -11..11  {
-            let mut a =Vec3::zero();
-            a.y=range_random_double(1.9,2.20);
-            a.z=i as f64*1.0+0.1+j as f64*0.2;
-            a.x=j as f64*1.0+0.1;
-            if (a-cam).length()<0.1 {continue; }
+        for j in -11..11 {
+            let mut a = Vec3::zero();
+            a.y = range_random_double(1.9, 2.20);
+            a.z = i as f64 * 1.0 + 0.1 + j as f64 * 0.2;
+            a.x = j as f64 * 1.0 + 0.1;
+            if (a - cam).length() < 0.1 { continue; }
             let ground = Sphere {
                 p: Vec3 {
                     x: 0.0,
@@ -1482,23 +1482,22 @@ fn my_scence_ball_world()->HittableList{
                 t: 0.0,
                 center: a,
                 radius: 0.0792,
-                mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.529,0.8078,0.9215)),), //todo
+                mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.529, 0.8078, 0.9215))), //todo
             };
             boxes_greenblue.add(Arc::new(ground));
         }
-
     }
-    let allinyellow=Arc::new(BvhNode::new(boxes_greenblue.objects.clone(),0.0,1.0));
+    let allinyellow = Arc::new(BvhNode::new(boxes_greenblue.objects.clone(), 0.0, 1.0));
     world.add(allinyellow);
 
 
     let mut boxes_green = HittableList { objects: vec![] };
     for _ in 0..200 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.50,1.160);
-        a.z=range_random_double(-5.0,5.0);
-        a.x=range_random_double(-20.0,12.0);
-        if (a-cam).length()<0.1 {continue; }
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.50, 1.160);
+        a.z = range_random_double(-5.0, 5.0);
+        a.x = range_random_double(-20.0, 12.0);
+        if (a - cam).length() < 0.1 { continue; }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1513,20 +1512,20 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.0792,
-            mat_ptr: Arc::new(Metal::new(Vec3::new(0.564,0.933,0.564),0.1),), //todo
+            mat_ptr: Arc::new(Metal::new(Vec3::new(0.564, 0.933, 0.564), 0.1)), //todo
         };
         boxes_green.add(Arc::new(ground));
     }
-    let allinyellow=Arc::new(BvhNode::new(boxes_green.objects,0.0,1.0));
+    let allinyellow = Arc::new(BvhNode::new(boxes_green.objects, 0.0, 1.0));
     world.add(allinyellow);
 
     let mut boxes_dark_green = HittableList { objects: vec![] };
     for _ in 0..600 {
-        let mut a =Vec3::zero();
-        a.y=range_random_double(0.05,0.15);
-        a.z=range_random_double(-5.0,5.0);
-        a.x=range_random_double(-20.0,12.0);
-        if (a-cam).length()<0.1 {continue; }
+        let mut a = Vec3::zero();
+        a.y = range_random_double(0.05, 0.15);
+        a.z = range_random_double(-5.0, 5.0);
+        a.x = range_random_double(-20.0, 12.0);
+        if (a - cam).length() < 0.1 { continue; }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1541,79 +1540,76 @@ fn my_scence_ball_world()->HittableList{
             t: 0.0,
             center: a,
             radius: 0.0392,
-            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.0,0.3933,0.0)),), //todo
+            mat_ptr: Arc::new(Lambertian::new(Vec3::new(0.0, 0.3933, 0.0))), //todo
         };
         boxes_dark_green.add(Arc::new(ground));
     }
-    let allinyellow=Arc::new(BvhNode::new(boxes_dark_green.objects,0.0,1.0));
+    let allinyellow = Arc::new(BvhNode::new(boxes_dark_green.objects, 0.0, 1.0));
     world.add(allinyellow);
-
 
 
 //
     let mut tennis_unit = HittableList { objects: vec![] };
     let tennis = Arc::new(ImageTexture::new("tennis.png"));
     for i in -8..8 {
-        if i==0 { continue;}
-        let xx=i as f64*(1.7/8.0);
-        let sky_sphere =Sphere {
+        if i == 0 { continue; }
+        let xx = i as f64 * (1.7 / 8.0);
+        let sky_sphere = Sphere {
             p: Vec3 {
                 x: 0.0,
                 y: 0.0,
-                z: 0.0
+                z: 0.0,
             },
             normal: Vec3 {
                 x: 0.0,
                 y: 0.0,
-                z: 0.0
+                z: 0.0,
             },
             t: 0.0,
             radius: 0.1160,
             mat_ptr: Arc::new(Lambertian::new1(tennis.clone())), //todo
-            center:  Vec3 {
+            center: Vec3 {
                 x: 0.0,
-                y: 3.0-xx*xx,
+                y: 3.0 - xx * xx,
                 z: xx,
             },
         };
         tennis_unit.add(Arc::new(sky_sphere));//
     }
 
-    let allteniss=Translate::new(Arc::new(RotateY::new(Arc::new(tennis_unit),60.0)),Vec3::new(6.0,-0.05,-1.0));
+    let allteniss = Translate::new(Arc::new(RotateY::new(Arc::new(tennis_unit), 60.0)), Vec3::new(6.0, -0.05, -1.0));
     world.add(Arc::new(allteniss));
-
-
 
 
     let mut glass_unit = HittableList { objects: vec![] };
     for i in -8..8 {
-        if i==0 { continue;}
-        let xx=i as f64*(1.75/8.0);
+        if i == 0 { continue; }
+        let xx = i as f64 * (1.75 / 8.0);
 
-        let sky_sphere =Sphere {
+        let sky_sphere = Sphere {
             p: Vec3 {
                 x: 0.0,
                 y: 0.0,
-                z: 0.0
+                z: 0.0,
             },
             normal: Vec3 {
                 x: 0.0,
                 y: 0.0,
-                z: 0.0
+                z: 0.0,
             },
             t: 0.0,
             radius: 0.0960,
             mat_ptr: Arc::new(Dielectric::new(1.5)), //todo
-            center:  Vec3 {
+            center: Vec3 {
                 x: 0.0,
-                y: 2.0-0.667*xx*xx,
+                y: 2.0 - 0.667 * xx * xx,
                 z: xx,
             },
         };
         glass_unit.add(Arc::new(sky_sphere));//
     }
 
-    let allteniss=Translate::new(Arc::new(RotateY::new(Arc::new(glass_unit),-30.0)),Vec3::new(9.0,-0.05,2.0));
+    let allteniss = Translate::new(Arc::new(RotateY::new(Arc::new(glass_unit), -30.0)), Vec3::new(9.0, -0.05, 2.0));
     world.add(Arc::new(allteniss));
     return world;
 }
