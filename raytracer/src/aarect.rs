@@ -12,6 +12,7 @@ pub struct XyRect {
     pub(crate) y1: f64,
     pub(crate) k: f64,
 }
+
 impl XyRect {
     pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
         Self {
@@ -24,6 +25,7 @@ impl XyRect {
         }
     }
 }
+
 impl Hittable for XyRect {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let t = (self.k - r.ori.z) / r.dic.z;
@@ -48,12 +50,74 @@ impl Hittable for XyRect {
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
-
-
         Some(Aabb::new(
             Vec3::new(self.x0, self.y0, self.k - 0.0001),
             Vec3::new(self.x1, self.y1, self.k + 0.0001),
         ))
+    }
+}
+
+pub struct Triangel {
+    pub(crate) mp: Arc<dyn Material>,
+    pub a1: Vec3,
+    pub a2: Vec3,
+    pub a3: Vec3,
+}
+
+unsafe impl Send for Triangel {}
+
+unsafe impl Sync for Triangel {}
+
+impl Triangel {
+    pub fn new(_a1: Vec3, _a2: Vec3, _a3: Vec3, mat: Arc<dyn Material>) -> Self {
+        Self {
+            mp: mat,
+            a1: _a1,
+            a2: _a2,
+            a3: _a3,
+        }
+    }
+}
+
+impl Hittable for Triangel {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
+        let dirct1 = self.a2 - self.a1;
+        let dirct2 = self.a3 - self.a1;
+        let n = Vec3::cross(dirct1, dirct2);
+        let b_a = self.a1 - r.ori;
+        let t = Vec3::dot(n, b_a) / Vec3::dot(n, r.dic);
+        if t < t_min || t > t_max {
+            return None;
+        }
+        let hit = r.at(t);
+        if Vec3::sameside(self.a1, self.a2, self.a3, hit) && Vec3::sameside(self.a2, self.a3, self.a1, hit) && Vec3::sameside(self.a3, self.a1, self.a2, hit) {
+            let mut rec = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.mp.clone());
+            rec.p = r.at(t);
+            let a1 = self.a1.x - self.a2.x;
+            let b1 = self.a1.x - self.a3.x;
+            let c1 = self.a1.x - hit.x;
+            let a2 = self.a1.y - self.a2.y;
+            let b2 = self.a1.y - self.a3.y;
+            let c2 = self.a1.y - hit.y;
+            rec.u=(c1*b2-b1*c2)/(a1*b2-b1*a2);
+            rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order
+            //the silly way
+            rec.t = t;
+            let ourward_normal = n;
+            rec.set_face_normal(&r, ourward_normal);
+            rec.mat_ptr = self.mp.clone();
+            Some(rec)
+        } else {
+            return None;
+        }
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        let dirct1 = self.a2 - self.a1;
+        let dirct2 = self.a3 - self.a1;
+        let n = Vec3::cross(dirct1, dirct2);
+
+        Some(Aabb::new(self.a1+n*0.001, self.a2+self.a3-self.a1-n*0.001))
     }
 }
 
@@ -65,8 +129,11 @@ pub struct XzRect {
     pub(crate) z1: f64,
     pub(crate) k: f64,
 }
+
 unsafe impl Send for XzRect {}
+
 unsafe impl Sync for XzRect {}
+
 impl XzRect {
     pub fn new(_x0: f64, _x1: f64, _z0: f64, _z1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
         Self {
@@ -92,7 +159,6 @@ impl Hittable for XzRect {
             return None;
         }
         let mut rec = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.mp.clone());
-
         rec.u = (x - self.x0) / (self.x1 - self.x0);
         rec.v = (z - self.z0) / (self.z1 - self.z0);
         rec.t = t;
@@ -103,8 +169,7 @@ impl Hittable for XzRect {
         Some(rec)
     }
 
-    fn bounding_box(&self,_: f64, _: f64) -> Option<Aabb> {
-
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
         Some(Aabb::new(
             Vec3::new(self.x0, self.k - 0.0001, self.z0),
             Vec3::new(self.x1, self.k + 0.0001, self.z1),
@@ -119,11 +184,10 @@ impl Hittable for XzRect {
             distance_squared / (cosine * area)
         } else {
             0.0
-        }
+        };
     }
 
     fn random(&self, o: &Vec3) -> Vec3 {
-
         let randompoint = Vec3::new(
             range_random_double(self.x0, self.x1),
             self.k,
@@ -141,6 +205,7 @@ pub struct YzRect {
     pub(crate) z1: f64,
     pub(crate) k: f64,
 }
+
 impl YzRect {
     pub fn new(_y0: f64, _y1: f64, _z0: f64, _z1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
         Self {
@@ -153,6 +218,7 @@ impl YzRect {
         }
     }
 }
+
 impl Hittable for YzRect {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let t = (self.k - r.ori.x) / r.dic.x;
@@ -177,7 +243,6 @@ impl Hittable for YzRect {
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
-
         Some(Aabb::new(
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),
