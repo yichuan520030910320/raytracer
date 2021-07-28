@@ -86,11 +86,13 @@ impl Hittable for Triangel {
         let n = Vec3::cross(dirct1, dirct2);
         let b_a = self.a1 - r.ori;
         let t = Vec3::dot(n, b_a) / Vec3::dot(n, r.dic);
+        //inspired by https://blog.csdn.net/wuwangrun/article/details/8188665
         if t < t_min || t > t_max {
             return None;
         }
         let hit = r.at(t);
         if Vec3::sameside(self.a1, self.a2, self.a3, hit) && Vec3::sameside(self.a2, self.a3, self.a1, hit) && Vec3::sameside(self.a3, self.a1, self.a2, hit) {
+           //use the method 2 in https://www.cnblogs.com/graphics/archive/2010/08/05/1793393.html
             let mut rec = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.mp.clone());
             rec.p = r.at(t);
             let a1 = self.a1.x - self.a2.x;
@@ -100,7 +102,7 @@ impl Hittable for Triangel {
             let b2 = self.a1.y - self.a3.y;
             let c2 = self.a1.y - hit.y;
             rec.u=(c1*b2-b1*c2)/(a1*b2-b1*a2);
-            rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order
+            rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order //use the most stupid way to solve the problem
             //the silly way
             rec.t = t;
             let ourward_normal = n;

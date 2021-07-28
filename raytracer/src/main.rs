@@ -113,7 +113,7 @@ fn main() {
     // let image_width = 400 as u32;
     let image_width = 800 as u32;
     let image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 100; //ought to be 100  可以做的更大比如500//todo
+    let sample_per_pixel = 1; //ought to be 100  可以做的更大比如500//todo
     let max_depth = 50; //an bo modifyed to lessen the time
     let number = 10;
     let mut world = HittableList { objects: vec![] };
@@ -152,9 +152,9 @@ fn main() {
     //Camera
     //let lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     //let lookfrom = Vec3::new(478.0, 278.0, -600.0); //13 2 3
-    let lookfrom = Vec3::new(13.0, 9.0, 5.0);//13 2 3
+    let lookfrom = Vec3::new(13.0, 9.0, 0.0);//13 2 3
 
-    //let lookfrom = Vec3::new(-130000.0, 20000.0, 20000.0);//13 2 3
+    let lookfrom = Vec3::new(-1300.0, 2500.0, 2000.0);//13 2 3
    // let lookfrom = Vec3::new(3.0, 2.0, 0.0);//13 2 3
     // let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
     let lookat = Vec3::new(0.0, 0.0, 0.0);
@@ -1625,7 +1625,7 @@ fn obj() -> HittableList {
 
 
     let cornell_box = tobj::load_obj(
-        "cube.obj",
+        "bunny.fine.obj",
         &tobj::LoadOptions {
             single_index: true,
             triangulate: true,
@@ -1633,7 +1633,7 @@ fn obj() -> HittableList {
         },
     );
     assert!(cornell_box.is_ok());
-    let rate = 1.0;
+    let rate = 10000.0;
     let (models, materials) = cornell_box.expect("Failed to load OBJ file");
 
 // Materials might report a separate loading error if the MTL file wasn't found.
@@ -1678,8 +1678,7 @@ fn obj() -> HittableList {
                 x: rate * mesh.positions[(3 * x3) as usize] as f64,
                 y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
                 z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-            }, Arc::new(Lambertian::new(Vec3::new(random_doouble(), random_doouble(), random_doouble()))));
-            //world.add(Arc::new(triange));
+            }, Arc::new(Lambertian::new(Vec3::new(0.39, 0.7, 0.34))));
             boxes2.add(Arc::new(triange));
         }
         let allin = BvhNode::new(boxes2.objects, 0.0, 1.0);
@@ -1717,6 +1716,136 @@ fn obj() -> HittableList {
         // }
         //
         //
+    }
+
+
+    for (i, m) in materials.iter().enumerate() {
+        println!("material[{}].name = \'{}\'", i, m.name);
+        println!(
+            "    material.Ka = ({}, {}, {})",
+            m.ambient[0], m.ambient[1], m.ambient[2]
+        );
+        println!(
+            "    material.Kd = ({}, {}, {})",
+            m.diffuse[0], m.diffuse[1], m.diffuse[2]
+        );
+        println!(
+            "    material.Ks = ({}, {}, {})",
+            m.specular[0], m.specular[1], m.specular[2]
+        );
+        println!("    material.Ns = {}", m.shininess);
+        println!("    material.d = {}", m.dissolve);
+        println!("    material.map_Ka = {}", m.ambient_texture);
+        println!("    material.map_Kd = {}", m.diffuse_texture);
+        println!("    material.map_Ks = {}", m.specular_texture);
+        println!("    material.map_Ns = {}", m.shininess_texture);
+        println!("    material.map_Bump = {}", m.normal_texture);
+        println!("    material.map_d = {}", m.dissolve_texture);
+
+        for (k, v) in &m.unknown_param {
+            println!("    material.{} = {}", k, v);
+        }
+    }
+
+    return world;
+}
+
+fn obj_with_texture() -> HittableList {
+    let mut world = HittableList { objects: vec![] };
+
+
+    let cornell_box = tobj::load_obj(
+        "patrick.obj",
+        &tobj::LoadOptions {
+            single_index: true,
+            triangulate: true,
+            ..Default::default()
+        },
+    );
+    assert!(cornell_box.is_ok());
+    let rate = 10000.0;
+    let (models, materials) = cornell_box.expect("Failed to load OBJ file");
+
+// Materials might report a separate loading error if the MTL file wasn't found.
+// If you don't need the materials, you can generate a default here and use that
+// instead.
+    let materials = materials.expect("Failed to load MTL file");
+
+
+    println!("# of models: {}", models.len());
+    println!("# of materials: {}", materials.len());
+
+    for (i, m) in models.iter().enumerate() {
+        let mesh = &m.mesh;
+        println!("model[{}].incidices: {}", i, mesh.indices.len() / 3);
+
+        assert!(mesh.indices.len() % 3 == 0);
+
+        let mut boxes2 = HittableList { objects: vec![] };
+        // for v in 0..mesh.indices.len() / 3 {
+        //
+        //
+        //     println!(
+        //         "  indices  v[{}] = ({}, {}, {})",
+        //         v,
+        //         mesh.indices[3 * v],
+        //         mesh.indices[3 * v + 1],
+        //         mesh.indices[3 * v + 2]
+        //     );
+        //     let x1 = mesh.indices[3 * v];
+        //     let x2 = mesh.indices[3 * v + 1];
+        //     let x3 = mesh.indices[3 * v + 2];
+        //
+        //     let triange = Triangel::new(Vec3 {
+        //         x: rate * mesh.positions[(3 * x1) as usize] as f64,
+        //         y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+        //         z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+        //     }, Vec3 {
+        //         x: rate * mesh.positions[(3 * x2) as usize] as f64,
+        //         y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+        //         z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+        //     }, Vec3 {
+        //         x: rate * mesh.positions[(3 * x3) as usize] as f64,
+        //         y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+        //         z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+        //     }, Arc::new(Lambertian::new(Vec3::new(0.39, 0.7, 0.34))));
+        //     boxes2.add(Arc::new(triange));
+        // }
+        // let allin = BvhNode::new(boxes2.objects, 0.0, 1.0);
+        // world.add(Arc::new(allin));
+        //
+        // println!("model[{}].name = \'{}\'", i, m.name);
+        // println!("model[{}].mesh.material_id = {:?}", i, mesh.material_id);
+        //
+        // println!(
+        //     "Size of model[{}].face_arities: {}",
+        //     i,
+        //     mesh.face_arities.len()
+        // );
+
+        let mut next_face = 0;
+        for f in 0..mesh.face_arities.len() {
+            let end = next_face + mesh.face_arities[f] as usize;
+            let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
+            println!("    face[{}] = {:?}", f, face_indices);
+            next_face = end;
+        }
+
+        // Normals and texture coordinates are also loaded, but not printed in this example
+        println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
+
+        assert!(mesh.positions.len() % 3 == 0);
+        for v in 0..mesh.positions.len() / 3 {
+            println!(
+                "    v[{}] = ({}, {}, {})",
+                v,
+                mesh.positions[3 * v],
+                mesh.positions[3 * v + 1],
+                mesh.positions[3 * v + 2]
+            );
+        }
+
+
     }
 
 
