@@ -3,7 +3,21 @@ use crate::hittable::{Hitrecord, Hittable, Material};
 use crate::{range_random_double, Ray, Vec3};
 use std::f64::INFINITY;
 use std::sync::Arc;
+pub fn maxnum1(a:f64,b:f64,c:f64)->f64{
+    if a<b {
+        if c<b {return b; }
+        else { return c; }
+    }else { if a<c {return c; }
+    else { return a; }}
+}
 
+pub fn mainnum1(a:f64,b:f64,c:f64)->f64{
+    if a<b {
+        if c<a {return c; }
+        else { return a; }
+    }else { if b<c {return b; }
+    else { return c; }}
+}
 pub struct XyRect {
     pub(crate) mp: Arc<dyn Material>,
     pub(crate) x0: f64,
@@ -101,9 +115,9 @@ impl Hittable for Triangel {
             let a2 = self.a1.y - self.a2.y;
             let b2 = self.a1.y - self.a3.y;
             let c2 = self.a1.y - hit.y;
-            rec.u=(c1*b2-b1*c2)/(a1*b2-b1*a2);
-            rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order //use the most stupid way to solve the problem
-            //the silly way
+            // rec.u=(c1*b2-b1*c2)/(a1*b2-b1*a2);
+            // rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order //use the most stupid way to solve the problem
+            // //the silly way
             rec.t = t;
             let ourward_normal = n;
             rec.set_face_normal(&r, ourward_normal);
@@ -115,11 +129,13 @@ impl Hittable for Triangel {
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
-        let dirct1 = self.a2 - self.a1;
-        let dirct2 = self.a3 - self.a1;
-        let n = Vec3::cross(dirct1, dirct2);
+        // let dirct1 = self.a2 - self.a1;
+        // let dirct2 = self.a3 - self.a1;
+        // let n = Vec3::cross(dirct1, dirct2);
+        let ans1=Vec3::new(mainnum1(self.a1.x,self.a2.x,self.a3.x), mainnum1(self.a1.y,self.a2.y,self.a3.y), mainnum1(self.a1.z,self.a2.z,self.a3.z));
+        let ans2=Vec3::new(maxnum1(self.a1.x,self.a2.x,self.a3.x), maxnum1(self.a1.y,self.a2.y,self.a3.y), maxnum1(self.a1.z,self.a2.z,self.a3.z));
 
-        Some(Aabb::new(self.a1+n*0.001, self.a2+self.a3-self.a1-n*0.001))
+        Some(Aabb::new(ans1,ans2))
     }
 }
 

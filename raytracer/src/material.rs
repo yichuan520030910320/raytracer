@@ -71,6 +71,7 @@ impl Material for Lambertian {
         _: &mut Ray,
         _: &mut f64,
     ) -> ScatterRecord {
+
         ScatterRecord {
             specular_ray: Ray::new(Vec3::zero(), Vec3::zero(), 0.0),
             is_specular: false,
@@ -82,29 +83,6 @@ impl Material for Lambertian {
             pdf_ptr: Arc::new(CosinePdf::new(&rec.normal)),
             isget: true,
         }
-        // let uvw = Onb::build_from(&rec.normal);
-        // 
-        // let temp = Vec3::random_cosine_direction();
-        // let mut scatter_direction = uvw.local(temp.x, temp.y, temp.z);
-        // // if Vec3::near_zero(scatter_direction) {
-        // //     scatter_direction = rec.normal;
-        // // }
-        // scattered.ori = rec.p;
-        // scattered.dic = scatter_direction.unit();
-        // 
-        // scattered.tm = r_in.tm;
-        // 
-        // // scattered= &mut Ray::new(rec.p.clone(), scatter_direction.clone());
-        // attenuation.x = self.albedo.value(rec.u, rec.v, &rec.p).x;
-        // attenuation.y = self.albedo.value(rec.u, rec.v, &rec.p).y;
-        // attenuation.z = self.albedo.value(rec.u, rec.v, &rec.p).z;
-        // // let mut temp =  (HALFNUM/PI);
-        // //
-        // //  *pdf=  temp;
-        // *pdf = (Vec3::dot(uvw.w(), scatter_direction) / PI);
-        // 
-        // // attenuation= &self.albedo;
-        // true
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
         let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());

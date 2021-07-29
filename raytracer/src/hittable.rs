@@ -698,7 +698,7 @@ unsafe impl Sync for HittableList {}
 
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
-    //todo
+
     //传出bool值可以用引用传递，先完善hittable 和add 函数
 }
 
@@ -772,7 +772,7 @@ pub struct ConstantMedium {
 impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         return if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INF, INF) {
-            //todo
+
             if let Option::Some(mut rec2) =
             self.boundary
                 .hit(r.clone(), rec1.t.clone() + 0.0001, INF)
@@ -844,7 +844,7 @@ impl BvhNode {
         let span = src_objects.len();
         let mut objects = src_objects;
         let axis = rand::thread_rng().gen_range(0..3);
-        //todo
+
         let left: Arc<dyn Hittable>;
         let right: Arc<dyn Hittable>;
         if span == 1 {
