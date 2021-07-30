@@ -11,13 +11,7 @@ use std::sync::Arc;
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     r0 *= r0;
-    r0
-        + (1.0 - r0)
-            * (1.0 - cosin)
-            * (1.0 - cosin)
-            * (1.0 - cosin)
-            * (1.0 - cosin)
-            * (1.0 - cosin)
+    r0 + (1.0 - r0) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin)
 }
 
 pub struct ScatterRecord {
@@ -85,7 +79,11 @@ impl Material for Lambertian {
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
         let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
-        if cosine < 0.0 { 0.0 } else { cosine / PI }
+        if cosine < 0.0 {
+            0.0
+        } else {
+            cosine / PI
+        }
     }
 }
 
@@ -302,7 +300,11 @@ impl Material for Isotropic {
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
         let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
-        if cosine < 0.0 { 0.0 } else { cosine / PI }
+        if cosine < 0.0 {
+            0.0
+        } else {
+            cosine / PI
+        }
     }
 }
 

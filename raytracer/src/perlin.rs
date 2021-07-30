@@ -86,8 +86,7 @@ impl Perlin {
             }
         }
         Perlin::trilinear_interp(c, u, v, w)
-
-         }
+    }
 
     pub fn trilinear_interp(my_sz: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         let uu = u * u * (3.0 - 2.0 * u);

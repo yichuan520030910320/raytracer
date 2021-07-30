@@ -129,8 +129,7 @@ impl Vec3 {
             if p.squared_length() >= 1.0 {
                 continue;
             }
-            return
-                p;
+            return p;
         }
     }
     pub fn random_in_himisphere(normal: Vec3) -> Vec3 {

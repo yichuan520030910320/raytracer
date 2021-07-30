@@ -73,11 +73,11 @@ fn color(
             if scatterrecord.is_specular {
                 return scatterrecord.attenuation
                     * color(
-                    scatterrecord.specular_ray,
-                    background,
-                    world,
-                    lights,
-                    dep - 1,
+                        scatterrecord.specular_ray,
+                        background,
+                        world,
+                        lights,
+                        dep - 1,
                 );
             }
 
@@ -89,9 +89,9 @@ fn color(
 
             let mm = emitted
                 + scatterrecord.attenuation
-                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                * color(scattered, background, world, lights, dep - 1)
-                / pdf_val;
+                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                    * color(scattered, background, world, lights, dep - 1)
+                    / pdf_val;
 
             return mm;
         }

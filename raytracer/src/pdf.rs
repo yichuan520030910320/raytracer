@@ -16,7 +16,11 @@ pub struct CosinePdf {
 impl Pdf for CosinePdf {
     fn value(&self, direction: &Vec3) -> f64 {
         let cosine = Vec3::dot(direction.unit(), self.uvw.w());
-        if cosine <= 0.0 { 0.0 } else { cosine / PI }
+        if cosine <= 0.0 {
+            0.0
+        } else {
+            cosine / PI
+        }
     }
 
     fn generate(&self) -> Vec3 {
