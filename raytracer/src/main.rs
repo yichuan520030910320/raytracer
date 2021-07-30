@@ -118,13 +118,13 @@ fn main() {
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 20; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 20000; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
-    let number = 6;
+    let number = 9;
     let mut world = HittableList { objects: vec![] };
     match number {
         1 => world = two_spheres(),
