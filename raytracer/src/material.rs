@@ -260,7 +260,7 @@ impl Material for DiffuseLight {
             return self.emit.value(u, v, p);
         }
 
-        return Vec3::zero();
+        return self.emit.value(u, v, p);
     }
 }
 
@@ -298,6 +298,14 @@ impl Material for Isotropic {
             attenuation: Vec3::new(temp.x, temp.y, temp.z),
             pdf_ptr: Arc::new(NoPdf::new()),
             isget: true,
+        }
+    }
+    fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
+        let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
+        return if cosine < 0.0 {
+            0.0
+        } else {
+            cosine / PI
         }
     }
 }
