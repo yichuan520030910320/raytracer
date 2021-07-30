@@ -36,6 +36,8 @@ impl Perlin {
             perm_z: perz,
         }
     }
+    #[allow(clippy::needless_range_loop)]
+    #[allow(clippy::manual_swap)]
     pub fn perline_generate_perm(p: &mut [i32; POINT_COUNT]) {
         for i in 0..POINT_COUNT {
             p[i] = i as i32;
@@ -60,6 +62,8 @@ impl Perlin {
         }
     }
     #[allow(clippy::many_single_char_names)]
+    #[allow(clippy::needless_range_loop)]
+    #[allow(clippy::manual_swap)]
     pub fn noise(&self, p: Vec3) -> f64 {
         let u = p.x - p.x.floor();
         let v = p.y - p.y.floor();
@@ -87,7 +91,8 @@ impl Perlin {
         }
         Perlin::trilinear_interp(c, u, v, w)
     }
-
+    #[allow(clippy::needless_range_loop)]
+    #[allow(clippy::manual_swap)]
     pub fn trilinear_interp(my_sz: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         let uu = u * u * (3.0 - 2.0 * u);
         let vv = v * v * (3.0 - 2.0 * v);
