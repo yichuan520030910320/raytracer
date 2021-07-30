@@ -892,4 +892,3 @@ impl Hittable for BvhNode {
         Some(outout)
     }
 }
-

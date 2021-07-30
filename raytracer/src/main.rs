@@ -78,7 +78,7 @@ fn color(
                         world,
                         lights,
                         dep - 1,
-                );
+                    );
             }
 
             let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
