@@ -114,7 +114,7 @@ impl Perlin {
         return accum;
     }
     pub fn turb(&self, p: Vec3) -> f64 {
-      let   depth = 7;
+        let depth = 7;
         let mut accum = 0.0;
         let mut temp_p = p;
         let mut weight = 1.0;
