@@ -5,21 +5,21 @@ pub struct Aabb {
     pub minimun: Vec3,
     pub maximum: Vec3,
 }
-
+#[allow(clippy::needless_return)]
 fn fmin1(a: f64, b: f64) -> f64 {
     if a < b {
         return a;
     }
     return b;
 }
-
+#[allow(clippy::needless_return)]
 fn fmax1(a: f64, b: f64) -> f64 {
     if a < b {
         return b;
     }
     return a;
 }
-
+#[allow(clippy::needless_return)]
 impl Aabb {
     pub fn new(a: Vec3, b: Vec3) -> Self {
         Self {
@@ -105,6 +105,6 @@ impl Aabb {
             fmax1(box0.maximum.y, box1.maximum.y),
             fmax1(box0.maximum.z, box1.maximum.z),
         );
-        return Aabb::new(small, big);
+         Aabb::new(small, big)
     }
 }

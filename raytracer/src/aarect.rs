@@ -3,7 +3,7 @@ use crate::hittable::{Hitrecord, Hittable, Material};
 use crate::{range_random_double, Ray, Vec3};
 use std::f64::INFINITY;
 use std::sync::Arc;
-
+#[allow(clippy::needless_return)]
 pub fn maxnum1(a: f64, b: f64, c: f64) -> f64 {
     if a < b {
         if c < b {
@@ -17,7 +17,7 @@ pub fn maxnum1(a: f64, b: f64, c: f64) -> f64 {
         return a;
     }
 }
-
+#[allow(clippy::needless_return)]
 pub fn mainnum1(a: f64, b: f64, c: f64) -> f64 {
     if a < b {
         if c < a {
@@ -108,6 +108,7 @@ impl Triangel {
 }
 
 impl Hittable for Triangel {
+    #[allow(clippy::needless_return)]
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let dirct1 = self.a2 - self.a1;
         let dirct2 = self.a3 - self.a1;
@@ -191,6 +192,7 @@ impl XzRect {
 }
 
 impl Hittable for XzRect {
+    #[allow(clippy::needless_return)]
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let t = (self.k - r.ori.y) / r.dic.y;
         if t < t_min || t > t_max {
@@ -229,7 +231,7 @@ impl Hittable for XzRect {
             0.0
         };
     }
-
+    #[allow(clippy::needless_return)]
     fn random(&self, o: &Vec3) -> Vec3 {
         let randompoint = Vec3::new(
             range_random_double(self.x0, self.x1),

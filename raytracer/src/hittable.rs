@@ -6,7 +6,9 @@ pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
 use rand::Rng;
 use std::f64::consts::PI;
+
 const INF: f64 = 1000000.0;
+
 use crate::onb::Onb;
 use std::sync::Arc;
 
@@ -42,17 +44,19 @@ pub struct Hitrecord {
     //正面还是反面
     pub mat_ptr: Arc<dyn Material>,
 }
+
 fn random_doouble() -> f64 {
     rand::thread_rng().gen_range(1..101) as f64 / 102.0
 }
+
 pub trait Hittable: Send + Sync {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
     fn pdf_value(&self, _: &Vec3, _: &Vec3) -> f64 {
-        return 0.0;
+        0.0
     }
     fn random(&self, _: &Vec3) -> Vec3 {
-        return Vec3::new(1.0, 0.0, 0.0);
+        Vec3::new(1.0, 0.0, 0.0)
     }
 } //相当于一个基类 在列表里面会去看是谁将它实例化（如圆等图形）
 
@@ -62,7 +66,7 @@ impl Hitrecord {
         let temptheta = (-p.z) / p.x;
 
         let mut phi = (temptheta).atan();
-        phi = phi + PI;
+        phi += PI;
         *u = phi / (2.0 * PI);
         *v = theta / PI;
     }
@@ -126,6 +130,7 @@ impl MovingSphere {
             + (self.center1 - self.center0) * ((time - self.time0) / (self.time1 - self.time0));
     }
 }
+
 #[allow(clippy::suspicious_operation_groupings)]
 impl Hittable for MovingSphere {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
@@ -762,7 +767,7 @@ impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         return if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INF, INF) {
             if let Option::Some(mut rec2) =
-                self.boundary.hit(r.clone(), rec1.t.clone() + 0.0001, INF)
+            self.boundary.hit(r.clone(), rec1.t.clone() + 0.0001, INF)
             {
                 if rec1.t < t_min {
                     rec1.t = t_min
