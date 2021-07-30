@@ -5,18 +5,19 @@ pub struct Onb {
     axis1: Vec3,
     axis2: Vec3,
 }
+
 impl Onb {
     pub fn u(&self) -> Vec3 {
-        return self.axis0;
+        self.axis0
     }
     pub fn v(&self) -> Vec3 {
-        return self.axis1;
+        self.axis1
     }
     pub fn w(&self) -> Vec3 {
-        return self.axis2;
+        self.axis2
     }
     pub fn local(&self, a: f64, b: f64, c: f64) -> Vec3 {
-        return self.u() * a + self.v() * b + self.w() * c;
+        self.u() * a + self.v() * b + self.w() * c
     }
     pub fn build_from(n: &Vec3) -> Self {
         let a;

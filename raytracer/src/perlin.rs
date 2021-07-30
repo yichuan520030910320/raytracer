@@ -3,7 +3,7 @@ use crate::{random_doouble, Vec3};
 use rand::Rng;
 
 const POINT_COUNT: usize = 256;
-
+#[allow(dead_code)]
 pub struct Perlin {
     pub ranvec: [Vec3; POINT_COUNT],
     pub ranfloat: [f64; POINT_COUNT],
@@ -28,13 +28,13 @@ impl Perlin {
         Perlin::perline_generate_perm(&mut pery);
         Perlin::perline_generate_perm(&mut perz);
 
-        return Self {
+        Self {
             ranvec: raanv,
             ranfloat: rancopy,
             perm_x: perx,
             perm_y: pery,
             perm_z: perz,
-        };
+        }
     }
     pub fn perline_generate_perm(p: &mut [i32; POINT_COUNT]) {
         for i in 0..POINT_COUNT {
@@ -50,7 +50,7 @@ impl Perlin {
             p[axis as usize] = tmp;
         }
     }
-
+    #[allow(dead_code)]
     pub fn permute(arr: &mut [i32; POINT_COUNT], n: i32) {
         for i in n - 1..0 {
             let axis = rand::thread_rng().gen_range(0..i);
@@ -85,13 +85,9 @@ impl Perlin {
                 }
             }
         }
-        return Perlin::trilinear_interp(c, u, v, w);
+        Perlin::trilinear_interp(c, u, v, w)
 
-        // let i = ((4.0 * p.x) as i32) & 255;
-        // let j = ((4.0 * p.y) as i32) & 255;
-        // let k = ((4.0 * p.z) as i32) & 255;
-        // return self.ranfloat[(self.perm_x[i as usize] ^ self.perm_y[j as usize] ^ self.perm_z[k as usize]) as usize];
-    }
+         }
 
     pub fn trilinear_interp(my_sz: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         let uu = u * u * (3.0 - 2.0 * u);
@@ -111,7 +107,7 @@ impl Perlin {
                 }
             }
         }
-        return accum;
+        accum
     }
     pub fn turb(&self, p: Vec3) -> f64 {
         let depth = 7;
@@ -123,7 +119,7 @@ impl Perlin {
             weight *= 0.5;
             temp_p = temp_p * 2.0;
         }
-        return accum.abs();
+        accum.abs()
     }
 }
 
@@ -143,8 +139,8 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, _: f64, _: f64, p: &Vec3) -> Vec3 {
-        return Vec3::new(1.0, 1.0, 1.0)
+        Vec3::new(1.0, 1.0, 1.0)
             * 0.5
-            * ((self.scale * p.z + 10.0 * self.noise.turb(*p)).sin() + 1.0);
+            * ((self.scale * p.z + 10.0 * self.noise.turb(*p)).sin() + 1.0)
     }
 }

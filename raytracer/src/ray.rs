@@ -10,6 +10,6 @@ impl Ray {
         Self { ori, dic, tm }
     }
     pub fn at(&self, t: f64) -> Vec3 {
-        return self.ori + self.dic * t;
+        self.ori + self.dic * t
     }
 }

@@ -3,32 +3,34 @@ use crate::hittable::{Hitrecord, Hittable, Material};
 use crate::{range_random_double, Ray, Vec3};
 use std::f64::INFINITY;
 use std::sync::Arc;
+
 #[allow(clippy::needless_return)]
 pub fn maxnum1(a: f64, b: f64, c: f64) -> f64 {
     if a < b {
         if c < b {
-            return b;
+            b
         } else {
-            return c;
+            c
         }
     } else if a < c {
-        return c;
+        c
     } else {
-        return a;
+        a
     }
 }
+
 #[allow(clippy::needless_return)]
 pub fn mainnum1(a: f64, b: f64, c: f64) -> f64 {
     if a < b {
         if c < a {
-            return c;
+            c
         } else {
-            return a;
+            a
         }
     } else if b < c {
-        return b;
+        b
     } else {
-        return c;
+        c
     }
 }
 
@@ -40,7 +42,7 @@ pub struct XyRect {
     pub(crate) y1: f64,
     pub(crate) k: f64,
 }
-
+#[allow(dead_code)]
 impl XyRect {
     pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
         Self {
@@ -55,6 +57,7 @@ impl XyRect {
 }
 
 impl Hittable for XyRect {
+    #[allow(clippy::needless_return)]
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let t = (self.k - r.ori.z) / r.dic.z;
         if t < t_min || t > t_max {
@@ -142,7 +145,7 @@ impl Hittable for Triangel {
             rec.mat_ptr = self.mp.clone();
             Some(rec)
         } else {
-            return None;
+            None
         }
     }
 
@@ -221,7 +224,7 @@ impl Hittable for XzRect {
         ))
     }
     fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
-        return if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
+        if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
             let area = (self.x1 - self.x0) * (self.z1 - self.z0);
             let distance_squared = rec.t * rec.t * v.squared_length();
             let cosine = Vec3::dot(*v, rec.normal).abs() / v.length();
@@ -229,7 +232,7 @@ impl Hittable for XzRect {
             distance_squared / (cosine * area)
         } else {
             0.0
-        };
+        }
     }
     #[allow(clippy::needless_return)]
     fn random(&self, o: &Vec3) -> Vec3 {
@@ -238,10 +241,10 @@ impl Hittable for XzRect {
             self.k,
             range_random_double(self.z0, self.z1),
         );
-        return randompoint - *o;
+        randompoint - *o
     }
 }
-
+#[allow(dead_code)]
 pub struct YzRect {
     pub(crate) mp: Arc<dyn Material>,
     pub(crate) y0: f64,
@@ -252,6 +255,7 @@ pub struct YzRect {
 }
 
 impl YzRect {
+    #[allow(dead_code)]
     pub fn new(_y0: f64, _y1: f64, _z0: f64, _z1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
         Self {
             mp: mat,

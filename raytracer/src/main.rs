@@ -42,13 +42,13 @@ fn range_random_double(min: f64, max: f64) -> f64 {
 
 fn clamp(x: f64, min: f64, max: f64) -> f64 {
     if x < min {
-        return min;
+       return  min;
     } else if x > max {
-        return max;
+       return  max;
     }
-    return x;
+   return  x;
 }
-
+#[allow(clippy::needless_return)]
 fn color(
     x: Ray,
     background: Vec3,
@@ -59,7 +59,7 @@ fn color(
     if dep == 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
-    return if let Option::Some(_rec) = world.hit(x, 0.001, INF) {
+    if let Option::Some(_rec) = world.hit(x, 0.001, INF) {
         let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(), 0.0);
         let emitted = _rec.mat_ptr.emitted(&_rec, _rec.u, _rec.v, &_rec.p);
         let mut pdf_val = 0.0;
@@ -70,14 +70,14 @@ fn color(
 
         if scatterrecord.isget {
             if scatterrecord.is_specular {
-                return scatterrecord.attenuation
+               return  scatterrecord.attenuation
                     * color(
-                        scatterrecord.specular_ray,
-                        background,
-                        world,
-                        lights,
-                        dep - 1,
-                    );
+                    scatterrecord.specular_ray,
+                    background,
+                    world,
+                    lights,
+                    dep - 1,
+                );
             }
 
             let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
@@ -88,16 +88,16 @@ fn color(
 
             let mm = emitted
                 + scatterrecord.attenuation
-                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                    * color(scattered, background, world, lights, dep - 1)
-                    / pdf_val;
+                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                * color(scattered, background, world, lights, dep - 1)
+                / pdf_val;
 
             return mm;
         }
         emitted
     } else {
         background
-    };
+    }
 }
 
 fn main() {
@@ -344,7 +344,7 @@ fn two_spheres() -> HittableList {
         mat_ptr: Arc::new(Lambertian::new1(checker1)), //
     };
     world.add(Arc::new(above));
-    return world;
+    world
 }
 
 fn random_sence() -> HittableList {
@@ -511,7 +511,7 @@ fn random_sence() -> HittableList {
         mat_ptr: Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0)),
     };
     world.add(Arc::new(material3));
-    return world;
+    world
 }
 
 fn two_berlin_spheres() -> HittableList {
@@ -563,7 +563,7 @@ fn two_berlin_spheres() -> HittableList {
     };
     world.add(Arc::new(above));
 
-    return world;
+    world
 }
 
 fn earth() -> HittableList {
@@ -591,7 +591,7 @@ fn earth() -> HittableList {
         mat_ptr: Arc::new(Lambertian::new1(checker)), //todo
     };
     world.add(Arc::new(below));
-    return world;
+    world
 }
 
 fn simple_light() -> HittableList {
@@ -674,7 +674,7 @@ fn simple_light() -> HittableList {
     world.add(Arc::new(light));
 
     //todo
-    return world;
+    world
 }
 
 fn cornell_box() -> HittableList {
@@ -802,7 +802,7 @@ fn cornell_box() -> HittableList {
     };
     let light1_bonus = Arc::new(FlipFace::new(Arc::new(light1)));
     world.add(light1_bonus);
-    return world;
+    world
 }
 
 fn cornell_box_rabbit() -> HittableList {
@@ -1106,7 +1106,7 @@ fn cornell_box_rabbit() -> HittableList {
     };
     let light1_bonus = Arc::new(FlipFace::new(Arc::new(light1)));
     world.add(light1_bonus);
-    return world;
+    world
 }
 
 fn cornell_smoke() -> HittableList {
@@ -1205,7 +1205,7 @@ fn cornell_smoke() -> HittableList {
         k: 554.0,
     };
     world.add(Arc::new(light1));
-    return world;
+    world
 }
 
 fn final_book2_scence() -> HittableList {
@@ -1419,7 +1419,7 @@ fn final_book2_scence() -> HittableList {
 
     world.add(allin);
 
-    return world;
+    world
 }
 
 fn my_scence_ball_world() -> HittableList {
@@ -2001,7 +2001,7 @@ fn my_scence_ball_world() -> HittableList {
         Vec3::new(9.0, -0.05, 2.0),
     );
     world.add(Arc::new(allteniss));
-    return world;
+    world
 }
 
 fn obj() -> HittableList {
@@ -2135,7 +2135,7 @@ fn obj() -> HittableList {
         }
     }
 
-    return world;
+    world
 }
 
 fn obj_with_texture() -> HittableList {
@@ -2270,5 +2270,5 @@ fn obj_with_texture() -> HittableList {
         }
     }
 
-    return world;
+    world
 }

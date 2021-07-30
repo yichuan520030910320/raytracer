@@ -11,13 +11,13 @@ use std::sync::Arc;
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     r0 *= r0;
-    return r0
+    r0
         + (1.0 - r0)
             * (1.0 - cosin)
             * (1.0 - cosin)
             * (1.0 - cosin)
             * (1.0 - cosin)
-            * (1.0 - cosin);
+            * (1.0 - cosin)
 }
 
 pub struct ScatterRecord {
@@ -39,10 +39,10 @@ pub trait Material: Send + Sync {
     ) -> ScatterRecord;
     //attenuation是衰减的意思
     fn emitted(&self, _: &Hitrecord, _: f64, _: f64, _: &Vec3) -> Vec3 {
-        return Vec3::zero();
+        Vec3::zero()
     }
     fn scattering_odf(&self, _: &Ray, _: &Hitrecord, _: &Ray) -> f64 {
-        return 0.0;
+        0.0
     }
 }
 
@@ -85,7 +85,7 @@ impl Material for Lambertian {
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
         let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
-        return if cosine < 0.0 { 0.0 } else { cosine / PI };
+        if cosine < 0.0 { 0.0 } else { cosine / PI }
     }
 }
 
@@ -217,11 +217,11 @@ impl Material for Dielectric {
         return srec;
     }
 }
-
+#[allow(dead_code)]
 pub struct DiffuseLight {
     emit: Arc<dyn Texture>,
 }
-
+#[allow(dead_code)]
 impl DiffuseLight {
     pub fn new(c: Vec3) -> Self {
         Self {
@@ -273,6 +273,7 @@ impl Isotropic {
             albedo: Arc::new(BaseColor::new(c)),
         }
     }
+    #[allow(dead_code)]
     pub fn new1(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
     }
@@ -301,7 +302,7 @@ impl Material for Isotropic {
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
         let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
-        return if cosine < 0.0 { 0.0 } else { cosine / PI };
+        if cosine < 0.0 { 0.0 } else { cosine / PI }
     }
 }
 
@@ -316,12 +317,13 @@ impl FlipFace {
 }
 
 impl Hittable for FlipFace {
+    #[allow(clippy::needless_return)]
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         if let Option::Some(mut rec) = self.ptr.hit(r, t_min, t_max) {
             rec.front_face = !rec.front_face;
             return Some(rec);
         }
-        None
+        return None;
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {

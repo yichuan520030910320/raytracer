@@ -17,6 +17,7 @@ pub struct Vec3 {
     pub y: f64,
     pub z: f64,
 }
+
 #[warn(unused_parens)]
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -63,24 +64,24 @@ impl Vec3 {
     }
     pub fn near_zero(self) -> bool {
         let s = 1e-8;
-        return (self.x).abs() < s && self.y.abs() < s && self.z.abs() < s;
+        (self.x).abs() < s && self.y.abs() < s && self.z.abs() < s
     }
     //may need to do
     pub fn reflect(v: Self, n: Self) -> Self {
-        return v - n * (2.0 as f64 * Vec3::dot(v, n));
+        v - n * (2.0 as f64 * Vec3::dot(v, n))
     }
     pub fn refract(uv: Self, n: Self, etai_over_etat: f64) -> Self {
         let costhta = Vec3::dot(-uv, n);
         let r_out_perp = (uv + n * costhta) * etai_over_etat;
         let r_out_parallel = n * (-(1.0 - Vec3::squared_length(&r_out_perp)).abs().sqrt());
-        return r_out_perp + r_out_parallel;
+        r_out_perp + r_out_parallel
     }
     pub fn cross(u: Self, v: Self) -> Self {
-        return Vec3::new(
+        Vec3::new(
             u.y * v.z - u.z * v.y,
             u.z * v.x - u.x * v.z,
             u.x * v.y - u.y * v.x,
-        );
+        )
     }
     pub fn sameside(a: Vec3, b: Vec3, c: Vec3, p: Vec3) -> bool {
         let ab = b - a;
@@ -89,7 +90,7 @@ impl Vec3 {
 
         let v1 = Vec3::cross(ab, ac);
         let v2 = Vec3::cross(ab, ap);
-        return Vec3::dot(v1, v2) >= 0.0;
+        Vec3::dot(v1, v2) >= 0.0
     }
     pub fn random_in_unit_disk() -> Self {
         loop {
@@ -108,19 +109,19 @@ impl Vec3 {
 
 impl Vec3 {
     pub fn get(&self, demesion: i32) -> f64 {
-        return if demesion == 0 {
+        if demesion == 0 {
             self.x
         } else if demesion == 1 {
             self.y
         } else {
             self.z
-        };
+        }
     }
     pub fn random_unit_vector() -> Vec3 {
         let a = range_random_double(0.0, (2.0 * PI) as f64);
         let z = range_random_double(-1.0, 1.0);
         let r = (1.0 - z * z).sqrt();
-        return Vec3::new(r * a.cos(), r * a.sin(), z);
+        Vec3::new(r * a.cos(), r * a.sin(), z)
     }
     pub fn random_in_unit_sphere() -> Vec3 {
         loop {
@@ -128,16 +129,17 @@ impl Vec3 {
             if p.squared_length() >= 1.0 {
                 continue;
             }
-            return p;
+            return
+                p;
         }
     }
     pub fn random_in_himisphere(normal: Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
-        return if Vec3::dot(in_unit_sphere, normal) > 0.0 {
+        if Vec3::dot(in_unit_sphere, normal) > 0.0 {
             in_unit_sphere
         } else {
             -in_unit_sphere
-        };
+        }
     }
     pub fn random_cosine_direction() -> Vec3 {
         let r1 = random_doouble();
@@ -146,7 +148,7 @@ impl Vec3 {
         let phi = 2.0 * PI * r1;
         let x = phi.cos() * r2.sqrt();
         let y = phi.sin() * r2.sqrt();
-        return Vec3::new(x, y, z);
+        Vec3::new(x, y, z)
     }
 }
 

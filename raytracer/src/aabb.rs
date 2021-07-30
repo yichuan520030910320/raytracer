@@ -5,6 +5,7 @@ pub struct Aabb {
     pub minimun: Vec3,
     pub maximum: Vec3,
 }
+
 #[allow(clippy::needless_return)]
 fn fmin1(a: f64, b: f64) -> f64 {
     if a < b {
@@ -12,6 +13,7 @@ fn fmin1(a: f64, b: f64) -> f64 {
     }
     return b;
 }
+
 #[allow(clippy::needless_return)]
 fn fmax1(a: f64, b: f64) -> f64 {
     if a < b {
@@ -19,6 +21,7 @@ fn fmax1(a: f64, b: f64) -> f64 {
     }
     return a;
 }
+
 #[allow(clippy::needless_return)]
 impl Aabb {
     pub fn new(a: Vec3, b: Vec3) -> Self {
@@ -39,8 +42,7 @@ impl Aabb {
                     t0 = (self.maximum.x - r.ori.x) / r.dic.x;
                     t1 = (self.minimun.x - r.ori.x) / r.dic.x;
                 }
-                if t0 < t_min {
-                } else {
+                if t0 < t_min {} else {
                     t_min = t0;
                 }
                 if t1 < t_max {
@@ -59,8 +61,7 @@ impl Aabb {
                     t0 = (self.maximum.y - r.ori.y) / r.dic.y;
                     t1 = (self.minimun.y - r.ori.y) / r.dic.y;
                 }
-                if t0 < t_min {
-                } else {
+                if t0 < t_min {} else {
                     t_min = t0;
                 }
                 if t1 < t_max {
@@ -79,8 +80,7 @@ impl Aabb {
                     t0 = (self.maximum.z - r.ori.z) / r.dic.z;
                     t1 = (self.minimun.z - r.ori.z) / r.dic.z;
                 }
-                if t0 < t_min {
-                } else {
+                if t0 < t_min {} else {
                     t_min = t0;
                 }
                 if t1 < t_max {
@@ -92,7 +92,7 @@ impl Aabb {
             }
         }
 
-        return true;
+        true
     }
     pub fn surrounding_box(box0: Aabb, box1: Aabb) -> Self {
         let small = Vec3::new(
@@ -105,6 +105,6 @@ impl Aabb {
             fmax1(box0.maximum.y, box1.maximum.y),
             fmax1(box0.maximum.z, box1.maximum.z),
         );
-         Aabb::new(small, big)
+        Aabb::new(small, big)
     }
 }
