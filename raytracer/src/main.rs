@@ -42,12 +42,13 @@ fn range_random_double(min: f64, max: f64) -> f64 {
 
 fn clamp(x: f64, min: f64, max: f64) -> f64 {
     if x < min {
-       return  min;
+        return min;
     } else if x > max {
-       return  max;
+        return max;
     }
-   return  x;
+    return x;
 }
+
 #[allow(clippy::needless_return)]
 fn color(
     x: Ray,
@@ -70,7 +71,7 @@ fn color(
 
         if scatterrecord.isget {
             if scatterrecord.is_specular {
-               return  scatterrecord.attenuation
+                return scatterrecord.attenuation
                     * color(
                     scatterrecord.specular_ray,
                     background,

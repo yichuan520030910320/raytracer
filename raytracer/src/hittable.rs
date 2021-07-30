@@ -97,6 +97,7 @@ impl Hitrecord {
         }
     }
 }
+
 #[allow(dead_code)]
 pub struct MovingSphere {
     pub center0: Vec3,
@@ -418,6 +419,7 @@ impl Hittable for Translate {
         }
     }
 }
+
 #[allow(dead_code)]
 pub struct RotateY {
     //相对观察视角物体旋转的角度
@@ -498,14 +500,13 @@ impl Hittable for RotateY {
         } else {
             None
         }
-
-
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
         Option::from(self.bbox)
     }
 }
+
 #[allow(dead_code)]
 pub struct RotateX {
     //相对观察视角物体旋转的角度
@@ -592,6 +593,7 @@ impl Hittable for RotateX {
         Option::from(self.bbox)
     }
 }
+
 #[allow(dead_code)]
 pub struct RotateZ {
     //相对观察视角物体旋转的角度
@@ -757,7 +759,7 @@ impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INF, INF) {
             if let Option::Some(mut rec2) =
-            self.boundary.hit(r.clone(), rec1.t.clone() + 0.0001, INF)
+                self.boundary.hit(r.clone(), rec1.t.clone() + 0.0001, INF)
             {
                 if rec1.t < t_min {
                     rec1.t = t_min
