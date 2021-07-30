@@ -391,7 +391,7 @@ impl Hittable for Translate {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let moved_r = Ray::new(r.ori - self.offset, r.dic, r.tm);
         if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
-            rec.p  += self.offset;
+            rec.p += self.offset;
             rec.set_face_normal(&moved_r, rec.normal);
             Some(rec)
         } else {
@@ -758,9 +758,7 @@ pub struct ConstantMedium {
 impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         if let Option::Some(mut rec1) = self.boundary.hit(r, -INF, INF) {
-            if let Option::Some(mut rec2) =
-                self.boundary.hit(r.clone(), rec1.t + 0.0001, INF)
-            {
+            if let Option::Some(mut rec2) = self.boundary.hit(r.clone(), rec1.t + 0.0001, INF) {
                 if rec1.t < t_min {
                     rec1.t = t_min
                 };
