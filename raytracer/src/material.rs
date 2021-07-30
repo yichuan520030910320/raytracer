@@ -78,7 +78,7 @@ impl Material for Lambertian {
         }
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
-        let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
+        let cosine = Vec3::dot(rec.normal, scattered.dic.unit());
         if cosine < 0.0 {
             0.0
         } else {
@@ -301,7 +301,7 @@ impl Material for Isotropic {
         }
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
-        let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
+        let cosine = Vec3::dot(rec.normal, scattered.dic.unit());
         if cosine < 0.0 {
             0.0
         } else {

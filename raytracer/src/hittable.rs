@@ -134,6 +134,7 @@ impl MovingSphere {
 }
 
 #[allow(clippy::suspicious_operation_groupings)]
+#[allow(clippy::needless_return)]
 impl Hittable for MovingSphere {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let oc = r.ori - MovingSphere::center(self, r.tm);
@@ -164,7 +165,7 @@ impl Hittable for MovingSphere {
             };
 
             rec.t = root;
-            rec.p = Ray::at(&r, rec.clone().t);
+            rec.p = Ray::at(&r, rec.t);
             let outward_normal = (rec.p - MovingSphere::center(self, r.tm)) / self.radius;
             rec.set_face_normal(&r, outward_normal);
             Some(rec)
@@ -262,11 +263,10 @@ impl Hittable for Sphere {
     }
 
     fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
-        if let Option::Some(_) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INF) {
+        if self.hit(Ray::new(*o, *v, 0.0), 0.001, INF).is_some() {
             let costheta_max =
                 (1.0 - (self.radius * self.radius) / (self.center - *o).squared_length()).sqrt();
             let solid_angle = 2.0 * PI * (1.0 - costheta_max);
-
             1.0 / solid_angle
         } else {
             0.0
@@ -391,7 +391,7 @@ impl Hittable for Translate {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let moved_r = Ray::new(r.ori - self.offset, r.dic, r.tm);
         if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
-            rec.p = rec.p + self.offset;
+            rec.p  += self.offset;
             rec.set_face_normal(&moved_r, rec.normal);
             Some(rec)
         } else {
@@ -438,7 +438,7 @@ impl RotateY {
         let costhetatemp = radians.cos();
         let tempresult: bool;
         let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
-        if let Option::Some(_) = p.bounding_box(0.0, 1.0) {
+        if p.bounding_box(0.0, 1.0).is_some() {
             tempresult = true;
         } else {
             tempresult = false;
@@ -757,9 +757,9 @@ pub struct ConstantMedium {
 #[allow(clippy::needless_return)]
 impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
-        if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INF, INF) {
+        if let Option::Some(mut rec1) = self.boundary.hit(r, -INF, INF) {
             if let Option::Some(mut rec2) =
-                self.boundary.hit(r.clone(), rec1.t.clone() + 0.0001, INF)
+                self.boundary.hit(r.clone(), rec1.t + 0.0001, INF)
             {
                 if rec1.t < t_min {
                     rec1.t = t_min
@@ -775,7 +775,7 @@ impl Hittable for ConstantMedium {
                     rec1.t = 0.0;
                 }
                 let ray_length = r.dic.length();
-                let distangce_inside_boundary = (rec2.t.clone() - rec1.t.clone()) * ray_length;
+                let distangce_inside_boundary = (rec2.t - rec1.t.clone()) * ray_length;
                 let hit_distance = self.neg_inv_density * random_doouble().ln();
 
                 if hit_distance > distangce_inside_boundary {
@@ -788,7 +788,7 @@ impl Hittable for ConstantMedium {
                     false,
                     self.phase_function.clone(),
                 );
-                recreturn.t = rec1.t.clone() + hit_distance / ray_length;
+                recreturn.t = rec1.t + hit_distance / ray_length;
                 recreturn.p = r.at(recreturn.t);
                 recreturn.normal = Vec3::new(1.0, 0.0, 0.0);
                 recreturn.front_face = true;
@@ -888,7 +888,7 @@ impl Hittable for BvhNode {
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
-        let outout = self.box1.clone();
+        let outout = self.box1;
         Some(outout)
     }
 }
