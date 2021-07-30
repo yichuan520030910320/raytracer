@@ -53,6 +53,8 @@ impl Perlin {
         }
     }
     #[allow(dead_code)]
+    #[allow(clippy::needless_range_loop)]
+    #[allow(clippy::manual_swap)]
     pub fn permute(arr: &mut [i32; POINT_COUNT], n: i32) {
         for i in n - 1..0 {
             let axis = rand::thread_rng().gen_range(0..i);

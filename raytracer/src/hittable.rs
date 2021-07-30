@@ -519,6 +519,7 @@ pub struct RotateX {
 
 impl RotateX {
     #[allow(dead_code)]
+    #[allow(clippy::redundant_pattern_matching)]
     pub fn new(p: Arc<dyn Hittable>, angle: f64) -> Self {
         let radians = degrees_to_radians(angle);
 
@@ -605,6 +606,8 @@ pub struct RotateZ {
 }
 
 impl RotateZ {
+    #[allow(dead_code)]
+    #[allow(clippy::redundant_pattern_matching)]
     pub fn new(p: Arc<dyn Hittable>, angle: f64) -> Self {
         let radians = degrees_to_radians(angle);
 
@@ -758,7 +761,7 @@ pub struct ConstantMedium {
 impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         if let Option::Some(mut rec1) = self.boundary.hit(r, -INF, INF) {
-            if let Option::Some(mut rec2) = self.boundary.hit(r.clone(), rec1.t + 0.0001, INF) {
+            if let Option::Some(mut rec2) = self.boundary.hit(r, rec1.t + 0.0001, INF) {
                 if rec1.t < t_min {
                     rec1.t = t_min
                 };
@@ -773,7 +776,7 @@ impl Hittable for ConstantMedium {
                     rec1.t = 0.0;
                 }
                 let ray_length = r.dic.length();
-                let distangce_inside_boundary = (rec2.t - rec1.t.clone()) * ray_length;
+                let distangce_inside_boundary = (rec2.t - rec1.t) * ray_length;
                 let hit_distance = self.neg_inv_density * random_doouble().ln();
 
                 if hit_distance > distangce_inside_boundary {
