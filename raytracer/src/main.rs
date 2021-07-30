@@ -39,7 +39,7 @@ fn random_doouble() -> f64 {
 fn range_random_double(min: f64, max: f64) -> f64 {
     min + (max - min) * random_doouble()
 }
-
+#[allow(clippy::needless_return)]
 fn clamp(x: f64, min: f64, max: f64) -> f64 {
     if x < min {
         return min;
@@ -116,11 +116,10 @@ fn main() {
     //image
     let mut ratio: f64 = 1.0;
     // let image_width = 400 as u32;
-    let mut image_width = 600 as u32;
+    let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
     let sample_per_pixel = 20; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
-
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
@@ -137,7 +136,7 @@ fn main() {
             vfov = 20.0;
             ratio = 3.0 / 2.0;
 
-            image_width = 1200 as u32;
+            image_width = 1200_u32;
             image_heigth = (image_width as f64 / ratio) as u32;
         }
         3 => {
@@ -168,7 +167,7 @@ fn main() {
             lookfrom = Vec3::new(478.0, 278.0, -600.0); //todo
             vfov = 40.0;
             ratio = 1.0;
-            image_width = 800 as u32;
+            image_width = 800_u32;
             image_heigth = (image_width as f64 / ratio) as u32;
         }
         9 => {
@@ -264,11 +263,11 @@ fn main() {
                     }
                     let scale = 1.0 / sample_per_pixel as f64;
                     let aaa = (pixel_color.x * scale).sqrt();
-                    let aaa1 = 256 as f64 * clamp(aaa, 0.0, 0.999);
+                    let aaa1 = 256_f64 * clamp(aaa, 0.0, 0.999);
                     let bbb = (pixel_color.y * scale).sqrt();
-                    let bbb1 = 256 as f64 * clamp(bbb, 0.0, 0.999);
+                    let bbb1 = 256_f64 * clamp(bbb, 0.0, 0.999);
                     let ccc = (pixel_color.z * scale).sqrt();
-                    let ccc1 = 256 as f64 * clamp(ccc, 0.0, 0.999);
+                    let ccc1 = 256_f64 * clamp(ccc, 0.0, 0.999);
                     *pixel = image::Rgb([aaa1 as u8, bbb1 as u8, ccc1 as u8]);
                 }
             }
@@ -413,9 +412,9 @@ fn random_sence() -> HittableList {
                         },
                         t: 0.0,
                         center: Vec3 {
-                            x: center.x.clone(),
-                            y: center.y.clone(),
-                            z: center.z.clone(),
+                            x: center.x,
+                            y: center.y,
+                            z: center.z,
                         },
                         radius: 0.2,
                         mat_ptr: Arc::new(Metal::new(albedo, fuzz)),
@@ -435,9 +434,9 @@ fn random_sence() -> HittableList {
                         },
                         t: 0.0,
                         center: Vec3 {
-                            x: center.x.clone(),
-                            y: center.y.clone(),
-                            z: center.z.clone(),
+                            x: center.x,
+                            y: center.y,
+                            z: center.z,
                         },
                         radius: 0.2,
                         mat_ptr: Arc::new(Dielectric::new(1.5)),

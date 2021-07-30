@@ -15,14 +15,14 @@ use std::sync::Arc;
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
 }
-
+#[allow(clippy::needless_return)]
 fn fmin1(a: f64, b: f64) -> f64 {
     if a < b {
         return a;
     }
     return b;
 }
-
+#[allow(clippy::needless_return)]
 fn fmax1(a: f64, b: f64) -> f64 {
     if a < b {
         return b;
@@ -707,7 +707,7 @@ impl Hittable for HittableList {
         }
         rec
     }
-
+    #[allow(clippy::needless_return)]
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
         if self.objects.is_empty() {
             return None;
@@ -754,7 +754,7 @@ pub struct ConstantMedium {
     pub phase_function: Arc<dyn Material>,
     neg_inv_density: f64,
 }
-
+#[allow(clippy::needless_return)]
 impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INF, INF) {
@@ -863,7 +863,7 @@ impl BvhNode {
         }
     }
 }
-
+#[allow(clippy::needless_return)]
 impl Hittable for BvhNode {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         if !self.box1.hit(&r, t_min, t_max) {

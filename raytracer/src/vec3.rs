@@ -68,7 +68,7 @@ impl Vec3 {
     }
     //may need to do
     pub fn reflect(v: Self, n: Self) -> Self {
-        v - n * (2.0 as f64 * Vec3::dot(v, n))
+        v - n * (2.0_f64 * Vec3::dot(v, n))
     }
     pub fn refract(uv: Self, n: Self, etai_over_etat: f64) -> Self {
         let costhta = Vec3::dot(-uv, n);
@@ -92,6 +92,7 @@ impl Vec3 {
         let v2 = Vec3::cross(ab, ap);
         Vec3::dot(v1, v2) >= 0.0
     }
+    #[allow(clippy::needless_return)]
     pub fn random_in_unit_disk() -> Self {
         loop {
             let p = Vec3::new(
@@ -123,6 +124,7 @@ impl Vec3 {
         let r = (1.0 - z * z).sqrt();
         Vec3::new(r * a.cos(), r * a.sin(), z)
     }
+    #[allow(clippy::needless_return)]
     pub fn random_in_unit_sphere() -> Vec3 {
         loop {
             let p = Vec3::randomrange(-1.0, 1.0);

@@ -139,6 +139,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
+    #[allow(clippy::needless_return)]
     fn scatter(
         &self,
         r_in: &Ray,
@@ -252,6 +253,7 @@ impl Material for DiffuseLight {
             isget: false,
         }
     }
+    #[allow(clippy::needless_return)]
     fn emitted(&self, rec: &Hitrecord, u: f64, v: f64, p: &Vec3) -> Vec3 {
         if rec.front_face {
             return self.emit.value(u, v, p);
