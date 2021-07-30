@@ -120,17 +120,9 @@ fn main() {
     let mut image_heigth = (image_width as f64 / ratio) as u32;
     let sample_per_pixel = 20; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
-                        // let backgroud=Vec3::new(0.7,0.8,1.0);
+
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
-                                                        //let lookfrom = Vec3::new(478.0, 278.0, -600.0); //13 2 3
-                                                        // let lookfrom = Vec3::new(-3.0, -3.0, -2.0);//13 2 3
-
-    // let lookfrom = Vec3::new(15300.0, 15500.0, 14000.0);//13 2 3
-    // let lookfrom = Vec3::new(3.0, 2.0, 0.0);//13 2 3
-    // let lookfrom=Vec3::new(26.0,3.0,6.0);//13 2 3
-    let lookat = Vec3::new(0.0, 0.0, 0.0);
-    //let lookat=Vec3::new(0.0,2.0,0.0);
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
     let number = 6;
@@ -186,7 +178,12 @@ fn main() {
             lookfrom = Vec3::new(13.0, 2.0, 0.0);
             vfov = 50.0;
         }
-        10 => world = obj(),
+        10 => {
+            world = obj();
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
+            lookfrom = Vec3::new(60.0, 20.0, 30.0);
+            lookat = Vec3::zero();
+        }
         11 => world = obj_with_texture(),
         12 => {
             world = cornell_box_rabbit();
@@ -205,14 +202,14 @@ fn main() {
         554.0,
         Arc::new(Lambertian::new(Vec3::zero())),
     ));
-    let tmp: Arc<dyn Hittable + Send> = Arc::new(Sphere::new(
-        Vec3::zero(),
-        Vec3::zero(),
-        0.0,
-        Vec3::new(190.0, 90.0, 190.0),
-        90.0,
-        Arc::new(Lambertian::new(Vec3::zero())),
-    ));
+    // let tmp: Arc<dyn Hittable + Send> = Arc::new(Sphere::new(
+    //     Vec3::zero(),
+    //     Vec3::zero(),
+    //     0.0,
+    //     Vec3::new(190.0, 90.0, 190.0),
+    //     90.0,
+    //     Arc::new(Lambertian::new(Vec3::zero())),
+    // ));
     lightworld.add(light1);
     // lightworld.add(tmp);
     let lights: Arc<dyn Hittable + Send> = Arc::new(lightworld);
@@ -873,58 +870,190 @@ fn cornell_box_rabbit() -> HittableList {
     // whitebox1 = Arc::new(Translate::new(whitebox1, Vec3::new(265.0, 0.0, 295.0)));
     // world.add(whitebox1);
 
-    let cornell_box = tobj::load_obj(
-        //buddle
-        "Buddha.obj",
-        &tobj::LoadOptions {
-            single_index: true,
-            triangulate: true,
-            ..Default::default()
-        },
-    );
-    assert!(cornell_box.is_ok());
-    let rate = 10.0 * 10.0 * 1.9;
-    let (models, materials) = cornell_box.expect("Failed to load OBJ file");
-    for (i, m) in models.iter().enumerate() {
-        let mesh = &m.mesh;
-        let mut boxes2 = HittableList { objects: vec![] };
-        for v in 0..mesh.indices.len() / 3 {
-            let x1 = mesh.indices[3 * v];
-            let x2 = mesh.indices[3 * v + 1];
-            let x3 = mesh.indices[3 * v + 2];
-            let triange = Triangel::new(
-                Vec3 {
-                    x: rate * mesh.positions[(3 * x1) as usize] as f64,
-                    y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
-                    z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
-                },
-                Vec3 {
-                    x: rate * mesh.positions[(3 * x2) as usize] as f64,
-                    y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
-                    z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
-                },
-                Vec3 {
-                    x: rate * mesh.positions[(3 * x3) as usize] as f64,
-                    y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
-                    z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-                },
-                Arc::new(Metal::new(Vec3::new(0.99, 0.78, 0.0), 0.1)),
-            );
-            boxes2.add(Arc::new(triange));
-        }
-        let allin = Translate::new(
-            Arc::new(RotateY::new(
-                Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
-                200.0,
-            )),
-            Vec3::new(425.0, 200.0, 345.0),
-        );
-        world.add(Arc::new(allin));
-    }
+    // let cornell_box = tobj::load_obj(
+    //     //buddle
+    //     "Buddha.obj",
+    //     &tobj::LoadOptions {
+    //         single_index: true,
+    //         triangulate: true,
+    //         ..Default::default()
+    //     },
+    // );
+    // assert!(cornell_box.is_ok());
+    // let rate = 10.0 * 10.0 * 1.9;
+    // let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+    // for (_i, m) in models.iter().enumerate() {
+    //     let mesh = &m.mesh;
+    //     let mut boxes2 = HittableList { objects: vec![] };
+    //     for v in 0..mesh.indices.len() / 3 {
+    //         let x1 = mesh.indices[3 * v];
+    //         let x2 = mesh.indices[3 * v + 1];
+    //         let x3 = mesh.indices[3 * v + 2];
+    //         let triange = Triangel::new(
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x1) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+    //             },
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x2) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+    //             },
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x3) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+    //             },
+    //             Arc::new(Metal::new(Vec3::new(0.99, 0.78, 0.0), 0.1)),
+    //         );
+    //         boxes2.add(Arc::new(triange));
+    //     }
+    //     let allin = Translate::new(
+    //         Arc::new(RotateY::new(
+    //             Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+    //             200.0,
+    //         )),
+    //         Vec3::new(425.0, 200.0, 345.0),
+    //     );
+    //     world.add(Arc::new(allin));
+    // }
+
+    // let cornell_box = tobj::load_obj(
+    //     //rabbit
+    //     "bunny.fine.obj",
+    //     &tobj::LoadOptions {
+    //         single_index: true,
+    //         triangulate: true,
+    //         ..Default::default()
+    //     },
+    // );
+    // assert!(cornell_box.is_ok());
+    // let rate = 100.0 * 10.0;
+    // let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+    // for (_i, m) in models.iter().enumerate() {
+    //     let mesh = &m.mesh;
+    //     let mut boxes2 = HittableList { objects: vec![] };
+    //     for v in 0..mesh.indices.len() / 3 {
+    //         let x1 = mesh.indices[3 * v];
+    //         let x2 = mesh.indices[3 * v + 1];
+    //         let x3 = mesh.indices[3 * v + 2];
+    //         let triange = Triangel::new(
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x1) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+    //             },
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x2) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+    //             },
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x3) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+    //             },
+    //             Arc::new(Lambertian::new(Vec3::new(0.74218, 0.74218, 0.74218))),
+    //         );
+    //         boxes2.add(Arc::new(triange));
+    //     }
+    //     let allin = Translate::new(
+    //         Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+    //         Vec3::new(190.0, -27.0, 190.0),
+    //     );
+    //     world.add(Arc::new(allin));
+    // }
+
+    // let cornell_box = tobj::load_obj(
+    //     "patrick.obj",
+    //     &tobj::LoadOptions {
+    //         single_index: true,
+    //         triangulate: true,
+    //         ..Default::default()
+    //     },
+    // );
+    // let filejpg = "Char_Patrick.png";
+    // assert!(cornell_box.is_ok());
+    // let rate = 120.0;
+    // let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+    //
+    // // Materials might report a separate loading error if the MTL file wasn't found.
+    // // If you don't need the materials, you can generate a default here and use that
+    // // instead.
+    //
+    // for (_i, m) in models.iter().enumerate() {
+    //     let mesh = &m.mesh;
+    //     let mut boxes2 = HittableList { objects: vec![] };
+    //     for v in 0..mesh.indices.len() / 3 {
+    //         let x1 = mesh.indices[3 * v];
+    //         let x2 = mesh.indices[3 * v + 1];
+    //         let x3 = mesh.indices[3 * v + 2];
+    //         // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
+    //         //todo
+    //         let u1 = mesh.texcoords[(x1 * 2) as usize];
+    //         let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
+    //         let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
+    //         let u2 = mesh.texcoords[(x2 * 2) as usize];
+    //         let v2 = mesh.texcoords[(x2 * 2 + 1) as usize];
+    //         let _mat2 = ObjTexture::new(filejpg, u2 as f64, v2 as f64);
+    //         let u3 = mesh.texcoords[(x3 * 2) as usize];
+    //         let v3 = mesh.texcoords[(x3 * 2 + 1) as usize];
+    //         let _mat3 = ObjTexture::new(filejpg, u3 as f64, v3 as f64);
+    //         //try to merge the three texture
+    //
+    //         let triange = Triangel::new(
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x1) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+    //             },
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x2) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+    //             },
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x3) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+    //             },
+    //             Arc::new(Lambertian::new1(Arc::new(mat1))),
+    //             // Arc::new(Lambertian::new(Vec3::new(0.99,0.756,0.756)))
+    //         );
+    //         boxes2.add(Arc::new(triange));
+    //     }
+    //     let allin = Translate::new(
+    //         Arc::new(RotateY::new(
+    //             Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+    //             160.0,
+    //         )),
+    //         Vec3::new(330.0, 0.0, 100.0),
+    //     );
+    //
+    //     world.add(Arc::new(allin));
+    // }
+    // //todo texture fail but can't know the result
+
+    // let mut whitebox2: Arc<dyn Hittable> = Arc::new(Box1::new(
+    //     &Vec3::new(0.0, 0.0, 0.0),
+    //     &Vec3::new(165.0, 165.0, 165.0),
+    //     Arc::new((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))),
+    // ));
+    // whitebox2 = Arc::new(RotateY::new(whitebox2, -18.0));
+    // whitebox2 = Arc::new(Translate::new(whitebox2, Vec3::new(130.0, 0.0, 65.0)));
+    // world.add(whitebox2);
+
+    // let whitebox5 = Box1::new( &Vec3::new(265.0, 0.0, 295.0), &Vec3::new(430.0, 330.0, 460.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
+    // world.add(
+    //     Arc::new(whitebox5)
+    // );
+
+    //1k
 
     let cornell_box = tobj::load_obj(
         //rabbit
-        "bunny.fine.obj",
+        "bunny_1k.obj",
         &tobj::LoadOptions {
             single_index: true,
             triangulate: true,
@@ -933,8 +1062,8 @@ fn cornell_box_rabbit() -> HittableList {
     );
     assert!(cornell_box.is_ok());
     let rate = 100.0 * 10.0;
-    let (models, materials) = cornell_box.expect("Failed to load OBJ file");
-    for (i, m) in models.iter().enumerate() {
+    let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+    for (_i, m) in models.iter().enumerate() {
         let mesh = &m.mesh;
         let mut boxes2 = HittableList { objects: vec![] };
         for v in 0..mesh.indices.len() / 3 {
@@ -967,90 +1096,6 @@ fn cornell_box_rabbit() -> HittableList {
         );
         world.add(Arc::new(allin));
     }
-
-    let cornell_box = tobj::load_obj(
-        "patrick.obj",
-        &tobj::LoadOptions {
-            single_index: true,
-            triangulate: true,
-            ..Default::default()
-        },
-    );
-    let filejpg = "Char_Patrick.png";
-    assert!(cornell_box.is_ok());
-    let rate = 120.0;
-    let (models, materials) = cornell_box.expect("Failed to load OBJ file");
-
-    // Materials might report a separate loading error if the MTL file wasn't found.
-    // If you don't need the materials, you can generate a default here and use that
-    // instead.
-
-    for (i, m) in models.iter().enumerate() {
-        let mesh = &m.mesh;
-        let mut boxes2 = HittableList { objects: vec![] };
-        for v in 0..mesh.indices.len() / 3 {
-            let x1 = mesh.indices[3 * v];
-            let x2 = mesh.indices[3 * v + 1];
-            let x3 = mesh.indices[3 * v + 2];
-            // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
-            //todo
-            let u1 = mesh.texcoords[(x1 * 2) as usize];
-            let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
-            let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
-            let u2 = mesh.texcoords[(x2 * 2) as usize];
-            let v2 = mesh.texcoords[(x2 * 2 + 1) as usize];
-            let mat2 = ObjTexture::new(filejpg, u2 as f64, v2 as f64);
-            let u3 = mesh.texcoords[(x3 * 2) as usize];
-            let v3 = mesh.texcoords[(x3 * 2 + 1) as usize];
-            let mat3 = ObjTexture::new(filejpg, u3 as f64, v3 as f64);
-            //try to merge the three texture
-
-            let triange = Triangel::new(
-                Vec3 {
-                    x: rate * mesh.positions[(3 * x1) as usize] as f64,
-                    y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
-                    z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
-                },
-                Vec3 {
-                    x: rate * mesh.positions[(3 * x2) as usize] as f64,
-                    y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
-                    z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
-                },
-                Vec3 {
-                    x: rate * mesh.positions[(3 * x3) as usize] as f64,
-                    y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
-                    z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-                },
-                Arc::new(Lambertian::new1(Arc::new(mat1))),
-                // Arc::new(Lambertian::new(Vec3::new(0.99,0.756,0.756)))
-            );
-            boxes2.add(Arc::new(triange));
-        }
-        let allin = Translate::new(
-            Arc::new(RotateY::new(
-                Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
-                160.0,
-            )),
-            Vec3::new(330.0, 0.0, 100.0),
-        );
-
-        world.add(Arc::new(allin));
-    }
-    //todo texture fail but can't know the result
-
-    // let mut whitebox2: Arc<dyn Hittable> = Arc::new(Box1::new(
-    //     &Vec3::new(0.0, 0.0, 0.0),
-    //     &Vec3::new(165.0, 165.0, 165.0),
-    //     Arc::new((Lambertian::new(Vec3::new(0.73, 0.73, 0.73)))),
-    // ));
-    // whitebox2 = Arc::new(RotateY::new(whitebox2, -18.0));
-    // whitebox2 = Arc::new(Translate::new(whitebox2, Vec3::new(130.0, 0.0, 65.0)));
-    // world.add(whitebox2);
-
-    // let whitebox5 = Box1::new( &Vec3::new(265.0, 0.0, 295.0), &Vec3::new(430.0, 330.0, 460.0), Arc::new(((Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))));
-    // world.add(
-    //     Arc::new(whitebox5)
-    // );
 
     let light1 = XzRect {
         mp: Arc::new(DiffuseLight::new(Vec3::new(13.0, 13.0, 13.0))),
@@ -1276,29 +1321,29 @@ fn final_book2_scence() -> HittableList {
     };
 
     world.add(Arc::new(tempdielectric2));
-    let mut boudary: Arc<dyn Hittable> = Arc::new(Sphere::new(
-        Vec3::zero(),
-        Vec3::zero(),
-        0.0,
-        Vec3::new(360.0, 150.0, 145.0),
-        70.0,
-        Arc::new(Dielectric::new(1.5)),
-    ));
-    boudary = Arc::new(ConstantMedium::new(boudary, 0.2, Vec3::new(0.2, 0.4, 0.9)));
+    // let mut boudary: Arc<dyn Hittable> = Arc::new(Sphere::new(
+    //     Vec3::zero(),
+    //     Vec3::zero(),
+    //     0.0,
+    //     Vec3::new(360.0, 150.0, 145.0),
+    //     70.0,
+    //     Arc::new(Dielectric::new(1.5)),
+    // ));
+    // boudary = Arc::new(ConstantMedium::new(boudary, 0.2, Vec3::new(0.2, 0.4, 0.9)));
     //world.add(boudary);
-    let mut boudary2: Arc<dyn Hittable> = Arc::new(Sphere::new(
-        Vec3::zero(),
-        Vec3::zero(),
-        0.0,
-        Vec3::new(0.0, 0.0, 0.0),
-        5000.0,
-        Arc::new(Dielectric::new(1.5)),
-    ));
-    boudary2 = Arc::new(ConstantMedium::new(
-        boudary2,
-        0.0001,
-        Vec3::new(1.0, 1.0, 1.0),
-    ));
+    // let mut boudary2: Arc<dyn Hittable> = Arc::new(Sphere::new(
+    //     Vec3::zero(),
+    //     Vec3::zero(),
+    //     0.0,
+    //     Vec3::new(0.0, 0.0, 0.0),
+    //     5000.0,
+    //     Arc::new(Dielectric::new(1.5)),
+    // ));
+    // boudary2 = Arc::new(ConstantMedium::new(
+    //     boudary2,
+    //     0.0001,
+    //     Vec3::new(1.0, 1.0, 1.0),
+    // ));
     //world.add(boudary2);
     let checker = Arc::new(ImageTexture::new("earthmap.jpg"));
     let below = Sphere {
@@ -1964,7 +2009,7 @@ fn obj() -> HittableList {
     let mut world = HittableList { objects: vec![] };
 
     let cornell_box = tobj::load_obj(
-        "bunny.fine.obj",
+        "bunny_1k.obj",
         &tobj::LoadOptions {
             single_index: true,
             triangulate: true,
@@ -1972,7 +2017,7 @@ fn obj() -> HittableList {
         },
     );
     assert!(cornell_box.is_ok());
-    let rate = 1.0;
+    let rate = 200.0;
     let (models, materials) = cornell_box.expect("Failed to load OBJ file");
 
     // Materials might report a separate loading error if the MTL file wasn't found.
@@ -2153,10 +2198,10 @@ fn obj_with_texture() -> HittableList {
             let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
             let u2 = mesh.texcoords[(x2 * 2) as usize];
             let v2 = mesh.texcoords[(x2 * 2 + 1) as usize];
-            let mat2 = ObjTexture::new(filejpg, u2 as f64, v2 as f64);
+            let _mat2 = ObjTexture::new(filejpg, u2 as f64, v2 as f64);
             let u3 = mesh.texcoords[(x3 * 2) as usize];
             let v3 = mesh.texcoords[(x3 * 2 + 1) as usize];
-            let mat3 = ObjTexture::new(filejpg, u3 as f64, v3 as f64);
+            let _mat3 = ObjTexture::new(filejpg, u3 as f64, v3 as f64);
             //try to merge the three texture
 
             let triange = Triangel::new(

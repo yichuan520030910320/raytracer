@@ -59,6 +59,7 @@ impl Perlin {
             arr[axis as usize] = tmp;
         }
     }
+    #[allow(clippy::many_single_char_names)]
     pub fn noise(&self, p: Vec3) -> f64 {
         let u = p.x - p.x.floor();
         let v = p.y - p.y.floor();

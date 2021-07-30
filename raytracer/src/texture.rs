@@ -68,8 +68,9 @@ impl ObjTexture {
         }
     }
 }
+#[allow(clippy::many_single_char_names)]
 impl Texture for ObjTexture {
-    fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
+    fn value(&self, _u: f64, _v: f64, _p: &Vec3) -> Vec3 {
         let mut i = (self.u * ((self.img.width()) as f64)) as i32;
         let mut j = (self.v * ((self.img.height()) as f64)) as i32;
         if i >= self.img.width() as i32 {

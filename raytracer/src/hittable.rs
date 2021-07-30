@@ -63,8 +63,8 @@ impl Hitrecord {
 
         let mut phi = (temptheta).atan();
         phi = phi + PI;
-        *u = *&mut (phi / (2.0 * PI));
-        *v = *&mut (theta / PI);
+        *u = (phi / (2.0 * PI));
+        *v = (theta / PI);
     }
     pub fn new(
         p: Vec3,
@@ -126,13 +126,14 @@ impl MovingSphere {
             + (self.center1 - self.center0) * ((time - self.time0) / (self.time1 - self.time0));
     }
 }
-
+#[allow(clippy::suspicious_operation_groupings)]
 impl Hittable for MovingSphere {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let oc = r.ori - MovingSphere::center(self, r.tm);
         let a = Vec3::squared_length(&r.dic);
         let half_b = Vec3::dot(r.dic, oc);
         let c = Vec3::squared_length(&oc) - self.radius * self.radius;
+
         let discriminant = (half_b * half_b - a * c) as f64;
         if discriminant < 0.0 {
             return None;
@@ -208,6 +209,7 @@ impl Sphere {
 }
 
 //实例化trait在圆中
+#[allow(clippy::suspicious_operation_groupings)]
 impl Hittable for Sphere {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         let oc = r.ori - self.center;
