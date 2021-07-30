@@ -30,7 +30,6 @@ use rand::Rng;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
-use tobj;
 pub use vec3::Vec3;
 
 fn random_doouble() -> f64 {

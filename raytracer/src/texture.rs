@@ -64,7 +64,7 @@ impl ObjTexture {
         Self {
             u,
             v,
-            img: image::open(filename).expect("failed").to_rgb(),
+            img: image::open(filename).expect("failed").to_rgb8(),
         }
     }
 }
@@ -105,7 +105,7 @@ impl ImageTexture {
             width: 0,
             height: 0,
             bytes_per_scanline: 0,
-            img: image::open(filename).expect("failed").to_rgb(),
+            img: image::open(filename).expect("failed").to_rgb8(),
         }
     }
 }

@@ -63,8 +63,8 @@ impl Hitrecord {
 
         let mut phi = (temptheta).atan();
         phi = phi + PI;
-        *u = (phi / (2.0 * PI));
-        *v = (theta / PI);
+        *u = phi / (2.0 * PI);
+        *v = theta / PI;
     }
     pub fn new(
         p: Vec3,
