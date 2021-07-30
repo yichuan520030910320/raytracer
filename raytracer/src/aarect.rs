@@ -3,20 +3,36 @@ use crate::hittable::{Hitrecord, Hittable, Material};
 use crate::{range_random_double, Ray, Vec3};
 use std::f64::INFINITY;
 use std::sync::Arc;
-pub fn maxnum1(a:f64,b:f64,c:f64)->f64{
-    if a<b {
-        if c<b {return b; }
-        else { return c; }
-    }else { if a<c {return c; }
-    else { return a; }}
+pub fn maxnum1(a: f64, b: f64, c: f64) -> f64 {
+    if a < b {
+        if c < b {
+            return b;
+        } else {
+            return c;
+        }
+    } else {
+        if a < c {
+            return c;
+        } else {
+            return a;
+        }
+    }
 }
 
-pub fn mainnum1(a:f64,b:f64,c:f64)->f64{
-    if a<b {
-        if c<a {return c; }
-        else { return a; }
-    }else { if b<c {return b; }
-    else { return c; }}
+pub fn mainnum1(a: f64, b: f64, c: f64) -> f64 {
+    if a < b {
+        if c < a {
+            return c;
+        } else {
+            return a;
+        }
+    } else {
+        if b < c {
+            return b;
+        } else {
+            return c;
+        }
+    }
 }
 pub struct XyRect {
     pub(crate) mp: Arc<dyn Material>,
@@ -105,8 +121,11 @@ impl Hittable for Triangel {
             return None;
         }
         let hit = r.at(t);
-        if Vec3::sameside(self.a1, self.a2, self.a3, hit) && Vec3::sameside(self.a2, self.a3, self.a1, hit) && Vec3::sameside(self.a3, self.a1, self.a2, hit) {
-           //use the method 2 in https://www.cnblogs.com/graphics/archive/2010/08/05/1793393.html
+        if Vec3::sameside(self.a1, self.a2, self.a3, hit)
+            && Vec3::sameside(self.a2, self.a3, self.a1, hit)
+            && Vec3::sameside(self.a3, self.a1, self.a2, hit)
+        {
+            //use the method 2 in https://www.cnblogs.com/graphics/archive/2010/08/05/1793393.html
             let mut rec = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.mp.clone());
             rec.p = r.at(t);
             let a1 = self.a1.x - self.a2.x;
@@ -132,10 +151,18 @@ impl Hittable for Triangel {
         // let dirct1 = self.a2 - self.a1;
         // let dirct2 = self.a3 - self.a1;
         // let n = Vec3::cross(dirct1, dirct2);
-        let ans1=Vec3::new(mainnum1(self.a1.x,self.a2.x,self.a3.x), mainnum1(self.a1.y,self.a2.y,self.a3.y), mainnum1(self.a1.z,self.a2.z,self.a3.z));
-        let ans2=Vec3::new(maxnum1(self.a1.x,self.a2.x,self.a3.x), maxnum1(self.a1.y,self.a2.y,self.a3.y), maxnum1(self.a1.z,self.a2.z,self.a3.z));
+        let ans1 = Vec3::new(
+            mainnum1(self.a1.x, self.a2.x, self.a3.x),
+            mainnum1(self.a1.y, self.a2.y, self.a3.y),
+            mainnum1(self.a1.z, self.a2.z, self.a3.z),
+        );
+        let ans2 = Vec3::new(
+            maxnum1(self.a1.x, self.a2.x, self.a3.x),
+            maxnum1(self.a1.y, self.a2.y, self.a3.y),
+            maxnum1(self.a1.z, self.a2.z, self.a3.z),
+        );
 
-        Some(Aabb::new(ans1,ans2))
+        Some(Aabb::new(ans1, ans2))
     }
 }
 

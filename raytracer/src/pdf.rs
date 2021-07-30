@@ -1,4 +1,4 @@
-use crate::hittable::{ Hittable};
+use crate::hittable::Hittable;
 use crate::onb::Onb;
 use crate::{random_doouble, Vec3};
 use std::f64::consts::PI;
@@ -16,11 +16,7 @@ pub struct CosinePdf {
 impl Pdf for CosinePdf {
     fn value(&self, direction: &Vec3) -> f64 {
         let cosine = Vec3::dot(direction.unit(), self.uvw.w());
-        return if cosine <= 0.0 {
-            0.0
-        } else {
-            cosine / PI
-        }
+        return if cosine <= 0.0 { 0.0 } else { cosine / PI };
     }
 
     fn generate(&self) -> Vec3 {
@@ -71,23 +67,21 @@ impl Pdf for MixturePdf {
             self.p0.generate()
         } else {
             self.p1.generate()
-        }
+        };
     }
 }
-pub struct NoPdf{
-    pub val:f64,
+pub struct NoPdf {
+    pub val: f64,
 }
 
-impl NoPdf{
-    pub fn new() -> Self{
-        Self{
-            val:0.0,
-        }
+impl NoPdf {
+    pub fn new() -> Self {
+        Self { val: 0.0 }
     }
 }
 
-impl Pdf for NoPdf{
-    fn value(&self, _: &Vec3) -> f64{
+impl Pdf for NoPdf {
+    fn value(&self, _: &Vec3) -> f64 {
         return 0.0;
     }
     fn generate(&self) -> Vec3 {

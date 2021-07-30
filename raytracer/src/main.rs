@@ -14,8 +14,11 @@ mod vec3;
 
 const INF: f64 = 1000000.0;
 
-use crate::aarect::{XyRect, XzRect, YzRect, Triangel};
-use crate::hittable::{Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, Sphere, Translate, RotateZ};
+use crate::aarect::{Triangel, XyRect, XzRect, YzRect};
+use crate::hittable::{
+    Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, RotateZ, Sphere,
+    Translate,
+};
 use crate::material::{Dielectric, DiffuseLight, FlipFace, Lambertian, Metal};
 use crate::pdf::{HittablePdf, MixturePdf, Pdf};
 use crate::perlin::NoiseTexture;
@@ -27,9 +30,8 @@ use rand::Rng;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
-pub use vec3::Vec3;
 use tobj;
-
+pub use vec3::Vec3;
 
 fn random_doouble() -> f64 {
     rand::thread_rng().gen_range(1..101) as f64 / 102.0
@@ -55,7 +57,7 @@ fn color(
     lights: &Arc<dyn Hittable + Send>,
     dep: u32,
 ) -> Vec3 {
-    if dep <= 0 {
+    if dep == 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
     return if let Option::Some(_rec) = world.hit(x, 0.001, INF) {
@@ -63,17 +65,21 @@ fn color(
         let emitted = _rec.mat_ptr.emitted(&_rec, _rec.u, _rec.v, &_rec.p);
         let mut pdf_val = 0.0;
         let mut aldedo = Vec3::zero();
-        let scatterrecord = _rec
-            .mat_ptr
-            .scatter(&x, &_rec, &mut aldedo, &mut scattered, &mut pdf_val);
+        let scatterrecord =
+            _rec.mat_ptr
+                .scatter(&x, &_rec, &mut aldedo, &mut scattered, &mut pdf_val);
 
-
-        if scatterrecord.isget
-        {
+        if scatterrecord.isget {
             if scatterrecord.is_specular {
-                return scatterrecord.attenuation * color(scatterrecord.specular_ray, background, world, lights, dep - 1);
+                return scatterrecord.attenuation
+                    * color(
+                        scatterrecord.specular_ray,
+                        background,
+                        world,
+                        lights,
+                        dep - 1,
+                    );
             }
-
 
             let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
             let p = MixturePdf::new(lightptr, scatterrecord.pdf_ptr);
@@ -81,12 +87,11 @@ fn color(
 
             pdf_val = p.value(&scattered.dic);
 
-
             let mm = emitted
                 + scatterrecord.attenuation
-                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                * color(scattered, background, world, lights, dep - 1)
-                / pdf_val;
+                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                    * color(scattered, background, world, lights, dep - 1)
+                    / pdf_val;
 
             return mm;
         }
@@ -112,14 +117,14 @@ fn main() {
     let mut ratio: f64 = 1.0;
     // let image_width = 400 as u32;
     let mut image_width = 600 as u32;
-    let  mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 10; //ought to be 100  可以做的更大比如500//
+    let mut image_heigth = (image_width as f64 / ratio) as u32;
+    let sample_per_pixel = 20; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
-    // let backgroud=Vec3::new(0.7,0.8,1.0);
+                        // let backgroud=Vec3::new(0.7,0.8,1.0);
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
-    //let lookfrom = Vec3::new(478.0, 278.0, -600.0); //13 2 3
-    // let lookfrom = Vec3::new(-3.0, -3.0, -2.0);//13 2 3
+                                                        //let lookfrom = Vec3::new(478.0, 278.0, -600.0); //13 2 3
+                                                        // let lookfrom = Vec3::new(-3.0, -3.0, -2.0);//13 2 3
 
     // let lookfrom = Vec3::new(15300.0, 15500.0, 14000.0);//13 2 3
     // let lookfrom = Vec3::new(3.0, 2.0, 0.0);//13 2 3
@@ -127,58 +132,64 @@ fn main() {
     let lookat = Vec3::new(0.0, 0.0, 0.0);
     //let lookat=Vec3::new(0.0,2.0,0.0);
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
-    let mut vfov =40.0;
-    let number = 12;
+    let mut vfov = 40.0;
+    let number = 6;
     let mut world = HittableList { objects: vec![] };
     match number {
         1 => world = two_spheres(),
-        2 => { world = random_sence();
+        2 => {
+            world = random_sence();
             lookat = Vec3::new(0.0, 0.0, 0.0);
-            lookfrom=Vec3::new(13.0,2.0,3.0);
-            backgroud=Vec3::new(0.7,0.8,1.0);
-            vfov=20.0;
-            ratio = 3.0/2.0;
+            lookfrom = Vec3::new(13.0, 2.0, 3.0);
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
+            vfov = 20.0;
+            ratio = 3.0 / 2.0;
 
-           image_width = 1200 as u32;
-           image_heigth = (image_width as f64 / ratio) as u32;
-
+            image_width = 1200 as u32;
+            image_heigth = (image_width as f64 / ratio) as u32;
         }
-        3 => { world = two_berlin_spheres();
-            vfov=20.0;
+        3 => {
+            world = two_berlin_spheres();
+            vfov = 20.0;
             lookat = Vec3::new(0.0, 0.0, 0.0);
-            lookfrom=Vec3::new(13.0,2.0,3.0);
-            backgroud=Vec3::new(0.7,0.8,1.0);
+            lookfrom = Vec3::new(13.0, 2.0, 3.0);
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
         }
-        4 => { world = earth();
-            vfov=20.0;
+        4 => {
+            world = earth();
+            vfov = 20.0;
             lookat = Vec3::new(0.0, 0.0, 0.0);
-            lookfrom=Vec3::new(13.0,2.0,3.0);
-            backgroud=Vec3::new(0.7,0.8,1.0);
+            lookfrom = Vec3::new(13.0, 2.0, 3.0);
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
         }
         5 => world = simple_light(),
-        6 => { world = cornell_box();
+        6 => {
+            world = cornell_box();
             backgroud = Vec3::new(0.0, 0.0, 0.0);
             lookat = Vec3::new(278.0, 278.0, 0.0);
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
         }
         7 => world = cornell_smoke(),
-        8 => { world = final_book2_scence();
+        8 => {
+            world = final_book2_scence();
             lookat = Vec3::new(278.0, 278.0, 0.0);
-            lookfrom = Vec3::new(478.0, 278.0, -600.0);//todo
-            vfov=40.0;
+            lookfrom = Vec3::new(478.0, 278.0, -600.0); //todo
+            vfov = 40.0;
             ratio = 1.0;
             image_width = 800 as u32;
             image_heigth = (image_width as f64 / ratio) as u32;
-         }
-        9 => { world = my_scence_ball_world();
+        }
+        9 => {
+            world = my_scence_ball_world();
             lookat = Vec3::new(0.0, 0.0, 0.0);
-            backgroud=Vec3::new(0.7,0.8,1.0);
-            lookfrom=Vec3::new(13.0,2.0,0.0);
-            vfov=50.0;
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
+            lookfrom = Vec3::new(13.0, 2.0, 0.0);
+            vfov = 50.0;
         }
         10 => world = obj(),
         11 => world = obj_with_texture(),
-        12 => { world = cornell_box_rabbit();
+        12 => {
+            world = cornell_box_rabbit();
             backgroud = Vec3::new(0.0, 0.0, 0.0);
             lookat = Vec3::new(278.0, 278.0, 0.0);
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
@@ -194,11 +205,17 @@ fn main() {
         554.0,
         Arc::new(Lambertian::new(Vec3::zero())),
     ));
-    let tmp: Arc<dyn Hittable + Send> = Arc::new(Sphere::new(Vec3::zero(), Vec3::zero(), 0.0, Vec3::new(190.0, 90.0, 190.0), 90.0, Arc::new(Lambertian::new(Vec3::zero()))));
+    let tmp: Arc<dyn Hittable + Send> = Arc::new(Sphere::new(
+        Vec3::zero(),
+        Vec3::zero(),
+        0.0,
+        Vec3::new(190.0, 90.0, 190.0),
+        90.0,
+        Arc::new(Lambertian::new(Vec3::zero())),
+    ));
     lightworld.add(light1);
-   // lightworld.add(tmp);
+    // lightworld.add(tmp);
     let lights: Arc<dyn Hittable + Send> = Arc::new(lightworld);
-
 
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
@@ -239,13 +256,13 @@ fn main() {
                         let r = cam.get_ray(u, v);
                         pixel_color += color(r, backgroud, &worldptr, &lightsptr, max_depth);
                     }
-                    if pixel_color.x != pixel_color.x {
+                    if pixel_color.x.is_nan() {
                         pixel_color.x = 0.0;
                     }
-                    if pixel_color.y != pixel_color.y {
+                    if pixel_color.y.is_nan() {
                         pixel_color.y = 0.0;
                     }
-                    if pixel_color.z != pixel_color.z {
+                    if pixel_color.z.is_nan() {
                         pixel_color.z = 0.0;
                     }
                     let scale = 1.0 / sample_per_pixel as f64;
@@ -550,7 +567,6 @@ fn two_berlin_spheres() -> HittableList {
     };
     world.add(Arc::new(above));
 
-
     return world;
 }
 
@@ -735,7 +751,6 @@ fn cornell_box() -> HittableList {
     // whitebox1 = Arc::new(Translate::new(whitebox1, Vec3::new(265.0, 0.0, 295.0)));
     // world.add(whitebox1);
 
-
     let mut whitebox1: Arc<dyn Hittable> = Arc::new(Box1::new(
         &Vec3::new(0.0, 0.0, 0.0),
         &Vec3::new(165.0, 330.0, 165.0),
@@ -767,27 +782,6 @@ fn cornell_box() -> HittableList {
     };
     world.add(Arc::new(material1));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // let mut whitebox2: Arc<dyn Hittable> = Arc::new(Box1::new(
     //     &Vec3::new(0.0, 0.0, 0.0),
     //     &Vec3::new(165.0, 165.0, 165.0),
@@ -814,8 +808,6 @@ fn cornell_box() -> HittableList {
     world.add(light1_bonus);
     return world;
 }
-
-
 
 fn cornell_box_rabbit() -> HittableList {
     let mut world = HittableList { objects: vec![] };
@@ -872,9 +864,6 @@ fn cornell_box_rabbit() -> HittableList {
     };
     world.add(Arc::new(white3));
 
-
-
-
     // let mut whitebox1: Arc<dyn Hittable> = Arc::new(Box1::new(
     //     &Vec3::new(0.0, 0.0, 0.0),
     //     &Vec3::new(165.0, 330.0, 165.0),
@@ -885,6 +874,7 @@ fn cornell_box_rabbit() -> HittableList {
     // world.add(whitebox1);
 
     let cornell_box = tobj::load_obj(
+        //buddle
         "Buddha.obj",
         &tobj::LoadOptions {
             single_index: true,
@@ -893,7 +883,7 @@ fn cornell_box_rabbit() -> HittableList {
         },
     );
     assert!(cornell_box.is_ok());
-    let rate = 10.0*10.0*1.9;
+    let rate = 10.0 * 10.0 * 1.9;
     let (models, materials) = cornell_box.expect("Failed to load OBJ file");
     for (i, m) in models.iter().enumerate() {
         let mesh = &m.mesh;
@@ -902,27 +892,38 @@ fn cornell_box_rabbit() -> HittableList {
             let x1 = mesh.indices[3 * v];
             let x2 = mesh.indices[3 * v + 1];
             let x3 = mesh.indices[3 * v + 2];
-            let triange = Triangel::new(Vec3 {
-                x: rate * mesh.positions[(3 * x1) as usize] as f64,
-                y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
-            }, Vec3 {
-                x: rate * mesh.positions[(3 * x2) as usize] as f64,
-                y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
-            }, Vec3 {
-                x: rate * mesh.positions[(3 * x3) as usize] as f64,
-                y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-            }, Arc::new(Metal::new(Vec3::new(0.99, 0.78, 0.0),0.1)));
+            let triange = Triangel::new(
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x1) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x2) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x3) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+                },
+                Arc::new(Metal::new(Vec3::new(0.99, 0.78, 0.0), 0.1)),
+            );
             boxes2.add(Arc::new(triange));
         }
-        let allin = Translate::new(Arc::new(RotateY::new(Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),180.0)),Vec3::new(395.0,200.0,345.0));
+        let allin = Translate::new(
+            Arc::new(RotateY::new(
+                Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+                200.0,
+            )),
+            Vec3::new(425.0, 200.0, 345.0),
+        );
         world.add(Arc::new(allin));
     }
 
-
     let cornell_box = tobj::load_obj(
+        //rabbit
         "bunny.fine.obj",
         &tobj::LoadOptions {
             single_index: true,
@@ -931,7 +932,7 @@ fn cornell_box_rabbit() -> HittableList {
         },
     );
     assert!(cornell_box.is_ok());
-    let rate = 100.0*10.0;
+    let rate = 100.0 * 10.0;
     let (models, materials) = cornell_box.expect("Failed to load OBJ file");
     for (i, m) in models.iter().enumerate() {
         let mesh = &m.mesh;
@@ -940,42 +941,102 @@ fn cornell_box_rabbit() -> HittableList {
             let x1 = mesh.indices[3 * v];
             let x2 = mesh.indices[3 * v + 1];
             let x3 = mesh.indices[3 * v + 2];
-            let triange = Triangel::new(Vec3 {
-                x: rate * mesh.positions[(3 * x1) as usize] as f64,
-                y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
-            }, Vec3 {
-                x: rate * mesh.positions[(3 * x2) as usize] as f64,
-                y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
-            }, Vec3 {
-                x: rate * mesh.positions[(3 * x3) as usize] as f64,
-                y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-            }, Arc::new(Lambertian::new(Vec3::new(0.74218, 0.74218, 0.74218))));
+            let triange = Triangel::new(
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x1) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x2) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x3) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+                },
+                Arc::new(Lambertian::new(Vec3::new(0.74218, 0.74218, 0.74218))),
+            );
             boxes2.add(Arc::new(triange));
         }
-        let allin = Translate::new(Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),Vec3::new(190.0,-27.0,190.0));
+        let allin = Translate::new(
+            Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+            Vec3::new(190.0, -27.0, 190.0),
+        );
         world.add(Arc::new(allin));
     }
 
+    let cornell_box = tobj::load_obj(
+        "patrick.obj",
+        &tobj::LoadOptions {
+            single_index: true,
+            triangulate: true,
+            ..Default::default()
+        },
+    );
+    let filejpg = "Char_Patrick.png";
+    assert!(cornell_box.is_ok());
+    let rate = 120.0;
+    let (models, materials) = cornell_box.expect("Failed to load OBJ file");
 
+    // Materials might report a separate loading error if the MTL file wasn't found.
+    // If you don't need the materials, you can generate a default here and use that
+    // instead.
 
+    for (i, m) in models.iter().enumerate() {
+        let mesh = &m.mesh;
+        let mut boxes2 = HittableList { objects: vec![] };
+        for v in 0..mesh.indices.len() / 3 {
+            let x1 = mesh.indices[3 * v];
+            let x2 = mesh.indices[3 * v + 1];
+            let x3 = mesh.indices[3 * v + 2];
+            // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
+            //todo
+            let u1 = mesh.texcoords[(x1 * 2) as usize];
+            let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
+            let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
+            let u2 = mesh.texcoords[(x2 * 2) as usize];
+            let v2 = mesh.texcoords[(x2 * 2 + 1) as usize];
+            let mat2 = ObjTexture::new(filejpg, u2 as f64, v2 as f64);
+            let u3 = mesh.texcoords[(x3 * 2) as usize];
+            let v3 = mesh.texcoords[(x3 * 2 + 1) as usize];
+            let mat3 = ObjTexture::new(filejpg, u3 as f64, v3 as f64);
+            //try to merge the three texture
 
+            let triange = Triangel::new(
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x1) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x2) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x3) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+                },
+                Arc::new(Lambertian::new1(Arc::new(mat1))),
+                // Arc::new(Lambertian::new(Vec3::new(0.99,0.756,0.756)))
+            );
+            boxes2.add(Arc::new(triange));
+        }
+        let allin = Translate::new(
+            Arc::new(RotateY::new(
+                Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+                160.0,
+            )),
+            Vec3::new(330.0, 0.0, 100.0),
+        );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        world.add(Arc::new(allin));
+    }
+    //todo texture fail but can't know the result
 
     // let mut whitebox2: Arc<dyn Hittable> = Arc::new(Box1::new(
     //     &Vec3::new(0.0, 0.0, 0.0),
@@ -992,7 +1053,7 @@ fn cornell_box_rabbit() -> HittableList {
     // );
 
     let light1 = XzRect {
-        mp: Arc::new(DiffuseLight::new(Vec3::new(15.0, 15.0, 15.0))),
+        mp: Arc::new(DiffuseLight::new(Vec3::new(13.0, 13.0, 13.0))),
         x0: 213.0,
         x1: 343.0,
         z0: 227.0,
@@ -1326,26 +1387,36 @@ fn my_scence_ball_world() -> HittableList {
         x1: 30.0,
         y0: 0.0,
 
-        k: 20.0,//高度
+        k: 20.0, //高度
         y1: 6.0,
     };
     world.add(Arc::new(light1));
 
     let floortexture = Arc::new(ImageTexture::new("wondersky.jpg"));
-    let floor = Sphere::new(Vec3 {
-        x: 0.0,
-        y: 0.0,
-        z: 0.0,
-    }, Vec3 {
-        x: 0.0,
-        y: 0.0,
-        z: 0.0,
-    }, 0.0, Vec3 {
-        x: 0.0,
-        y: 0.0,
-        z: 0.0,
-    }, 100.0, Arc::new(Lambertian::new1(floortexture)));
-    let terminalfloor = Arc::new(Translate::new(Arc::new(RotateZ::new(Arc::new(floor), 60.0)), Vec3::new(0.0, -100.0, 0.0)));
+    let floor = Sphere::new(
+        Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        0.0,
+        Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        100.0,
+        Arc::new(Lambertian::new1(floortexture)),
+    );
+    let terminalfloor = Arc::new(Translate::new(
+        Arc::new(RotateZ::new(Arc::new(floor), 60.0)),
+        Vec3::new(0.0, -100.0, 0.0),
+    ));
 
     world.add(terminalfloor);
     let mut boxes2 = HittableList { objects: vec![] };
@@ -1565,16 +1636,17 @@ fn my_scence_ball_world() -> HittableList {
         boxes2.add(Arc::new(sky_sphere));
     }
 
-
     let allin = Arc::new(Translate::new(
-        Arc::new(RotateZ::new(Arc::new(RotateY::new(
-            Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+        Arc::new(RotateZ::new(
+            Arc::new(RotateY::new(
+                Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+                0.0,
+            )),
             0.0,
-        )), 0.0)),
+        )),
         Vec3::new(0.0, 0.0, 0.0),
     ));
     world.add(allin);
-
 
     let mut boxes_red = HittableList { objects: vec![] };
     for _ in 0..500 {
@@ -1603,14 +1675,15 @@ fn my_scence_ball_world() -> HittableList {
     let allinred = Arc::new(BvhNode::new(boxes_red.objects, 0.0, 1.0));
     world.add(allinred);
 
-
     let mut boxes_yellow = HittableList { objects: vec![] };
     for _ in 0..400 {
         let mut a = Vec3::zero();
         a.y = range_random_double(1.90, 2.50);
         a.z = range_random_double(-5.0, 5.0);
         a.x = range_random_double(-20.0, 6.0);
-        if (a - cam).length() < 0.1 { continue; }
+        if (a - cam).length() < 0.1 {
+            continue;
+        }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1632,14 +1705,15 @@ fn my_scence_ball_world() -> HittableList {
     let allinyellow = Arc::new(BvhNode::new(boxes_yellow.objects, 0.0, 1.0));
     world.add(allinyellow);
 
-
     let mut boxes_pink = HittableList { objects: vec![] };
     for _ in 0..400 {
         let mut a = Vec3::zero();
         a.y = range_random_double(3.90, 4.50) - 0.5;
         a.z = range_random_double(-9.0, 9.0);
         a.x = range_random_double(-20.0, 9.0);
-        if (a - cam).length() < 0.1 { continue; }
+        if (a - cam).length() < 0.1 {
+            continue;
+        }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1661,14 +1735,15 @@ fn my_scence_ball_world() -> HittableList {
     let allinyellow = Arc::new(BvhNode::new(boxes_pink.objects, 0.0, 1.0));
     world.add(allinyellow);
 
-
     let mut boxes_white = HittableList { objects: vec![] };
     for _ in 0..400 {
         let mut a = Vec3::zero();
         a.y = range_random_double(1.70, 2.90);
         a.z = range_random_double(-5.0, 5.0);
         a.x = range_random_double(-20.0, 11.0);
-        if (a - cam).length() < 0.1 { continue; }
+        if (a - cam).length() < 0.1 {
+            continue;
+        }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1697,7 +1772,9 @@ fn my_scence_ball_world() -> HittableList {
             a.y = range_random_double(2.8, 4.90);
             a.z = i as f64 * 0.5;
             a.x = j as f64 * 0.5;
-            if (a - cam).length() < 0.1 { continue; }
+            if (a - cam).length() < 0.1 {
+                continue;
+            }
             let ground = Sphere {
                 p: Vec3 {
                     x: 0.0,
@@ -1723,7 +1800,9 @@ fn my_scence_ball_world() -> HittableList {
             a.y = range_random_double(1.9, 2.20);
             a.z = i as f64 * 1.0 + 0.1 + j as f64 * 0.2;
             a.x = j as f64 * 1.0 + 0.1;
-            if (a - cam).length() < 0.1 { continue; }
+            if (a - cam).length() < 0.1 {
+                continue;
+            }
             let ground = Sphere {
                 p: Vec3 {
                     x: 0.0,
@@ -1746,14 +1825,15 @@ fn my_scence_ball_world() -> HittableList {
     let allinyellow = Arc::new(BvhNode::new(boxes_greenblue.objects.clone(), 0.0, 1.0));
     world.add(allinyellow);
 
-
     let mut boxes_green = HittableList { objects: vec![] };
     for _ in 0..200 {
         let mut a = Vec3::zero();
         a.y = range_random_double(0.50, 1.160);
         a.z = range_random_double(-5.0, 5.0);
         a.x = range_random_double(-20.0, 12.0);
-        if (a - cam).length() < 0.1 { continue; }
+        if (a - cam).length() < 0.1 {
+            continue;
+        }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1781,7 +1861,9 @@ fn my_scence_ball_world() -> HittableList {
         a.y = range_random_double(0.05, 0.15);
         a.z = range_random_double(-5.0, 5.0);
         a.x = range_random_double(-20.0, 12.0);
-        if (a - cam).length() < 0.1 { continue; }
+        if (a - cam).length() < 0.1 {
+            continue;
+        }
         let ground = Sphere {
             p: Vec3 {
                 x: 0.0,
@@ -1803,12 +1885,13 @@ fn my_scence_ball_world() -> HittableList {
     let allinyellow = Arc::new(BvhNode::new(boxes_dark_green.objects, 0.0, 1.0));
     world.add(allinyellow);
 
-
-//
+    //
     let mut tennis_unit = HittableList { objects: vec![] };
     let tennis = Arc::new(ImageTexture::new("tennis.png"));
     for i in -8..8 {
-        if i == 0 { continue; }
+        if i == 0 {
+            continue;
+        }
         let xx = i as f64 * (1.7 / 8.0);
         let sky_sphere = Sphere {
             p: Vec3 {
@@ -1830,16 +1913,20 @@ fn my_scence_ball_world() -> HittableList {
                 z: xx,
             },
         };
-        tennis_unit.add(Arc::new(sky_sphere));//
+        tennis_unit.add(Arc::new(sky_sphere)); //
     }
 
-    let allteniss = Translate::new(Arc::new(RotateY::new(Arc::new(tennis_unit), 60.0)), Vec3::new(6.0, -0.05, -1.0));
+    let allteniss = Translate::new(
+        Arc::new(RotateY::new(Arc::new(tennis_unit), 60.0)),
+        Vec3::new(6.0, -0.05, -1.0),
+    );
     world.add(Arc::new(allteniss));
-
 
     let mut glass_unit = HittableList { objects: vec![] };
     for i in -8..8 {
-        if i == 0 { continue; }
+        if i == 0 {
+            continue;
+        }
         let xx = i as f64 * (1.75 / 8.0);
 
         let sky_sphere = Sphere {
@@ -1862,17 +1949,19 @@ fn my_scence_ball_world() -> HittableList {
                 z: xx,
             },
         };
-        glass_unit.add(Arc::new(sky_sphere));//
+        glass_unit.add(Arc::new(sky_sphere)); //
     }
 
-    let allteniss = Translate::new(Arc::new(RotateY::new(Arc::new(glass_unit), -30.0)), Vec3::new(9.0, -0.05, 2.0));
+    let allteniss = Translate::new(
+        Arc::new(RotateY::new(Arc::new(glass_unit), -30.0)),
+        Vec3::new(9.0, -0.05, 2.0),
+    );
     world.add(Arc::new(allteniss));
     return world;
 }
 
 fn obj() -> HittableList {
     let mut world = HittableList { objects: vec![] };
-
 
     let cornell_box = tobj::load_obj(
         "bunny.fine.obj",
@@ -1886,11 +1975,10 @@ fn obj() -> HittableList {
     let rate = 1.0;
     let (models, materials) = cornell_box.expect("Failed to load OBJ file");
 
-// Materials might report a separate loading error if the MTL file wasn't found.
-// If you don't need the materials, you can generate a default here and use that
-// instead.
+    // Materials might report a separate loading error if the MTL file wasn't found.
+    // If you don't need the materials, you can generate a default here and use that
+    // instead.
     let materials = materials.expect("Failed to load MTL file");
-
 
     println!("# of models: {}", models.len());
     println!("# of materials: {}", materials.len());
@@ -1900,12 +1988,10 @@ fn obj() -> HittableList {
         println!("model[{}].incidices: {}", i, mesh.indices.len() / 3);
 
         assert!(mesh.indices.len() % 3 == 0);
-        println!("len  is {}",mesh.indices.len());
+        println!("len  is {}", mesh.indices.len());
 
         let mut boxes2 = HittableList { objects: vec![] };
         for v in 0..mesh.indices.len() / 3 {
-
-
             // println!(
             //     "  indices  v[{}] = ({}, {}, {})",
             //     v,
@@ -1917,24 +2003,28 @@ fn obj() -> HittableList {
             let x2 = mesh.indices[3 * v + 1];
             let x3 = mesh.indices[3 * v + 2];
 
-            let triange = Triangel::new(Vec3 {
-                x: rate * mesh.positions[(3 * x1) as usize] as f64,
-                y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
-            }, Vec3 {
-                x: rate * mesh.positions[(3 * x2) as usize] as f64,
-                y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
-            }, Vec3 {
-                x: rate * mesh.positions[(3 * x3) as usize] as f64,
-                y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-            }, Arc::new(Lambertian::new(Vec3::new(0.99, 0.78, 0.0))));
+            let triange = Triangel::new(
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x1) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x2) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x3) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+                },
+                Arc::new(Lambertian::new(Vec3::new(0.99, 0.78, 0.0))),
+            );
 
             // println!("triangle  vec  1is {:?}",triange.a1);
             // println!("triangle  vec 2 is {:?}",triange.a2);
             // println!("triangle  vec3  is {:?}",triange.a3);
-
 
             boxes2.add(Arc::new(triange));
         }
@@ -1971,10 +2061,7 @@ fn obj() -> HittableList {
         //         mesh.positions[3 * v + 2]
         //     );
         // }
-
-
     }
-
 
     for (i, m) in materials.iter().enumerate() {
         println!("material[{}].name = \'{}\'", i, m.name);
@@ -2010,7 +2097,6 @@ fn obj() -> HittableList {
 fn obj_with_texture() -> HittableList {
     let mut world = HittableList { objects: vec![] };
 
-
     let cornell_box = tobj::load_obj(
         "patrick.obj",
         &tobj::LoadOptions {
@@ -2024,11 +2110,10 @@ fn obj_with_texture() -> HittableList {
     let rate = 10000.0;
     let (models, materials) = cornell_box.expect("Failed to load OBJ file");
 
-// Materials might report a separate loading error if the MTL file wasn't found.
-// If you don't need the materials, you can generate a default here and use that
-// instead.
+    // Materials might report a separate loading error if the MTL file wasn't found.
+    // If you don't need the materials, you can generate a default here and use that
+    // instead.
     let materials = materials.expect("Failed to load MTL file");
-
 
     println!("# of models: {}", models.len());
     println!("# of materials: {}", materials.len());
@@ -2036,8 +2121,14 @@ fn obj_with_texture() -> HittableList {
     for (i, m) in models.iter().enumerate() {
         let mesh = &m.mesh;
         println!("model[{}].incidices: {}", i, mesh.indices.len() / 3);
-        println!("   normal  incidieces len   is  {}", mesh.normal_indices.len());
-        println!("  texture  incidieces len   is  {}", mesh.texcoord_indices.len());
+        println!(
+            "   normal  incidieces len   is  {}",
+            mesh.normal_indices.len()
+        );
+        println!(
+            "  texture  incidieces len   is  {}",
+            mesh.texcoord_indices.len()
+        );
 
         println!("model[{}].incidices: {}", i, mesh.indices.len() / 3);
 
@@ -2055,55 +2146,42 @@ fn obj_with_texture() -> HittableList {
             let x1 = mesh.indices[3 * v];
             let x2 = mesh.indices[3 * v + 1];
             let x3 = mesh.indices[3 * v + 2];
-// u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
+            // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
             //todo
             let u1 = mesh.texcoords[(x1 * 2) as usize];
-            let v1 = mesh.texcoords[(x1 * 2 + 1)as usize];
+            let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
             let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
             let u2 = mesh.texcoords[(x2 * 2) as usize];
-            let v2 = mesh.texcoords[(x2 * 2 + 1)as usize];
+            let v2 = mesh.texcoords[(x2 * 2 + 1) as usize];
             let mat2 = ObjTexture::new(filejpg, u2 as f64, v2 as f64);
             let u3 = mesh.texcoords[(x3 * 2) as usize];
-            let v3 = mesh.texcoords[(x3 * 2 + 1)as usize];
+            let v3 = mesh.texcoords[(x3 * 2 + 1) as usize];
             let mat3 = ObjTexture::new(filejpg, u3 as f64, v3 as f64);
-//try to merge the three texture
+            //try to merge the three texture
 
-            let triange = Triangel::new(Vec3 {
-                x: rate * mesh.positions[(3 * x1) as usize] as f64,
-                y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
-            }, Vec3 {
-                x: rate * mesh.positions[(3 * x2) as usize] as f64,
-                y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
-            }, Vec3 {
-                x: rate * mesh.positions[(3 * x3) as usize] as f64,
-                y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
-                z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-            }, Arc::new(Lambertian::new1(Arc::new(mat1))));
-
+            let triange = Triangel::new(
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x1) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x2) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+                },
+                Vec3 {
+                    x: rate * mesh.positions[(3 * x3) as usize] as f64,
+                    y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+                    z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+                },
+                Arc::new(Lambertian::new1(Arc::new(mat1))),
+            );
 
             boxes2.add(Arc::new(triange));
         }
         let allin = BvhNode::new(boxes2.objects, 0.0, 1.0);
         world.add(Arc::new(allin));
-
-        println!("model[{}].name = \'{}\'", i, m.name);
-        println!("model[{}].mesh.material_id = {:?}", i, mesh.material_id);
-
-        println!(
-            "Size of model[{}].face_arities: {}",
-            i,
-            mesh.face_arities.len()
-        );
-
-        let mut next_face = 0;
-        for f in 0..mesh.face_arities.len() {
-            let end = next_face + mesh.face_arities[f] as usize;
-            let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
-            println!("    face[{}] = {:?}", f, face_indices);
-            next_face = end;
-        }
 
         // Normals and texture coordinates are also loaded, but not printed in this example
         println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
@@ -2119,7 +2197,6 @@ fn obj_with_texture() -> HittableList {
             );
         }
     }
-
 
     for (i, m) in materials.iter().enumerate() {
         println!("material[{}].name = \'{}\'", i, m.name);

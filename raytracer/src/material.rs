@@ -1,23 +1,23 @@
 use crate::aabb::Aabb;
 pub use crate::hittable::Hitrecord;
 use crate::hittable::Hittable;
+use crate::pdf::{CosinePdf, NoPdf, Pdf};
 use crate::random_doouble;
 pub use crate::ray::Ray;
 use crate::texture::{BaseColor, Texture};
 pub use crate::vec3::Vec3;
 use std::f64::consts::PI;
 use std::sync::Arc;
-use crate::pdf::{Pdf, CosinePdf, NoPdf};
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     r0 *= r0;
     return r0
         + (1.0 - r0)
-        * (1.0 - cosin)
-        * (1.0 - cosin)
-        * (1.0 - cosin)
-        * (1.0 - cosin)
-        * (1.0 - cosin);
+            * (1.0 - cosin)
+            * (1.0 - cosin)
+            * (1.0 - cosin)
+            * (1.0 - cosin)
+            * (1.0 - cosin);
 }
 
 pub struct ScatterRecord {
@@ -71,7 +71,6 @@ impl Material for Lambertian {
         _: &mut Ray,
         _: &mut f64,
     ) -> ScatterRecord {
-
         ScatterRecord {
             specular_ray: Ray::new(Vec3::zero(), Vec3::zero(), 0.0),
             is_specular: false,
@@ -86,11 +85,7 @@ impl Material for Lambertian {
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
         let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
-        return if cosine < 0.0 {
-            0.0
-        } else {
-            cosine / PI
-        }
+        return if cosine < 0.0 { 0.0 } else { cosine / PI };
     }
 }
 
@@ -102,7 +97,8 @@ pub struct Metal {
 
 impl Metal {
     pub fn new(albedo: Vec3, mut fuzz: f64) -> Self {
-        if fuzz < 1.0 {} else {
+        if fuzz < 1.0 {
+        } else {
             fuzz = 1.0
         }
         Self { albedo, fuzz }
@@ -121,7 +117,11 @@ impl Material for Metal {
         let reflected = Vec3::reflect(r_in.dic, rec.normal);
 
         ScatterRecord {
-            specular_ray: Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz, 0.0),
+            specular_ray: Ray::new(
+                rec.p,
+                reflected + Vec3::random_in_unit_sphere() * self.fuzz,
+                0.0,
+            ),
             is_specular: true,
             attenuation: self.albedo,
             pdf_ptr: Arc::new(NoPdf::new()),
@@ -182,16 +182,15 @@ impl Material for Dielectric {
         attenuation.y = 1.0;
         attenuation.z = 1.0; //glass dont absorb ray so the attenuation is constly 1
 
-        let  etai_over_etat:f64;
+        let etai_over_etat: f64;
         if rec.front_face {
             etai_over_etat = 1.0 / self.ref_idx
         } else {
             etai_over_etat = self.ref_idx
         }
 
-
         let unit_direction = Vec3::unit(r_in.dic);
-        let  cos_theta :f64;
+        let cos_theta: f64;
         if Vec3::dot(-unit_direction, rec.normal) < 1.0 {
             cos_theta = Vec3::dot(-unit_direction, rec.normal)
         } else {
@@ -302,11 +301,7 @@ impl Material for Isotropic {
     }
     fn scattering_odf(&self, _: &Ray, rec: &Hitrecord, scattered: &Ray) -> f64 {
         let cosine = Vec3::dot(rec.normal, scattered.dic.clone().unit());
-        return if cosine < 0.0 {
-            0.0
-        } else {
-            cosine / PI
-        }
+        return if cosine < 0.0 { 0.0 } else { cosine / PI };
     }
 }
 

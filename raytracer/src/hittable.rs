@@ -6,9 +6,9 @@ pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
 use rand::Rng;
 use std::f64::consts::PI;
-const INF:f64=1000000.0;
-use std::sync::Arc;
+const INF: f64 = 1000000.0;
 use crate::onb::Onb;
+use std::sync::Arc;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
@@ -245,8 +245,6 @@ impl Hittable for Sphere {
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
-
-
         let output = Aabb::new(
             self.center - Vec3::new(self.radius, self.radius, self.radius),
             self.center + Vec3::new(self.radius, self.radius, self.radius),
@@ -256,17 +254,17 @@ impl Hittable for Sphere {
 
     fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
         return if let Option::Some(_) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INF) {
-            let costheta_max = (1.0 - (self.radius * self.radius) / (self.center - *o).squared_length()).sqrt();
+            let costheta_max =
+                (1.0 - (self.radius * self.radius) / (self.center - *o).squared_length()).sqrt();
             let solid_angle = 2.0 * PI * (1.0 - costheta_max);
 
             1.0 / solid_angle
         } else {
             0.0
-        }
+        };
     }
     fn random(&self, o: &Vec3) -> Vec3 {
-
-        let  direction = self.center - *o;
+        let direction = self.center - *o;
 
         let distance_squared = direction.squared_length();
         let uvw = Onb::build_from(&direction);
@@ -389,7 +387,7 @@ impl Hittable for Translate {
             Some(rec)
         } else {
             None
-        }
+        };
 
         // Option::from(if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
         //     rec.p += self.offset;
@@ -409,7 +407,7 @@ impl Hittable for Translate {
             Some(output_box)
         } else {
             None
-        }
+        };
     }
 }
 
@@ -428,7 +426,7 @@ impl RotateY {
 
         let sinthetatemp = radians.sin();
         let costhetatemp = radians.cos();
-        let  tempresult:bool;
+        let tempresult: bool;
         let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
         if let Option::Some(_) = p.bounding_box(0.0, 1.0) {
             tempresult = true;
@@ -491,7 +489,7 @@ impl Hittable for RotateY {
             Some(rec)
         } else {
             None
-        }
+        };
 
         // Option::from(if let Option::Some(mut rec) = self.ptr.hit(rotated_ray, t_min, t_max) {
         //     let mut p = rec.p;
@@ -509,12 +507,9 @@ impl Hittable for RotateY {
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
-
         return Option::from(self.bbox);
     }
 }
-
-
 
 pub struct RotateX {
     //相对观察视角物体旋转的角度
@@ -531,7 +526,7 @@ impl RotateX {
 
         let sinthetatemp = radians.sin();
         let costhetatemp = radians.cos();
-        let  tempresult:bool;
+        let tempresult: bool;
         let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
         if let Option::Some(_) = p.bounding_box(0.0, 1.0) {
             tempresult = true;
@@ -593,17 +588,13 @@ impl Hittable for RotateX {
             Some(rec)
         } else {
             None
-        }
+        };
     }
 
-    fn bounding_box(&self,_: f64, _: f64) -> Option<Aabb> {
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
         return Option::from(self.bbox);
     }
 }
-
-
-
-
 
 pub struct RotateZ {
     //相对观察视角物体旋转的角度
@@ -620,7 +611,7 @@ impl RotateZ {
 
         let sinthetatemp = radians.sin();
         let costhetatemp = radians.cos();
-        let  tempresult:bool;
+        let tempresult: bool;
         let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
         if let Option::Some(_) = p.bounding_box(0.0, 1.0) {
             tempresult = true;
@@ -682,15 +673,13 @@ impl Hittable for RotateZ {
             Some(rec)
         } else {
             None
-        }
+        };
     }
 
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
-
         return Option::from(self.bbox);
     }
 }
-
 
 unsafe impl Send for HittableList {}
 
@@ -698,7 +687,6 @@ unsafe impl Sync for HittableList {}
 
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
-
     //传出bool值可以用引用传递，先完善hittable 和add 函数
 }
 
@@ -749,7 +737,6 @@ impl Hittable for HittableList {
             sum += weight * object.pdf_value(o, v);
         }
 
-
         return sum;
     }
     fn random(&self, o: &Vec3) -> Vec3 {
@@ -759,7 +746,7 @@ impl Hittable for HittableList {
         } else {
             let k = (rand::thread_rng().gen_range(0..int_size)) as usize;
             self.objects[k].random(o)
-        }
+        };
     }
 }
 
@@ -772,10 +759,8 @@ pub struct ConstantMedium {
 impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
         return if let Option::Some(mut rec1) = self.boundary.hit(r.clone(), -INF, INF) {
-
             if let Option::Some(mut rec2) =
-            self.boundary
-                .hit(r.clone(), rec1.t.clone() + 0.0001, INF)
+                self.boundary.hit(r.clone(), rec1.t.clone() + 0.0001, INF)
             {
                 if rec1.t < t_min {
                     rec1.t = t_min
@@ -815,7 +800,7 @@ impl Hittable for ConstantMedium {
             }
         } else {
             None
-        }
+        };
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
@@ -859,7 +844,6 @@ impl BvhNode {
             right = objects.remove(1);
             left = objects.remove(0);
         } else {
-
             objects.sort_by(|a, b| {
                 let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
                 let y = b.bounding_box(time0, time1).unwrap().minimun.get(axis);
@@ -873,7 +857,6 @@ impl BvhNode {
         let box11 = left.bounding_box(time0, time1).unwrap();
         let box22 = right.bounding_box(time0, time1).unwrap();
 
-
         Self {
             left,
             right,
@@ -884,29 +867,22 @@ impl BvhNode {
 
 impl Hittable for BvhNode {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
-
         if !self.box1.hit(&r, t_min, t_max) {
-
             return None;
         }
         let _temp = self.left.hit(r, t_min, t_max);
         if let Option::Some(_temp1) = _temp {
             let hit_right = self.right.hit(r, t_min, _temp1.t);
             if let Option::Some(_temp2right) = hit_right {
-
-
                 Some(_temp2right)
             } else {
-
                 Some(_temp1)
             }
         } else {
             let hit_right = self.right.hit(r, t_min, t_max);
             if let Option::Some(_temp2right) = hit_right {
-
                 Some(_temp2right)
             } else {
-
                 None
             }
         }

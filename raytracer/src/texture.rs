@@ -1,5 +1,5 @@
-use crate::{clamp,  Vec3};
-use image::{RgbImage};
+use crate::{clamp, Vec3};
+use image::RgbImage;
 use std::sync::Arc;
 
 pub trait Texture: Send + Sync {
@@ -24,8 +24,6 @@ impl BaseColor {
 
 impl Texture for BaseColor {
     fn value(&self, _: f64, _: f64, _: &Vec3) -> Vec3 {
-
-
         self.color
     }
 }
@@ -47,12 +45,12 @@ impl Texture for CheckerTexture {
             self.odd.value(u, v, &p)
         } else {
             self.even.value(u, v, &p)
-        }
+        };
     }
 }
 pub struct ObjTexture {
-    pub u:f64,
-    pub v:f64,
+    pub u: f64,
+    pub v: f64,
     pub img: RgbImage,
 }
 pub struct ImageTexture {
@@ -61,16 +59,16 @@ pub struct ImageTexture {
     pub bytes_per_scanline: i32,
     pub img: RgbImage,
 }
-impl ObjTexture{
-    pub fn new(filename: &str,u:f64,v:f64) -> Self{
-        Self{
+impl ObjTexture {
+    pub fn new(filename: &str, u: f64, v: f64) -> Self {
+        Self {
             u,
             v,
             img: image::open(filename).expect("failed").to_rgb(),
         }
     }
 }
-impl Texture for ObjTexture{
+impl Texture for ObjTexture {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
         let mut i = (self.u * ((self.img.width()) as f64)) as i32;
         let mut j = (self.v * ((self.img.height()) as f64)) as i32;
@@ -80,10 +78,18 @@ impl Texture for ObjTexture{
         if j >= self.img.height() as i32 {
             j = self.img.height() as i32 - 1;
         }
-        //println!("u: {},v:{}   i:{},   j:{} ",self.u,self.v,i,j);
         let color_scale = 1.0 / 255.0;
         let pixel = self.img.get_pixel(i as u32, j as u32);
         //let pixel=(self.data)+j*self.bytes_per_scanline+i*BYTES_PER_PIXEL;
+        println!(
+            "rnm  vec {:?}",
+            Vec3::new(
+                color_scale * (pixel[0] as f64),
+                color_scale * (pixel[1] as f64),
+                color_scale * (pixel[2] as f64),
+            )
+        );
+
         return Vec3::new(
             color_scale * (pixel[0] as f64),
             color_scale * (pixel[1] as f64),
@@ -100,7 +106,6 @@ impl ImageTexture {
             bytes_per_scanline: 0,
             img: image::open(filename).expect("failed").to_rgb(),
         }
-
     }
 }
 

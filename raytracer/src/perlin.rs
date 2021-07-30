@@ -60,9 +60,9 @@ impl Perlin {
         }
     }
     pub fn noise(&self, p: Vec3) -> f64 {
-        let  u = p.x - p.x.floor();
-        let  v = p.y - p.y.floor();
-        let  w = p.z - p.z.floor();
+        let u = p.x - p.x.floor();
+        let v = p.y - p.y.floor();
+        let w = p.z - p.z.floor();
 
         // u=u*u*(3.0-2.0*u);
         // v=v*v*(3.0-2.0*v);
@@ -92,7 +92,7 @@ impl Perlin {
         // return self.ranfloat[(self.perm_x[i as usize] ^ self.perm_y[j as usize] ^ self.perm_z[k as usize]) as usize];
     }
 
-    pub fn trilinear_interp( my_sz: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    pub fn trilinear_interp(my_sz: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         let uu = u * u * (3.0 - 2.0 * u);
         let vv = v * v * (3.0 - 2.0 * v);
         let ww = w * w * (3.0 - 2.0 * w);

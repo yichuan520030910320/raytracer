@@ -19,7 +19,7 @@ impl Onb {
         return self.u() * a + self.v() * b + self.w() * c;
     }
     pub fn build_from(n: &Vec3) -> Self {
-        let  a ;
+        let a;
         let axiss2 = n.unit();
 
         if axiss2.x.abs() > 0.9 {

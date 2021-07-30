@@ -82,14 +82,14 @@ impl Vec3 {
             u.x * v.y - u.y * v.x,
         );
     }
-    pub fn sameside(a:Vec3,b:Vec3,c:Vec3,p:Vec3)->bool{
-        let ab=b-a;
-        let ac=c-a;
-        let ap=p-a;
+    pub fn sameside(a: Vec3, b: Vec3, c: Vec3, p: Vec3) -> bool {
+        let ab = b - a;
+        let ac = c - a;
+        let ap = p - a;
 
-        let v1=Vec3::cross(ab,ac);
-        let v2=Vec3::cross(ab,ap);
-        return Vec3::dot(v1,v2)>=0.0;
+        let v1 = Vec3::cross(ab, ac);
+        let v2 = Vec3::cross(ab, ap);
+        return Vec3::dot(v1, v2) >= 0.0;
     }
     pub fn random_in_unit_disk() -> Self {
         loop {
