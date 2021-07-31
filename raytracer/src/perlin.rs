@@ -1,9 +1,10 @@
 use crate::texture::Texture;
-use crate::{random_doouble, Vec3};
+use crate::run::{random_doouble, Vec3};
 use rand::Rng;
 
 const POINT_COUNT: usize = 256;
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct Perlin {
     pub ranvec: [Vec3; POINT_COUNT],
     pub ranfloat: [f64; POINT_COUNT],
@@ -128,7 +129,7 @@ impl Perlin {
         accum.abs()
     }
 }
-
+#[derive(Clone)]
 pub struct NoiseTexture {
     noise: Perlin,
     scale: f64,

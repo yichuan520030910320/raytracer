@@ -1,6 +1,6 @@
 pub use crate::aabb::Aabb;
-use crate::aarect::{XyRect, XzRect, YzRect};
-use crate::material::Isotropic;
+use crate::aarect::{XyRect, XzRect, YzRect, StaticXyRect, StaticXzRect, StaticYzRect};
+use crate::material::{Isotropic, StaticMaterial, StaticIsotropic};
 pub use crate::material::Material;
 pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
@@ -11,6 +11,9 @@ const INF: f64 = 1000000.0;
 
 use crate::onb::Onb;
 use std::sync::Arc;
+use crate::texture::Texture;
+use crate::{texture, material};
+use std::option::Option::Some;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
@@ -893,3 +896,886 @@ impl Hittable for BvhNode {
         Some(outout)
     }
 }
+
+
+
+
+
+
+
+
+pub trait StaticHittable: Send + Sync {
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord>;
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
+    fn pdf_value(&self, _: &Vec3, _: &Vec3) -> f64 {
+        0.0
+    }
+    fn random(&self, _: &Vec3) -> Vec3 {
+        Vec3::new(1.0, 0.0, 0.0)
+    }
+} //相当于一个基类 在列表里面会去看是谁将它实例化（如圆等图形）
+
+#[derive(Clone)]
+pub struct StaticHitrecord<'a> {
+    pub p: Vec3,
+    //交点
+    pub normal: Vec3,
+    //法向量
+    pub t: f64,
+    pub u: f64,
+    pub v: f64,
+    //距离
+    pub front_face: bool,
+    //正面还是反面
+    pub mat_ptr:  &'a dyn StaticMaterial,
+}
+impl <'a> StaticHitrecord<'a> {
+    pub fn grt_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
+        let theta = (-p.y).acos();
+        let temptheta = (-p.z) / p.x;
+
+        let mut phi = (temptheta).atan();
+        phi += PI;
+        *u = phi / (2.0 * PI);
+        *v = theta / PI;
+    }
+    pub fn new(
+        p: Vec3,
+        normal: Vec3,
+        t: f64,
+        front_face: bool,
+        mat_ptr: &'a dyn StaticMaterial,
+    ) -> Self {
+        Self {
+            p,
+            normal,
+            t,
+            u: 0.0,
+            v: 0.0,
+            front_face,
+            mat_ptr,
+        }
+    }
+
+    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
+        self.front_face = Vec3::dot(r.dic, outward_normal) < 0.0;
+        if self.front_face {
+            self.normal = outward_normal;
+        } else {
+            self.normal = -outward_normal;
+        }
+    }
+}
+
+#[allow(dead_code)]
+pub struct StaticMovingSphere<T:StaticMaterial> {
+    pub center0: Vec3,
+    pub center1: Vec3,
+    pub time0: f64,
+    pub time1: f64,
+    pub radius: f64,
+    pub mat_ptr: T,
+}
+
+impl<T: material::StaticMaterial> StaticMovingSphere<T> {
+    #[allow(dead_code)]
+    pub fn new(
+        cen0: Vec3,
+        cen1: Vec3,
+        _time0: f64,
+        _time1: f64,
+        r: f64,
+        mat_ptr:T,
+    ) -> Self {
+        Self {
+            center0: cen0,
+            center1: cen1,
+            time0: _time0,
+            time1: _time1,
+            radius: r,
+            mat_ptr,
+        }
+    }
+    pub fn center(&self, time: f64) -> Vec3 {
+        self.center0
+            + (self.center1 - self.center0) * ((time - self.time0) / (self.time1 - self.time0))
+    }
+}
+
+#[allow(clippy::suspicious_operation_groupings)]
+#[allow(clippy::needless_return)]
+impl<T: material::StaticMaterial+Clone>StaticHittable for StaticMovingSphere<T> {
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let oc = r.ori - StaticMovingSphere::center(self, r.tm);
+        let a = Vec3::squared_length(&r.dic);
+        let half_b = Vec3::dot(r.dic, oc);
+        let c = Vec3::squared_length(&oc) - self.radius * self.radius;
+
+        let discriminant = (half_b * half_b - a * c) as f64;
+        if discriminant < 0.0 {
+            return None;
+        } else {
+            let sqrtd = discriminant.sqrt();
+            let mut root = (-half_b - sqrtd) / a;
+            if root < t_min || t_max < root {
+                root = (-half_b + sqrtd) / a;
+                if root < t_min || t_max < root {
+                    return None;
+                }
+            }
+            let mat_tem= &self.mat_ptr;
+            let mut rec = StaticHitrecord {
+                t: 0.0,
+                u: 0.0,
+                p: Vec3::zero(),
+                normal: Vec3::zero(),
+                front_face: false,
+                mat_ptr:mat_tem,
+                v: 0.0,
+            };
+
+            rec.t = root;
+            rec.p = Ray::at(&r, rec.t);
+            let outward_normal = (rec.p - StaticMovingSphere::center(self, r.tm)) / self.radius;
+            rec.set_face_normal(&r, outward_normal);
+            Some(rec)
+        }
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let box0 = Aabb::new(
+            self.center(time0) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(time0) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        let box1 = Aabb::new(
+            self.center(time1) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(time1) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        let output_box = Aabb::surrounding_box(box0, box1);
+        Some(output_box)
+        //改成option
+    }
+}
+
+pub struct StaticSphere<T:StaticMaterial> {
+    pub p: Vec3,
+    pub normal: Vec3,
+    pub t: f64,
+    pub center: Vec3,
+    pub radius: f64,
+    pub mat_ptr: T,
+}
+
+impl<T:StaticMaterial> StaticSphere<T> {
+    pub fn new(
+        p: Vec3,
+        normal: Vec3,
+        t: f64,
+        center: Vec3,
+        radius: f64,
+        mat_ptr:T,
+    ) -> Self {
+        Self {
+            p,
+            normal,
+            t,
+            center,
+            radius,
+            mat_ptr,
+        }
+    }
+}
+
+//实例化trait在圆中
+#[allow(clippy::suspicious_operation_groupings)]
+impl <T:StaticMaterial+Clone>StaticHittable for StaticSphere<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let oc = r.ori - self.center;
+        let a = Vec3::squared_length(&r.dic);
+        let half_b = Vec3::dot(r.dic, oc);
+        let c = Vec3::squared_length(&oc) - self.radius * self.radius;
+        let discriminant = (half_b * half_b - a * c) as f64;
+        if discriminant < 0.0 {
+            None
+        } else {
+            let sqrtd = discriminant.sqrt();
+            let mut root = (-half_b - sqrtd) / a;
+            if root < t_min || t_max < root {
+                root = (-half_b + sqrtd) / a;
+                if root < t_min || t_max < root {
+                    return None;
+                }
+            }
+            let mut rec = StaticHitrecord {
+                t: 0.0,
+                u: 0.0,
+                p: Vec3::zero(),
+                normal: Vec3::zero(),
+                front_face: false,
+                mat_ptr: &self.mat_ptr,
+                v: 0.0,
+            };
+            rec.t = root;
+            rec.p = Ray::at(&r, rec.t);
+            let outward_normal = (rec.p - self.center) / self.radius;
+            rec.set_face_normal(&r, outward_normal);
+            Hitrecord::grt_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
+            Some(rec)
+        }
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        let output = Aabb::new(
+            self.center - Vec3::new(self.radius, self.radius, self.radius),
+            self.center + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        Some(output)
+    }
+
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        if self.hit(Ray::new(*o, *v, 0.0), 0.001, INF).is_some() {
+            let costheta_max =
+                (1.0 - (self.radius * self.radius) / (self.center - *o).squared_length()).sqrt();
+            let solid_angle = 2.0 * PI * (1.0 - costheta_max);
+            1.0 / solid_angle
+        } else {
+            0.0
+        }
+    }
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let direction = self.center - *o;
+
+        let distance_squared = direction.squared_length();
+        let uvw = Onb::build_from(&direction);
+
+        let temp = random_to_sphere(self.radius, distance_squared);
+
+        uvw.local(temp.x, temp.y, temp.z)
+    }
+}
+
+pub struct StaticBox1 <T:StaticMaterial+Clone>{
+    pub(crate) box_min: Vec3,
+    pub(crate) box_max: Vec3,
+    pub(crate) sides: (
+    StaticXyRect<T>,
+    StaticXyRect<T>,
+    StaticYzRect<T>,
+    StaticYzRect<T>,
+    StaticXzRect<T>,
+    StaticXzRect<T>,
+    ),
+}
+
+impl <T:StaticMaterial+Clone>StaticHittable for StaticBox1<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+let mut the_closest =t_max;
+        let mut ans: Option<StaticHitrecord> = None;
+        if let Some (rec)=self.sides.0.hit(r,t_min,t_max){
+            ans=Some(rec.clone());
+            the_closest=rec.t;
+        }
+        if let Some (rec)=self.sides.1.hit(r,the_closest,t_max){
+            ans=Some(rec.clone());
+            the_closest=rec.t;
+        }
+        if let Some (rec)=self.sides.2.hit(r,the_closest,t_max){
+            ans=Some(rec.clone());
+            the_closest=rec.t;
+        }
+        if let Some (rec)=self.sides.3.hit(r,the_closest,t_max){
+            ans=Some(rec.clone());
+            the_closest=rec.t;
+        }
+        if let Some (rec)=self.sides.4.hit(r,the_closest,t_max){
+            ans=Some(rec.clone());
+            the_closest=rec.t;
+        }
+        if let Some (rec)=self.sides.5.hit(r,the_closest,t_max) {
+            ans = Some(rec.clone());
+            the_closest = rec.t;
+        }
+        ans
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        Option::from(Aabb::new(self.box_min, self.box_max))
+    }
+}
+
+impl <T:StaticMaterial+Clone> StaticBox1<T> {
+    pub fn new(p0: &Vec3, p1: &Vec3, ptr: T) -> Self {
+        Self {
+            box_min: *p0,
+            box_max: *p1,
+
+            sides: (StaticXyRect {
+                mp: ptr.clone(),
+                x0: p0.x,
+                x1: p1.x,
+                y0: p0.y,
+                y1: p1.y,
+                k: p1.z
+            }, StaticXyRect {
+                mp: ptr.clone(),
+                x0: p0.x,
+                x1: p1.x,
+                y0: p0.y,
+                y1: p1.y,
+                k: p0.z
+            }, StaticYzRect {
+                mp: ptr.clone(),
+                y0: p1.y,
+                y1: p0.y,
+                z0: p1.z,
+                z1: p1.z,
+                k: p1.x
+            }, StaticYzRect {
+                mp: ptr.clone(),
+                y0: p1.y,
+                y1: p0.y,
+                z0: p1.z,
+                z1: p1.z,
+                k: p0.x
+            }, StaticXzRect {
+                mp: ptr.clone(),
+                x0: p1.x,
+                x1: p0.x,
+                z0: p1.z,
+                z1: p0.z,
+                k: p0.y
+            }, StaticXzRect {
+                mp: ptr.clone(),
+                x0: p1.x,
+                x1: p0.x,
+                z0: p1.z,
+                z1: p0.z,
+                k: p1.y
+            })
+        }
+    }
+}
+
+pub struct StaticTranslate<T:StaticHittable> {
+    pub(crate) ptr: T,
+    pub(crate) offset: Vec3,
+}
+
+impl<T:StaticHittable> StaticTranslate<T> {
+    pub fn new(ptr: T, offset: Vec3) -> Self {
+        Self { ptr, offset }
+    }
+}
+
+impl <T:StaticHittable>StaticHittable for StaticTranslate<T> {
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let moved_r = Ray::new(r.ori - self.offset, r.dic, r.tm);
+        if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
+            rec.p += self.offset;
+            rec.set_face_normal(&moved_r, rec.normal);
+            Some(rec)
+        } else {
+            None
+        }
+
+        // Option::from(if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
+        //     rec.p += self.offset;
+        //     rec.set_face_normal(&moved_r, rec.normal);
+        //     rec
+        // } else {
+        //     None
+        // })
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        if let Option::Some(mut output_box) = self.ptr.bounding_box(time0, time1) {
+            output_box = Aabb::new(
+                output_box.minimun + self.offset,
+                output_box.maximum + self.offset,
+            );
+            Some(output_box)
+        } else {
+            None
+        }
+    }
+}
+
+#[allow(dead_code)]
+pub struct StaticRotateY<T:StaticHittable> {
+    //相对观察视角物体旋转的角度
+    pub(crate) ptr: T,
+    pub(crate) sin_theta: f64,
+    pub(crate) cos_theta: f64,
+    pub(crate) hasbox: bool,
+    pub(crate) bbox: Aabb,
+}
+
+impl <T:StaticHittable>StaticRotateY<T> {
+    pub fn new(p:T, angle: f64) -> Self {
+        let radians = degrees_to_radians(angle);
+
+        let sinthetatemp = radians.sin();
+        let costhetatemp = radians.cos();
+        let tempresult: bool;
+        let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
+        if p.bounding_box(0.0, 1.0).is_some() {
+            tempresult = true;
+        } else {
+            tempresult = false;
+        }
+
+        let mut min1 = Vec3::new(INF, INF, INF);
+        let mut max1 = Vec3::new(-INF, -INF, -INF);
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let x = i as f64 * bboxtemp.maximum.x + (1.0 - i as f64) * bboxtemp.minimun.x;
+                    let y = j as f64 * bboxtemp.maximum.y + (1.0 - j as f64) * bboxtemp.minimun.y;
+                    let z = k as f64 * bboxtemp.maximum.z + (1.0 - k as f64) * bboxtemp.minimun.z;
+                    let newx = costhetatemp * x + sinthetatemp * z;
+                    let newz = -sinthetatemp * x + costhetatemp * z;
+                    let tester = Vec3::new(newx, y, newz);
+                    min1.x = fmin1(min1.x, tester.x);
+                    max1.x = fmax1(max1.x, tester.x);
+                    min1.y = fmin1(min1.y, tester.y);
+                    max1.y = fmax1(max1.y, tester.y);
+                    min1.z = fmin1(min1.z, tester.z);
+                    max1.z = fmax1(max1.z, tester.z);
+                }
+            }
+        }
+        bboxtemp = Aabb::new(min1, max1);
+
+        Self {
+            ptr: p,
+            sin_theta: sinthetatemp,
+            cos_theta: costhetatemp,
+            hasbox: tempresult,
+            bbox: bboxtemp,
+        }
+    }
+}
+
+impl<T:StaticHittable> StaticHittable for StaticRotateY<T> {
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let mut origin = r.ori;
+        let mut direct = r.dic;
+        origin.x = self.cos_theta * r.ori.x - self.sin_theta * r.ori.z;
+        origin.z = self.sin_theta * r.ori.x + self.cos_theta * r.ori.z;
+        direct.x = self.cos_theta * r.dic.x - self.sin_theta * r.dic.z;
+        direct.z = self.sin_theta * r.dic.x + self.cos_theta * r.dic.z;
+        let rotated_ray = Ray::new(origin, direct, r.tm);
+        //let rec=Hitrecord::new(Vec3::zero(),Vec3::zero(),0.0,false,)
+
+        if let Option::Some(mut rec) = self.ptr.hit(rotated_ray, t_min, t_max) {
+            let mut p = rec.p;
+            let mut nomal = rec.normal;
+            p.x = self.cos_theta * rec.p.x + self.sin_theta * rec.p.z;
+            p.z = -self.sin_theta * rec.p.x + self.cos_theta * rec.p.z;
+            nomal.x = self.cos_theta * rec.normal.x + self.sin_theta * rec.normal.z;
+            nomal.z = -self.sin_theta * rec.normal.x + self.cos_theta * rec.normal.z;
+            rec.p = p;
+            rec.set_face_normal(&rotated_ray, nomal);
+            Some(rec)
+        } else {
+            None
+        }
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        Option::from(self.bbox)
+    }
+}
+
+#[allow(dead_code)]
+pub struct StaticRotateX<T:StaticHittable> {
+    //相对观察视角物体旋转的角度
+    pub(crate) ptr: T,
+    pub(crate) sin_theta: f64,
+    pub(crate) cos_theta: f64,
+    pub(crate) hasbox: bool,
+    pub(crate) bbox: Aabb,
+}
+
+impl<T:StaticHittable> StaticRotateX<T> {
+    #[allow(dead_code)]
+    #[allow(clippy::redundant_pattern_matching)]
+    pub fn new(p: T, angle: f64) -> Self {
+        let radians = degrees_to_radians(angle);
+
+        let sinthetatemp = radians.sin();
+        let costhetatemp = radians.cos();
+        let tempresult: bool;
+        let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
+        if let Option::Some(_) = p.bounding_box(0.0, 1.0) {
+            tempresult = true;
+        } else {
+            tempresult = false;
+        }
+        let mut min1 = Vec3::new(INF, INF, INF);
+        let mut max1 = Vec3::new(-INF, -INF, -INF);
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let x = i as f64 * bboxtemp.maximum.x + (1.0 - i as f64) * bboxtemp.minimun.x;
+                    let y = j as f64 * bboxtemp.maximum.y + (1.0 - j as f64) * bboxtemp.minimun.y;
+                    let z = k as f64 * bboxtemp.maximum.z + (1.0 - k as f64) * bboxtemp.minimun.z;
+                    let newy = costhetatemp * y + sinthetatemp * z;
+                    let newz = -sinthetatemp * y + costhetatemp * z;
+                    let tester = Vec3::new(x, newy, newz);
+                    min1.x = fmin1(min1.x, tester.x);
+                    max1.x = fmax1(max1.x, tester.x);
+                    min1.y = fmin1(min1.y, tester.y);
+                    max1.y = fmax1(max1.y, tester.y);
+                    min1.z = fmin1(min1.z, tester.z);
+                    max1.z = fmax1(max1.z, tester.z);
+                }
+            }
+        }
+        bboxtemp = Aabb::new(min1, max1);
+
+        Self {
+            ptr: p,
+            sin_theta: sinthetatemp,
+            cos_theta: costhetatemp,
+            hasbox: tempresult,
+            bbox: bboxtemp,
+        }
+    }
+}
+
+impl<T:StaticHittable> StaticHittable for StaticRotateX<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let mut origin = r.ori;
+        let mut direct = r.dic;
+        origin.y = self.cos_theta * r.ori.y - self.sin_theta * r.ori.z;
+        origin.z = self.sin_theta * r.ori.y + self.cos_theta * r.ori.z;
+        direct.y = self.cos_theta * r.dic.y - self.sin_theta * r.dic.z;
+        direct.z = self.sin_theta * r.dic.y + self.cos_theta * r.dic.z;
+        let rotated_ray = Ray::new(origin, direct, r.tm);
+        //let rec=Hitrecord::new(Vec3::zero(),Vec3::zero(),0.0,false,)
+
+        if let Option::Some(mut rec) = self.ptr.hit(rotated_ray, t_min, t_max) {
+            let mut p = rec.p;
+            let mut nomal = rec.normal;
+            p.y = self.cos_theta * rec.p.y + self.sin_theta * rec.p.z;
+            p.z = -self.sin_theta * rec.p.y + self.cos_theta * rec.p.z;
+            nomal.y = self.cos_theta * rec.normal.y + self.sin_theta * rec.normal.z;
+            nomal.z = -self.sin_theta * rec.normal.y + self.cos_theta * rec.normal.z;
+            rec.p = p;
+            rec.set_face_normal(&rotated_ray, nomal);
+            Some(rec)
+        } else {
+            None
+        }
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        Option::from(self.bbox)
+    }
+}
+
+#[allow(dead_code)]
+pub struct StaticRotateZ<T:StaticHittable> {
+    //相对观察视角物体旋转的角度
+    pub(crate) ptr: T,
+    pub(crate) sin_theta: f64,
+    pub(crate) cos_theta: f64,
+    pub(crate) hasbox: bool,
+    pub(crate) bbox: Aabb,
+}
+
+impl<T:StaticHittable> StaticRotateZ<T> {
+    #[allow(dead_code)]
+    #[allow(clippy::redundant_pattern_matching)]
+    pub fn new(p:T, angle: f64) -> Self {
+        let radians = degrees_to_radians(angle);
+
+        let sinthetatemp = radians.sin();
+        let costhetatemp = radians.cos();
+        let tempresult: bool;
+        let mut bboxtemp = Aabb::new(Vec3::zero(), Vec3::zero());
+        if let Option::Some(_) = p.bounding_box(0.0, 1.0) {
+            tempresult = true;
+        } else {
+            tempresult = false;
+        }
+        let mut min1 = Vec3::new(INF, INF, INF);
+        let mut max1 = Vec3::new(-INF, -INF, -INF);
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let x = i as f64 * bboxtemp.maximum.x + (1.0 - i as f64) * bboxtemp.minimun.x;
+                    let y = j as f64 * bboxtemp.maximum.y + (1.0 - j as f64) * bboxtemp.minimun.y;
+                    let z = k as f64 * bboxtemp.maximum.z + (1.0 - k as f64) * bboxtemp.minimun.z;
+                    let newx = costhetatemp * x + sinthetatemp * y;
+                    let newy = -sinthetatemp * x + costhetatemp * y;
+                    let tester = Vec3::new(newx, newy, z);
+                    min1.x = fmin1(min1.x, tester.x);
+                    max1.x = fmax1(max1.x, tester.x);
+                    min1.y = fmin1(min1.y, tester.y);
+                    max1.y = fmax1(max1.y, tester.y);
+                    min1.z = fmin1(min1.z, tester.z);
+                    max1.z = fmax1(max1.z, tester.z);
+                }
+            }
+        }
+        bboxtemp = Aabb::new(min1, max1);
+
+        Self {
+            ptr: p,
+            sin_theta: sinthetatemp,
+            cos_theta: costhetatemp,
+            hasbox: tempresult,
+            bbox: bboxtemp,
+        }
+    }
+}
+
+impl<T:StaticHittable> StaticHittable for StaticRotateZ<T> {
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let mut origin = r.ori;
+        let mut direct = r.dic;
+        origin.x = self.cos_theta * r.ori.x - self.sin_theta * r.ori.y;
+        origin.y = self.sin_theta * r.ori.x + self.cos_theta * r.ori.y;
+        direct.x = self.cos_theta * r.dic.x - self.sin_theta * r.dic.y;
+        direct.y = self.sin_theta * r.dic.x + self.cos_theta * r.dic.y;
+        let rotated_ray = Ray::new(origin, direct, r.tm);
+        //let rec=Hitrecord::new(Vec3::zero(),Vec3::zero(),0.0,false,)
+
+        if let Option::Some(mut rec) = self.ptr.hit(rotated_ray, t_min, t_max) {
+            let mut p = rec.p;
+            let mut nomal = rec.normal;
+            p.x = self.cos_theta * rec.p.x + self.sin_theta * rec.p.y;
+            p.y = -self.sin_theta * rec.p.x + self.cos_theta * rec.p.y;
+            nomal.x = self.cos_theta * rec.normal.x + self.sin_theta * rec.normal.y;
+            nomal.y = -self.sin_theta * rec.normal.x + self.cos_theta * rec.normal.y;
+            rec.p = p;
+            rec.set_face_normal(&rotated_ray, nomal);
+            Some(rec)
+        } else {
+            None
+        }
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        Option::from(self.bbox)
+    }
+}
+
+unsafe impl Send for StaticHittableList {}
+
+unsafe impl Sync for StaticHittableList {}
+
+pub struct StaticHittableList {
+    pub objects: Vec<Arc<dyn StaticHittable>>,
+    //传出bool值可以用引用传递，先完善hittable 和add 函数
+}
+
+impl StaticHittableList {
+    pub fn add(&mut self, object: Arc<dyn StaticHittable>) {
+        self.objects.push(object);
+    }
+}
+
+impl StaticHittable for StaticHittableList {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let mut rec: Option<StaticHitrecord> = Option::None;
+        let mut closet_so_far = t_max;
+        for object in self.objects.iter() {
+            if let Option::Some(_rec) = object.hit(r, t_min, closet_so_far) {
+                rec = Option::Some(_rec.clone());
+                closet_so_far = _rec.t;
+            }
+        }
+        rec
+    }
+    #[allow(clippy::needless_return)]
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        if self.objects.is_empty() {
+            return None;
+        }
+        let mut output = Aabb::new(Vec3::zero(), Vec3::zero());
+        let mut first_box = true;
+        for object in self.objects.iter() {
+            if let Option::Some(tempbox) = object.bounding_box(time0, time1) {
+                if first_box {
+                    output = tempbox;
+                } else {
+                    output = Aabb::surrounding_box(output, tempbox);
+                }
+                first_box = false;
+            } else {
+                return None;
+            }
+        }
+        Some(output)
+    }
+
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        let weight = 1.0 / self.objects.len() as f64;
+        let mut sum = 0.0;
+        for object in self.objects.iter() {
+            sum += weight * object.pdf_value(o, v);
+        }
+
+        sum
+    }
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let int_size = self.objects.len() as i32;
+        if self.objects.len() == 1 {
+            self.objects[0].random(o)
+        } else {
+            let k = (rand::thread_rng().gen_range(0..int_size)) as usize;
+            self.objects[k].random(o)
+        }
+    }
+}
+
+pub struct StaticConstantMedium<T1:StaticHittable,T2:Clone +StaticMaterial> {
+    pub boundary: T1,
+    pub phase_function: T2,
+    neg_inv_density: f64,
+}
+#[allow(clippy::needless_return)]
+impl<T1:StaticHittable,T2:Clone +StaticMaterial> StaticHittable for StaticConstantMedium<T1, T2> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        if let Option::Some(mut rec1) = self.boundary.hit(r, -INF, INF) {
+            if let Option::Some(mut rec2) = self.boundary.hit(r, rec1.t + 0.0001, INF) {
+                if rec1.t < t_min {
+                    rec1.t = t_min
+                };
+                if rec2.t > t_max {
+                    rec2.t = t_max
+                };
+
+                if rec1.t >= rec2.t {
+                    return None;
+                }
+                if rec1.t < 0.0 {
+                    rec1.t = 0.0;
+                }
+                let ray_length = r.dic.length();
+                let distangce_inside_boundary = (rec2.t - rec1.t) * ray_length;
+                let hit_distance = self.neg_inv_density * random_doouble().ln();
+
+                if hit_distance > distangce_inside_boundary {
+                    return None;
+                }
+                let mut recreturn = StaticHitrecord::new(
+                    Vec3::zero(),
+                    Vec3::zero(),
+                    0.0,
+                    false,
+                    &self.phase_function,
+                );
+                recreturn.t = rec1.t + hit_distance / ray_length;
+                recreturn.p = r.at(recreturn.t);
+                recreturn.normal = Vec3::new(1.0, 0.0, 0.0);
+                recreturn.front_face = true;
+                recreturn.mat_ptr = &self.phase_function;
+                Some(recreturn)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        self.boundary.bounding_box(time0, time1)
+    }
+}
+
+impl<T1:StaticHittable,T2:Clone +texture::Texture> StaticConstantMedium<T1, StaticIsotropic<T2>> {
+    pub fn new(b: T1, d: f64, c: T2) -> Self {
+        //c 用vec来new出一个basrcolor !!!!
+        Self {
+            boundary: b,
+            phase_function:StaticIsotropic{
+                albedo: c,
+            },
+            neg_inv_density: (-1.0 / d),
+        }
+    }
+}
+
+pub struct StaticBvhNode {
+    pub left: Arc<dyn StaticHittable>,
+    pub right: Arc<dyn StaticHittable>,
+    pub box1: Aabb,
+}
+
+impl StaticBvhNode {
+    pub fn new(src_objects: Vec<Arc<dyn StaticHittable>>, time0: f64, time1: f64) -> Self {
+        let span = src_objects.len();
+        let mut objects = src_objects;
+        let axis = rand::thread_rng().gen_range(0..3);
+
+        let left: Arc<dyn StaticHittable>;
+        let right: Arc<dyn StaticHittable>;
+        if span == 1 {
+            left = objects.remove(0);
+            right = left.clone();
+        } else if span == 2 {
+            objects.sort_by(|a, b| {
+                let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
+                let y = b.bounding_box(time0, time1).unwrap().minimun.get(axis);
+                x.partial_cmp(&y).unwrap()
+            });
+            right = objects.remove(1);
+            left = objects.remove(0);
+        } else {
+            objects.sort_by(|a, b| {
+                let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
+                let y = b.bounding_box(time0, time1).unwrap().minimun.get(axis);
+                x.partial_cmp(&y).unwrap()
+            });
+            let mid = span / 2;
+            let (object0, object1) = objects.split_at_mut(mid as usize);
+            left = Arc::new(StaticBvhNode::new(object0.to_vec(), time0, time1));
+            right = Arc::new(StaticBvhNode::new(object1.to_vec(), time0, time1));
+        }
+        let box11 = left.bounding_box(time0, time1).unwrap();
+        let box22 = right.bounding_box(time0, time1).unwrap();
+
+        Self {
+            left,
+            right,
+            box1: Aabb::surrounding_box(box11, box22),
+        }
+    }
+}
+#[allow(clippy::needless_return)]
+impl StaticHittable for StaticBvhNode {
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        if !self.box1.hit(&r, t_min, t_max) {
+            return None;
+        }
+        let _temp = self.left.hit(r, t_min, t_max);
+        if let Option::Some(_temp1) = _temp {
+            let hit_right = self.right.hit(r, t_min, _temp1.t);
+            if let Option::Some(_temp2right) = hit_right {
+                Some(_temp2right)
+            } else {
+                Some(_temp1)
+            }
+        } else {
+            let hit_right = self.right.hit(r, t_min, t_max);
+            if let Option::Some(_temp2right) = hit_right {
+                Some(_temp2right)
+            } else {
+                return None;
+            }
+        }
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        let outout = self.box1;
+        Some(outout)
+    }
+}
+
+
+

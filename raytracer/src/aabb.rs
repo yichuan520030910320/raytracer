@@ -1,4 +1,4 @@
-use crate::{Ray, Vec3};
+use crate::run::{Ray, Vec3};
 
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Aabb {

@@ -1,8 +1,10 @@
 use crate::aabb::Aabb;
-use crate::hittable::{Hitrecord, Hittable, Material};
-use crate::{range_random_double, Ray, Vec3};
+use crate::hittable::{Hitrecord, Hittable, Material, StaticHittable, StaticHitrecord};
+use crate::run::{range_random_double, Ray, Vec3};
 use std::f64::INFINITY;
 use std::sync::Arc;
+use crate::material::StaticMaterial;
+use crate::material;
 
 #[allow(clippy::needless_return)]
 pub fn maxnum1(a: f64, b: f64, c: f64) -> f64 {
@@ -298,3 +300,293 @@ impl Hittable for YzRect {
         ))
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//static
+pub struct StaticXyRect<T:StaticMaterial> {
+    pub(crate) mp:T,
+    pub(crate) x0: f64,
+    pub(crate) x1: f64,
+    pub(crate) y0: f64,
+    pub(crate) y1: f64,
+    pub(crate) k: f64,
+}
+#[allow(dead_code)]
+impl <T:StaticMaterial>StaticXyRect<T> {
+    pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat:T) -> Self {
+        Self {
+            mp: mat,
+            x0: _x0,
+            x1: _x1,
+            y0: _y0,
+            y1: _y1,
+            k: _k,
+        }
+    }
+}
+
+impl<T:StaticMaterial+Clone > StaticHittable for StaticXyRect<T> {
+    #[allow(clippy::needless_return)]
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let t = (self.k - r.ori.z) / r.dic.z;
+        if t < t_min || t > t_max {
+            return None;
+        }
+        let x = r.ori.x + t * r.dic.x;
+        let y = r.ori.y + t * r.dic.y;
+        if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
+            return None;
+        }
+
+        let mut rec = StaticHitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, &self.mp);
+
+        rec.u = (x - self.x0) / (self.x1 - self.x0);
+        rec.v = (y - self.y0) / (self.y1 - self.y0);
+        rec.t = t;
+        let ourward_normal = Vec3::new(0.0, 0.0, 1.0);
+        rec.set_face_normal(&r, ourward_normal);
+        rec.p = r.at(t);
+        rec.mat_ptr=&self.mp;
+        Some(rec)
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        Some(Aabb::new(
+            Vec3::new(self.x0, self.y0, self.k - 0.0001),
+            Vec3::new(self.x1, self.y1, self.k + 0.0001),
+        ))
+    }
+}
+
+pub struct StaticTriangel<T:StaticMaterial> {
+    pub(crate) mp:T,
+    pub a1: Vec3,
+    pub a2: Vec3,
+    pub a3: Vec3,
+}
+
+unsafe impl <T:StaticMaterial>Send for StaticTriangel<T> {}
+
+unsafe impl<T:StaticMaterial> Sync for StaticTriangel<T> {}
+
+impl<T:StaticMaterial> StaticTriangel<T> {
+    pub fn new(_a1: Vec3, _a2: Vec3, _a3: Vec3, mat: T) -> Self {
+        Self {
+            mp: mat,
+            a1: _a1,
+            a2: _a2,
+            a3: _a3,
+        }
+    }
+}
+
+impl<T:StaticMaterial+Clone + material::Material> StaticHittable for StaticTriangel<T> {
+    #[allow(clippy::needless_return)]
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let dirct1 = self.a2 - self.a1;
+        let dirct2 = self.a3 - self.a1;
+        let n = Vec3::cross(dirct1, dirct2);
+        let b_a = self.a1 - r.ori;
+        let t = Vec3::dot(n, b_a) / Vec3::dot(n, r.dic);
+        //inspired by https://blog.csdn.net/wuwangrun/article/details/8188665
+        if t < t_min || t > t_max {
+            return None;
+        }
+        let hit = r.at(t);
+        if Vec3::sameside(self.a1, self.a2, self.a3, hit)
+            && Vec3::sameside(self.a2, self.a3, self.a1, hit)
+            && Vec3::sameside(self.a3, self.a1, self.a2, hit)
+        {
+            //use the method 2 in https://www.cnblogs.com/graphics/archive/2010/08/05/1793393.html
+            let mut rec = StaticHitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, &self.mp);
+            rec.p = r.at(t);
+            // let a1 = self.a1.x - self.a2.x;
+            // let b1 = self.a1.x - self.a3.x;
+            // let c1 = self.a1.x - hit.x;
+            // let a2 = self.a1.y - self.a2.y;
+            // let b2 = self.a1.y - self.a3.y;
+            // let c2 = self.a1.y - hit.y;
+            // rec.u=(c1*b2-b1*c2)/(a1*b2-b1*a2);
+            // rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order //use the most stupid way to solve the problem
+            // //the silly way
+            rec.t = t;
+            let ourward_normal = n;
+            rec.set_face_normal(&r, ourward_normal);
+            rec.mat_ptr = &self.mp;
+            Some(rec)
+        } else {
+            None
+        }
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        // let dirct1 = self.a2 - self.a1;
+        // let dirct2 = self.a3 - self.a1;
+        // let n = Vec3::cross(dirct1, dirct2);
+        let ans1 = Vec3::new(
+            mainnum1(self.a1.x, self.a2.x, self.a3.x),
+            mainnum1(self.a1.y, self.a2.y, self.a3.y),
+            mainnum1(self.a1.z, self.a2.z, self.a3.z),
+        ) + Vec3::new(0.01, 0.01, 0.01);
+        let ans2 = Vec3::new(
+            maxnum1(self.a1.x, self.a2.x, self.a3.x),
+            maxnum1(self.a1.y, self.a2.y, self.a3.y),
+            maxnum1(self.a1.z, self.a2.z, self.a3.z),
+        ) - Vec3::new(0.01, 0.01, 0.01);
+
+        Some(Aabb::new(ans1, ans2))
+    }
+}
+
+pub struct StaticXzRect<T:StaticMaterial> {
+    pub(crate) mp: T,
+    pub(crate) x0: f64,
+    pub(crate) x1: f64,
+    pub(crate) z0: f64,
+    pub(crate) z1: f64,
+    pub(crate) k: f64,
+}
+
+unsafe impl<T:StaticMaterial> Send for StaticXzRect<T> {}
+
+unsafe impl<T:StaticMaterial> Sync for StaticXzRect<T> {}
+
+impl<T:StaticMaterial> StaticXzRect<T> {
+    pub fn new(_x0: f64, _x1: f64, _z0: f64, _z1: f64, _k: f64, mat: T) -> Self {
+        Self {
+            mp: mat,
+            x0: _x0,
+            x1: _x1,
+            z0: _z0,
+            z1: _z1,
+            k: _k,
+        }
+    }
+}
+
+impl<T:StaticMaterial+Clone> StaticHittable for StaticXzRect<T> {
+    #[allow(clippy::needless_return)]
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let t = (self.k - r.ori.y) / r.dic.y;
+        if t < t_min || t > t_max {
+            return None;
+        }
+        let x = r.ori.x + t * r.dic.x;
+        let z = r.ori.z + t * r.dic.z;
+        if x < self.x0 || x > self.x1 || z < self.z0 || z > self.z1 {
+            return None;
+        }
+        let mut rec = StaticHitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, &self.mp);
+        rec.u = (x - self.x0) / (self.x1 - self.x0);
+        rec.v = (z - self.z0) / (self.z1 - self.z0);
+        rec.t = t;
+        let ourward_normal = Vec3::new(0.0, 1.0, 0.0);
+        rec.set_face_normal(&r, ourward_normal);
+        rec.mat_ptr = &self.mp;
+        rec.p = r.at(t);
+        Some(rec)
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        Some(Aabb::new(
+            Vec3::new(self.x0, self.k - 0.0001, self.z0),
+            Vec3::new(self.x1, self.k + 0.0001, self.z1),
+        ))
+    }
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
+            let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+            let distance_squared = rec.t * rec.t * v.squared_length();
+            let cosine = Vec3::dot(*v, rec.normal).abs() / v.length();
+
+            distance_squared / (cosine * area)
+        } else {
+            0.0
+        }
+    }
+    #[allow(clippy::needless_return)]
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let randompoint = Vec3::new(
+            range_random_double(self.x0, self.x1),
+            self.k,
+            range_random_double(self.z0, self.z1),
+        );
+        randompoint - *o
+    }
+}
+#[allow(dead_code)]
+pub struct StaticYzRect<T:StaticMaterial> {
+    pub(crate) mp: T,
+    pub(crate) y0: f64,
+    pub(crate) y1: f64,
+    pub(crate) z0: f64,
+    pub(crate) z1: f64,
+    pub(crate) k: f64,
+}
+
+impl<T:StaticMaterial> StaticYzRect<T> {
+    #[allow(dead_code)]
+    pub fn new(_y0: f64, _y1: f64, _z0: f64, _z1: f64, _k: f64, mat: T) -> Self {
+        Self {
+            mp: mat,
+            y0: _y0,
+            y1: _y1,
+            z0: _z0,
+            z1: _z1,
+            k: _k,
+        }
+    }
+}
+
+impl <T:StaticMaterial+Clone>StaticHittable for StaticYzRect<T> {
+    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+        let t = (self.k - r.ori.x) / r.dic.x;
+        if t < t_min || t > t_max {
+            return None;
+        }
+        let y = r.ori.y + t * r.dic.y;
+        let z = r.ori.z + t * r.dic.z;
+        if y < self.y0 || y > self.y1 || z < self.z0 || z > self.z1 {
+            return None;
+        }
+        let mut rec = StaticHitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, &self.mp);
+
+        rec.u = (y - self.y0) / (self.y1 - self.y0);
+        rec.v = (z - self.z0) / (self.z1 - self.z0);
+        rec.t = t;
+        let ourward_normal = Vec3::new(1.0, 0.0, 0.0);
+        rec.set_face_normal(&r, ourward_normal);
+        rec.mat_ptr = &self.mp;
+        rec.p = r.at(t);
+        Some(rec)
+    }
+
+    fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
+        Some(Aabb::new(
+            Vec3::new(self.k - 0.0001, self.y0, self.z0),
+            Vec3::new(self.k + 0.0001, self.y1, self.z1),
+        ))
+    }
+}
+

@@ -1,4 +1,4 @@
-use crate::range_random_double;
+use crate::run::range_random_double;
 pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
 use std::f64::consts::PI;
