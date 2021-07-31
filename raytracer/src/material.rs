@@ -1,6 +1,6 @@
 use crate::aabb::Aabb;
 pub use crate::hittable::Hitrecord;
-use crate::hittable::{Hittable, StaticHitrecord};
+use crate::hittable::{Hittable, StaticHitrecord, StaticHittable};
 use crate::pdf::{CosinePdf, NoPdf, Pdf};
 pub use crate::ray::Ray;
 use crate::texture::{BaseColor, Texture, StaticBaseColor};
@@ -639,19 +639,19 @@ impl<T:Texture> StaticMaterial for StaticIsotropic<T> {
     }
 }
 #[derive(Clone)]
-pub struct StaticFlipFace {
-    ptr: Arc<dyn Hittable>,
+pub struct StaticFlipFace<T:StaticHittable> {
+    ptr: T,
 }
 
-impl StaticFlipFace {
-    pub fn new(ptr: Arc<dyn Hittable>) -> Self {
+impl<T:StaticHittable> StaticFlipFace<T> {
+    pub fn new(ptr: T) -> Self {
         Self { ptr }
     }
 }
 
-impl Hittable for StaticFlipFace {
+impl<T:StaticHittable> StaticHittable for StaticFlipFace<T> {
     #[allow(clippy::needless_return)]
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if let Option::Some(mut rec) = self.ptr.hit(r, t_min, t_max) {
             rec.front_face = !rec.front_face;
             return Some(rec);
