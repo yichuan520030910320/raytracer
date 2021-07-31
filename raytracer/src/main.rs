@@ -17,6 +17,6 @@ mod staticscence;
 
 use crate::run::{run, runstatic};
 fn main() {
-    //run();
-    runstatic();
+    run();
+    //runstatic();
 }
