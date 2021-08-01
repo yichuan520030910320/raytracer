@@ -3,7 +3,7 @@
 const INF: f64 = 1000000.0;
 
 use crate::aarect::{Triangel, XyRect, XzRect, YzRect, StaticXzRect};
-use crate::hittable::{Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, RotateZ, Sphere, Translate, StaticHittableList, StaticHittable};
+use crate::hittable::{Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, RotateZ, Sphere, Translate, StaticHittableList, StaticHittable, StaticSphere};
 use crate::material::{Dielectric, DiffuseLight, FlipFace, Lambertian, Metal, StaticLambertian};
 use crate::pdf::{HittablePdf, MixturePdf, Pdf, StaticHittablePdf, StaticMixturePdf};
 use crate::perlin::NoiseTexture;
@@ -106,13 +106,13 @@ pub(crate) fn run() {
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 30; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 3; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
-    let number = 2;
+    let number = 6;
     let mut world = HittableList { objects: vec![] };
     match number {
         1 => world = two_spheres(),
@@ -348,7 +348,7 @@ pub fn runstatic(){
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 3; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 50; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
@@ -424,17 +424,18 @@ pub fn runstatic(){
                 554.0,
                 StaticLambertian::<StaticBaseColor>::new(Vec3::zero()),
             ));
-            // let tmp: Arc<dyn Hittable + Send> = Arc::new(Sphere::new(
-            //     Vec3::zero(),
-            //     Vec3::zero(),
-            //     0.0,
-            //     Vec3::new(190.0, 90.0, 190.0),
-            //     90.0,
-            //     Arc::new(Lambertian::new(Vec3::zero())),
-            // ));
+            let tmp: Arc<dyn StaticHittable + Send> = Arc::new(StaticSphere::new(
+                Vec3::zero(),
+                Vec3::zero(),
+                0.0,
+                Vec3::new(190.0, 90.0, 190.0),
+                90.0,
+                StaticLambertian::<StaticBaseColor>::new(Vec3::zero()),
+            ));
             lightworld.add(light1);
+            //lightworld.add(tmp);
             let lightin=lightworld;
-            // lightworld.add(tmp);
+
             let row_begin = image_heigth as usize * i / n_jobs;
             let row_end = image_heigth as usize * (i + 1) / n_jobs;
             let render_height = row_end - row_begin;

@@ -88,6 +88,26 @@ impl Hittable for XyRect {
             Vec3::new(self.x1, self.y1, self.k + 0.0001),
         ))
     }
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
+            let area = (self.x1 - self.x0) * (self.y1 - self.y0);
+            let distance_squared = rec.t * rec.t * v.squared_length();
+            let cosine = Vec3::dot(*v, rec.normal).abs() / v.length();
+
+            distance_squared / (cosine * area)
+        } else {
+            0.0
+        }
+    }
+    #[allow(clippy::needless_return)]
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let randompoint = Vec3::new(
+            range_random_double(self.x0, self.x1),
+            range_random_double(self.y0,self.y1),
+            self.k,
+        );
+        randompoint - *o//分布在击中点球面上的一个点与球心的连线
+    }
 }
 
 pub struct Triangel {
@@ -243,7 +263,7 @@ impl Hittable for XzRect {
             self.k,
             range_random_double(self.z0, self.z1),
         );
-        randompoint - *o
+        randompoint - *o//分布在击中点球面上的一个点与球心的连线
     }
 }
 #[allow(dead_code)]
@@ -298,6 +318,27 @@ impl Hittable for YzRect {
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),
         ))
+    }
+
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        if let Option::Some(rec) = self.hit(Ray::new(*o, *v, 0.0), 0.001, INFINITY) {
+            let area = (self.y1 - self.y0) * (self.z1 - self.z0);
+            let distance_squared = rec.t * rec.t * v.squared_length();
+            let cosine = Vec3::dot(*v, rec.normal).abs() / v.length();
+
+            distance_squared / (cosine * area)
+        } else {
+            0.0
+        }
+    }
+    #[allow(clippy::needless_return)]
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let randompoint = Vec3::new(
+            self.k,
+            range_random_double(self.y0,self.y1),
+            range_random_double(self.z0, self.z1),
+        );
+        randompoint - *o//分布在击中点球面上的一个点与球心的连线
     }
 }
 

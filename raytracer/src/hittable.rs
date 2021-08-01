@@ -18,6 +18,7 @@ use std::option::Option::Some;
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
 }
+
 #[allow(clippy::needless_return)]
 fn fmin1(a: f64, b: f64) -> f64 {
     if a < b {
@@ -25,6 +26,7 @@ fn fmin1(a: f64, b: f64) -> f64 {
     }
     return b;
 }
+
 #[allow(clippy::needless_return)]
 fn fmax1(a: f64, b: f64) -> f64 {
     if a < b {
@@ -400,14 +402,6 @@ impl Hittable for Translate {
         } else {
             None
         }
-
-        // Option::from(if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
-        //     rec.p += self.offset;
-        //     rec.set_face_normal(&moved_r, rec.normal);
-        //     rec
-        // } else {
-        //     None
-        // })
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
@@ -420,6 +414,13 @@ impl Hittable for Translate {
         } else {
             None
         }
+    }
+
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        self.ptr.pdf_value(&(*o - self.offset), v)
+    }
+    fn random(&self, o: &Vec3) -> Vec3 {
+        self.ptr.random(&(*o - self.offset))
     }
 }
 
@@ -504,9 +505,36 @@ impl Hittable for RotateY {
             None
         }
     }
-
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
         Option::from(self.bbox)
+    }
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        let mut rotateo = Vec3::zero();
+        rotateo.y = o.y;
+        let mut rotatev = Vec3::zero();
+        rotatev.y = v.y;
+        rotateo.x = self.cos_theta * o.x - self.sin_theta * o.z;
+        rotateo.z = self.sin_theta * o.x + self.cos_theta * o.z;
+        rotatev.x = self.cos_theta * v.x - self.sin_theta * v.z;
+        rotatev.z = self.sin_theta * v.x + self.cos_theta * v.z;
+        self.ptr.pdf_value(&rotateo, &rotatev)
+    }
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let mut rotateo = Vec3::zero();
+        rotateo.y = o.y;
+        rotateo.x = self.cos_theta * o.x - self.sin_theta * o.z;
+        rotateo.z = self.sin_theta * o.x + self.cos_theta * o.z;
+let rec=self.ptr.random(&rotateo);
+        let mut ans =Vec3::zero();
+        ans.y=rec.y;
+
+        ans.x = self.cos_theta * rec.x - self.sin_theta * rec.z;
+        ans.z = self.sin_theta * rec.x + self.cos_theta * rec.z;
+
+
+        ans
+
+        //self.ptr.random(&(*o - self.offset))
     }
 }
 
@@ -760,6 +788,7 @@ pub struct ConstantMedium {
     pub phase_function: Arc<dyn Material>,
     neg_inv_density: f64,
 }
+
 #[allow(clippy::needless_return)]
 impl Hittable for ConstantMedium {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
@@ -867,6 +896,7 @@ impl BvhNode {
         }
     }
 }
+
 #[allow(clippy::needless_return)]
 impl Hittable for BvhNode {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hitrecord> {
@@ -898,14 +928,8 @@ impl Hittable for BvhNode {
 }
 
 
-
-
-
-
-
-
 pub trait StaticHittable: Send + Sync {
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord>;
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
     fn pdf_value(&self, _: &Vec3, _: &Vec3) -> f64 {
         0.0
@@ -927,9 +951,10 @@ pub struct StaticHitrecord<'a> {
     //距离
     pub front_face: bool,
     //正面还是反面
-    pub mat_ptr:  &'a dyn StaticMaterial,
+    pub mat_ptr: &'a dyn StaticMaterial,
 }
-impl <'a> StaticHitrecord<'a> {
+
+impl<'a> StaticHitrecord<'a> {
     pub fn grt_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
         let theta = (-p.y).acos();
         let temptheta = (-p.z) / p.x;
@@ -968,7 +993,7 @@ impl <'a> StaticHitrecord<'a> {
 }
 
 #[allow(dead_code)]
-pub struct StaticMovingSphere<T:StaticMaterial> {
+pub struct StaticMovingSphere<T: StaticMaterial> {
     pub center0: Vec3,
     pub center1: Vec3,
     pub time0: f64,
@@ -985,7 +1010,7 @@ impl<T: material::StaticMaterial> StaticMovingSphere<T> {
         _time0: f64,
         _time1: f64,
         r: f64,
-        mat_ptr:T,
+        mat_ptr: T,
     ) -> Self {
         Self {
             center0: cen0,
@@ -1004,8 +1029,8 @@ impl<T: material::StaticMaterial> StaticMovingSphere<T> {
 
 #[allow(clippy::suspicious_operation_groupings)]
 #[allow(clippy::needless_return)]
-impl<T: material::StaticMaterial+Clone>StaticHittable for StaticMovingSphere<T> {
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+impl<T: material::StaticMaterial + Clone> StaticHittable for StaticMovingSphere<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let oc = r.ori - StaticMovingSphere::center(self, r.tm);
         let a = Vec3::squared_length(&r.dic);
         let half_b = Vec3::dot(r.dic, oc);
@@ -1023,14 +1048,14 @@ impl<T: material::StaticMaterial+Clone>StaticHittable for StaticMovingSphere<T> 
                     return None;
                 }
             }
-            let mat_tem= &self.mat_ptr;
+            let mat_tem = &self.mat_ptr;
             let mut rec = StaticHitrecord {
                 t: 0.0,
                 u: 0.0,
                 p: Vec3::zero(),
                 normal: Vec3::zero(),
                 front_face: false,
-                mat_ptr:mat_tem,
+                mat_ptr: mat_tem,
                 v: 0.0,
             };
 
@@ -1057,7 +1082,7 @@ impl<T: material::StaticMaterial+Clone>StaticHittable for StaticMovingSphere<T> 
     }
 }
 
-pub struct StaticSphere<T:StaticMaterial> {
+pub struct StaticSphere<T: StaticMaterial> {
     pub p: Vec3,
     pub normal: Vec3,
     pub t: f64,
@@ -1066,14 +1091,14 @@ pub struct StaticSphere<T:StaticMaterial> {
     pub mat_ptr: T,
 }
 
-impl<T:StaticMaterial> StaticSphere<T> {
+impl<T: StaticMaterial> StaticSphere<T> {
     pub fn new(
         p: Vec3,
         normal: Vec3,
         t: f64,
         center: Vec3,
         radius: f64,
-        mat_ptr:T,
+        mat_ptr: T,
     ) -> Self {
         Self {
             p,
@@ -1088,7 +1113,7 @@ impl<T:StaticMaterial> StaticSphere<T> {
 
 //实例化trait在圆中
 #[allow(clippy::suspicious_operation_groupings)]
-impl <T:StaticMaterial+Clone>StaticHittable for StaticSphere<T> {
+impl<T: StaticMaterial + Clone> StaticHittable for StaticSphere<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let oc = r.ori - self.center;
         let a = Vec3::squared_length(&r.dic);
@@ -1154,44 +1179,44 @@ impl <T:StaticMaterial+Clone>StaticHittable for StaticSphere<T> {
     }
 }
 
-pub struct StaticBox1 <T:StaticMaterial+Clone>{
+pub struct StaticBox1<T: StaticMaterial + Clone> {
     pub(crate) box_min: Vec3,
     pub(crate) box_max: Vec3,
     pub(crate) sides: (
-    StaticXyRect<T>,
-    StaticXyRect<T>,
-    StaticYzRect<T>,
-    StaticYzRect<T>,
-    StaticXzRect<T>,
-    StaticXzRect<T>,
+        StaticXyRect<T>,
+        StaticXyRect<T>,
+        StaticYzRect<T>,
+        StaticYzRect<T>,
+        StaticXzRect<T>,
+        StaticXzRect<T>,
     ),
 }
 
-impl <T:StaticMaterial+Clone>StaticHittable for StaticBox1<T> {
+impl<T: StaticMaterial + Clone> StaticHittable for StaticBox1<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
-let mut the_closest =t_max;
+        let mut the_closest = t_max;
         let mut ans: Option<StaticHitrecord> = None;
-        if let Some (rec)=self.sides.0.hit(r,t_min,t_max){
-            ans=Some(rec.clone());
-            the_closest=rec.t;
+        if let Some(rec) = self.sides.0.hit(r, t_min, t_max) {
+            ans = Some(rec.clone());
+            the_closest = rec.t;
         }
-        if let Some (rec)=self.sides.1.hit(r,the_closest,t_max){
-            ans=Some(rec.clone());
-            the_closest=rec.t;
+        if let Some(rec) = self.sides.1.hit(r, the_closest, t_max) {
+            ans = Some(rec.clone());
+            the_closest = rec.t;
         }
-        if let Some (rec)=self.sides.2.hit(r,the_closest,t_max){
-            ans=Some(rec.clone());
-            the_closest=rec.t;
+        if let Some(rec) = self.sides.2.hit(r, the_closest, t_max) {
+            ans = Some(rec.clone());
+            the_closest = rec.t;
         }
-        if let Some (rec)=self.sides.3.hit(r,the_closest,t_max){
-            ans=Some(rec.clone());
-            the_closest=rec.t;
+        if let Some(rec) = self.sides.3.hit(r, the_closest, t_max) {
+            ans = Some(rec.clone());
+            the_closest = rec.t;
         }
-        if let Some (rec)=self.sides.4.hit(r,the_closest,t_max){
-            ans=Some(rec.clone());
-            the_closest=rec.t;
+        if let Some(rec) = self.sides.4.hit(r, the_closest, t_max) {
+            ans = Some(rec.clone());
+            the_closest = rec.t;
         }
-        if let Some (rec)=self.sides.5.hit(r,the_closest,t_max) {
+        if let Some(rec) = self.sides.5.hit(r, the_closest, t_max) {
             ans = Some(rec.clone());
             the_closest = rec.t;
         }
@@ -1203,7 +1228,7 @@ let mut the_closest =t_max;
     }
 }
 
-impl <T:StaticMaterial+Clone> StaticBox1<T> {
+impl<T: StaticMaterial + Clone> StaticBox1<T> {
     pub fn new(p0: &Vec3, p1: &Vec3, ptr: T) -> Self {
         Self {
             box_min: *p0,
@@ -1215,60 +1240,60 @@ impl <T:StaticMaterial+Clone> StaticBox1<T> {
                 x1: p1.x,
                 y0: p0.y,
                 y1: p1.y,
-                k: p1.z
+                k: p1.z,
             }, StaticXyRect {
                 mp: ptr.clone(),
                 x0: p0.x,
                 x1: p1.x,
                 y0: p0.y,
                 y1: p1.y,
-                k: p0.z
+                k: p0.z,
             }, StaticYzRect {
                 mp: ptr.clone(),
                 y0: p1.y,
                 y1: p0.y,
                 z0: p1.z,
                 z1: p1.z,
-                k: p1.x
+                k: p1.x,
             }, StaticYzRect {
                 mp: ptr.clone(),
                 y0: p1.y,
                 y1: p0.y,
                 z0: p1.z,
                 z1: p1.z,
-                k: p0.x
+                k: p0.x,
             }, StaticXzRect {
                 mp: ptr.clone(),
                 x0: p1.x,
                 x1: p0.x,
                 z0: p1.z,
                 z1: p0.z,
-                k: p0.y
+                k: p0.y,
             }, StaticXzRect {
                 mp: ptr.clone(),
                 x0: p1.x,
                 x1: p0.x,
                 z0: p1.z,
                 z1: p0.z,
-                k: p1.y
-            })
+                k: p1.y,
+            }),
         }
     }
 }
 
-pub struct StaticTranslate<T:StaticHittable> {
+pub struct StaticTranslate<T: StaticHittable> {
     pub(crate) ptr: T,
     pub(crate) offset: Vec3,
 }
 
-impl<T:StaticHittable> StaticTranslate<T> {
+impl<T: StaticHittable> StaticTranslate<T> {
     pub fn new(ptr: T, offset: Vec3) -> Self {
         Self { ptr, offset }
     }
 }
 
-impl <T:StaticHittable>StaticHittable for StaticTranslate<T> {
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+impl<T: StaticHittable> StaticHittable for StaticTranslate<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let moved_r = Ray::new(r.ori - self.offset, r.dic, r.tm);
         if let Option::Some(mut rec) = self.ptr.hit(moved_r, t_min, t_max) {
             rec.p += self.offset;
@@ -1301,7 +1326,7 @@ impl <T:StaticHittable>StaticHittable for StaticTranslate<T> {
 }
 
 #[allow(dead_code)]
-pub struct StaticRotateY<T:StaticHittable> {
+pub struct StaticRotateY<T: StaticHittable> {
     //相对观察视角物体旋转的角度
     pub(crate) ptr: T,
     pub(crate) sin_theta: f64,
@@ -1310,8 +1335,8 @@ pub struct StaticRotateY<T:StaticHittable> {
     pub(crate) bbox: Aabb,
 }
 
-impl <T:StaticHittable>StaticRotateY<T> {
-    pub fn new(p:T, angle: f64) -> Self {
+impl<T: StaticHittable> StaticRotateY<T> {
+    pub fn new(p: T, angle: f64) -> Self {
         let radians = degrees_to_radians(angle);
 
         let sinthetatemp = radians.sin();
@@ -1356,8 +1381,8 @@ impl <T:StaticHittable>StaticRotateY<T> {
     }
 }
 
-impl<T:StaticHittable> StaticHittable for StaticRotateY<T> {
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+impl<T: StaticHittable> StaticHittable for StaticRotateY<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let mut origin = r.ori;
         let mut direct = r.dic;
         origin.x = self.cos_theta * r.ori.x - self.sin_theta * r.ori.z;
@@ -1388,7 +1413,7 @@ impl<T:StaticHittable> StaticHittable for StaticRotateY<T> {
 }
 
 #[allow(dead_code)]
-pub struct StaticRotateX<T:StaticHittable> {
+pub struct StaticRotateX<T: StaticHittable> {
     //相对观察视角物体旋转的角度
     pub(crate) ptr: T,
     pub(crate) sin_theta: f64,
@@ -1397,7 +1422,7 @@ pub struct StaticRotateX<T:StaticHittable> {
     pub(crate) bbox: Aabb,
 }
 
-impl<T:StaticHittable> StaticRotateX<T> {
+impl<T: StaticHittable> StaticRotateX<T> {
     #[allow(dead_code)]
     #[allow(clippy::redundant_pattern_matching)]
     pub fn new(p: T, angle: f64) -> Self {
@@ -1444,7 +1469,7 @@ impl<T:StaticHittable> StaticRotateX<T> {
     }
 }
 
-impl<T:StaticHittable> StaticHittable for StaticRotateX<T> {
+impl<T: StaticHittable> StaticHittable for StaticRotateX<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let mut origin = r.ori;
         let mut direct = r.dic;
@@ -1476,7 +1501,7 @@ impl<T:StaticHittable> StaticHittable for StaticRotateX<T> {
 }
 
 #[allow(dead_code)]
-pub struct StaticRotateZ<T:StaticHittable> {
+pub struct StaticRotateZ<T: StaticHittable> {
     //相对观察视角物体旋转的角度
     pub(crate) ptr: T,
     pub(crate) sin_theta: f64,
@@ -1485,10 +1510,10 @@ pub struct StaticRotateZ<T:StaticHittable> {
     pub(crate) bbox: Aabb,
 }
 
-impl<T:StaticHittable> StaticRotateZ<T> {
+impl<T: StaticHittable> StaticRotateZ<T> {
     #[allow(dead_code)]
     #[allow(clippy::redundant_pattern_matching)]
-    pub fn new(p:T, angle: f64) -> Self {
+    pub fn new(p: T, angle: f64) -> Self {
         let radians = degrees_to_radians(angle);
 
         let sinthetatemp = radians.sin();
@@ -1532,8 +1557,8 @@ impl<T:StaticHittable> StaticRotateZ<T> {
     }
 }
 
-impl<T:StaticHittable> StaticHittable for StaticRotateZ<T> {
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+impl<T: StaticHittable> StaticHittable for StaticRotateZ<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let mut origin = r.ori;
         let mut direct = r.dic;
         origin.x = self.cos_theta * r.ori.x - self.sin_theta * r.ori.y;
@@ -1632,13 +1657,14 @@ impl StaticHittable for StaticHittableList {
     }
 }
 
-pub struct StaticConstantMedium<T1:StaticHittable,T2:Clone +StaticMaterial> {
+pub struct StaticConstantMedium<T1: StaticHittable, T2: Clone + StaticMaterial> {
     pub boundary: T1,
     pub phase_function: T2,
     neg_inv_density: f64,
 }
+
 #[allow(clippy::needless_return)]
-impl<T1:StaticHittable,T2:Clone +StaticMaterial> StaticHittable for StaticConstantMedium<T1, T2> {
+impl<T1: StaticHittable, T2: Clone + StaticMaterial> StaticHittable for StaticConstantMedium<T1, T2> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if let Option::Some(mut rec1) = self.boundary.hit(r, -INF, INF) {
             if let Option::Some(mut rec2) = self.boundary.hit(r, rec1.t + 0.0001, INF) {
@@ -1688,12 +1714,12 @@ impl<T1:StaticHittable,T2:Clone +StaticMaterial> StaticHittable for StaticConsta
     }
 }
 
-impl<T1:StaticHittable,T2:Clone +texture::Texture> StaticConstantMedium<T1, StaticIsotropic<T2>> {
+impl<T1: StaticHittable, T2: Clone + texture::Texture> StaticConstantMedium<T1, StaticIsotropic<T2>> {
     pub fn new(b: T1, d: f64, c: T2) -> Self {
         //c 用vec来new出一个basrcolor !!!!
         Self {
             boundary: b,
-            phase_function:StaticIsotropic{
+            phase_function: StaticIsotropic {
                 albedo: c,
             },
             neg_inv_density: (-1.0 / d),
@@ -1747,9 +1773,10 @@ impl StaticBvhNode {
         }
     }
 }
+
 #[allow(clippy::needless_return)]
 impl StaticHittable for StaticBvhNode {
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if !self.box1.hit(&r, t_min, t_max) {
             return None;
         }
