@@ -1,12 +1,17 @@
-use crate::hittable::{Sphere, HittableList, StaticSphere, StaticHittableList, MovingSphere, StaticMovingSphere, StaticBox1, StaticTranslate, StaticRotateY, StaticHittable};
-use crate::run::{Vec3, range_random_double, random_doouble};
-use crate::material::{Lambertian, StaticLambertian, Metal, Dielectric, StaticMetal, StaticDielectric, StaticDiffuseLight, StaticFlipFace};
-use std::sync::Arc;
+use crate::aarect::{StaticXyRect, StaticXzRect, StaticYzRect};
+use crate::hittable::{
+    StaticBox1, StaticHittableList, StaticMovingSphere, StaticRotateY, StaticSphere,
+    StaticTranslate,
+};
+use crate::material::{
+    StaticDielectric, StaticDiffuseLight, StaticFlipFace, StaticLambertian, StaticMetal,
+};
 use crate::perlin::NoiseTexture;
-use crate::texture::{CheckerTexture, StaticBaseColor, ImageTexture, StaticImageTexture};
-use crate::aarect::{YzRect, StaticYzRect, StaticXzRect, StaticXyRect};
+use crate::run::{random_doouble, range_random_double, Vec3};
+use crate::texture::{CheckerTexture, StaticBaseColor, StaticImageTexture};
+use std::sync::Arc;
 
-pub fn two_texture_static()->StaticHittableList{
+pub fn two_texture_static() -> StaticHittableList {
     let mut world = StaticHittableList { objects: vec![] };
 
     let checker = NoiseTexture::new(4.0);
@@ -28,7 +33,7 @@ pub fn two_texture_static()->StaticHittableList{
             z: 0.0,
         },
         radius: 1000.0,
-        mat_ptr:StaticLambertian::new1(checker),
+        mat_ptr: StaticLambertian::new1(checker),
     };
     world.add(Arc::new(below));
 
@@ -56,16 +61,11 @@ pub fn two_texture_static()->StaticHittableList{
     world.add(Arc::new(above));
 
     world
-
 }
-
 
 pub(crate) fn static_random_sence() -> StaticHittableList {
     let mut world = StaticHittableList { objects: vec![] };
-    let checker = CheckerTexture::new(
-        Vec3::new(0.2, 0.3, 0.1),
-        Vec3::new(0.9, 0.9, 0.9),
-    );
+    let checker = CheckerTexture::new(Vec3::new(0.2, 0.3, 0.1), Vec3::new(0.9, 0.9, 0.9));
     let ground = StaticSphere {
         p: Vec3 {
             x: 0.0,
@@ -99,7 +99,6 @@ pub(crate) fn static_random_sence() -> StaticHittableList {
             if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.8 {
                     let albedo = Vec3::random() * Vec3::random();
-                    let tex=StaticBaseColor::new(albedo);
                     let center2 = center + Vec3::new(0.0, range_random_double(0.0, 0.5), 0.0);
                     let temp = StaticMovingSphere {
                         center0: center,
@@ -179,7 +178,7 @@ pub(crate) fn static_random_sence() -> StaticHittableList {
             z: 0.0,
         },
         radius: 1.0,
-        mat_ptr:StaticDielectric::new(1.5),
+        mat_ptr: StaticDielectric::new(1.5),
     };
     world.add(Arc::new(material1));
     let material2 = StaticSphere {
@@ -222,7 +221,7 @@ pub(crate) fn static_random_sence() -> StaticHittableList {
             z: 0.0,
         },
         radius: 1.0,
-        mat_ptr:StaticMetal::new(Vec3::new(0.7, 0.6, 0.5), 0.0),
+        mat_ptr: StaticMetal::new(Vec3::new(0.7, 0.6, 0.5), 0.0),
     };
     world.add(Arc::new(material3));
     world
@@ -255,8 +254,6 @@ pub(crate) fn static_earth() -> StaticHittableList {
     world.add(Arc::new(below));
     world
 }
-
-
 
 pub(crate) fn static_cornell_box() -> StaticHittableList {
     let mut world = StaticHittableList { objects: vec![] };
@@ -292,7 +289,7 @@ pub(crate) fn static_cornell_box() -> StaticHittableList {
     };
     world.add(Arc::new(white1));
     let white2 = StaticXzRect {
-        mp:StaticLambertian::<StaticBaseColor>::new(Vec3::new(0.73, 0.73, 0.73)),
+        mp: StaticLambertian::<StaticBaseColor>::new(Vec3::new(0.73, 0.73, 0.73)),
 
         x0: 0.0,
         x1: 555.0,
@@ -328,13 +325,13 @@ pub(crate) fn static_cornell_box() -> StaticHittableList {
     // whitebox1 = Arc::new(Translate::new(whitebox1, Vec3::new(265.0, 0.0, 295.0)));
     // world.add(whitebox1);
 
-    let mut whitebox1 = StaticBox1::new(
+    let whitebox1 = StaticBox1::new(
         &Vec3::new(0.0, 0.0, 0.0),
         &Vec3::new(165.0, 330.0, 165.0),
         StaticMetal::new(Vec3::new(0.8, 0.85, 0.88), 0.0),
     );
     let whitebox2 = StaticRotateY::new(whitebox1, 15.0);
-    let whitebox3 =StaticTranslate::new(whitebox2, Vec3::new(265.0, 0.0, 295.0));
+    let whitebox3 = StaticTranslate::new(whitebox2, Vec3::new(265.0, 0.0, 295.0));
     world.add(Arc::new(whitebox3));
 
     let material1 = StaticSphere {
@@ -355,7 +352,7 @@ pub(crate) fn static_cornell_box() -> StaticHittableList {
             z: 190.0,
         },
         radius: 90.0,
-        mat_ptr:StaticDielectric::new(1.5),
+        mat_ptr: StaticDielectric::new(1.5),
     };
     world.add(Arc::new(material1));
 

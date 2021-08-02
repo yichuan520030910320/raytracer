@@ -3,18 +3,17 @@ pub use crate::hittable::Hitrecord;
 use crate::hittable::{Hittable, StaticHitrecord, StaticHittable};
 use crate::pdf::{CosinePdf, NoPdf, Pdf};
 pub use crate::ray::Ray;
-use crate::texture::{BaseColor, Texture, StaticBaseColor};
+use crate::run::random_doouble;
+use crate::texture::{BaseColor, StaticBaseColor, Texture};
 pub use crate::vec3::Vec3;
 use std::f64::consts::PI;
 use std::sync::Arc;
-use crate::run::random_doouble;
 
 fn schlick(cosin: f64, ref_idx: f64) -> f64 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     r0 *= r0;
     r0 + (1.0 - r0) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin) * (1.0 - cosin)
 }
-
 
 pub trait Material: Send + Sync {
     fn scatter(
@@ -47,11 +46,13 @@ pub struct ScatterRecord {
 }
 
 impl Lambertian {
+    #[allow(dead_code)]
     pub fn new(albedo: Vec3) -> Self {
         Self {
             albedo: Arc::new(BaseColor::new(albedo)),
         }
     }
+    #[allow(dead_code)]
     pub fn new1(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
     }
@@ -66,6 +67,7 @@ impl Material for Lambertian {
         _: &mut Ray,
         _: &mut f64,
     ) -> ScatterRecord {
+        //println!("{} {}", rec.v,rec.u);
         ScatterRecord {
             specular_ray: Ray::new(Vec3::zero(), Vec3::zero(), 0.0),
             is_specular: false,
@@ -95,6 +97,7 @@ pub struct Metal {
 }
 
 impl Metal {
+    #[allow(dead_code)]
     pub fn new(albedo: Vec3, mut fuzz: f64) -> Self {
         if fuzz < 1.0 {
         } else {
@@ -134,6 +137,7 @@ pub struct Dielectric {
 }
 
 impl Dielectric {
+    #[allow(dead_code)]
     pub fn new(ref_idx: f64) -> Self {
         Self { ref_idx }
     }
@@ -270,6 +274,7 @@ pub struct Isotropic {
 }
 
 impl Isotropic {
+    #[allow(dead_code)]
     pub fn new(c: Vec3) -> Self {
         Self {
             albedo: Arc::new(BaseColor::new(c)),
@@ -317,6 +322,7 @@ pub struct FlipFace {
 }
 
 impl FlipFace {
+    #[allow(dead_code)]
     pub fn new(ptr: Arc<dyn Hittable>) -> Self {
         Self { ptr }
     }
@@ -337,13 +343,6 @@ impl Hittable for FlipFace {
     }
 }
 
-
-
-
-
-
-
-
 pub trait StaticMaterial: Send + Sync {
     fn scatter(
         &self,
@@ -362,7 +361,7 @@ pub trait StaticMaterial: Send + Sync {
     }
 }
 #[derive(Clone)]
-pub struct StaticLambertian<T:Texture> {
+pub struct StaticLambertian<T: Texture> {
     albedo: T,
 }
 pub struct StaticScatterRecord {
@@ -373,18 +372,19 @@ pub struct StaticScatterRecord {
     pub isget: bool,
 }
 
-impl <T:Texture>StaticLambertian<T > {
+impl<T: Texture> StaticLambertian<T> {
+    #[allow(dead_code)]
     pub fn new(albedo: Vec3) -> StaticLambertian<StaticBaseColor> {
         StaticLambertian {
             albedo: StaticBaseColor::new(albedo),
         }
     }
-    pub fn new1(albedo: T) ->StaticLambertian<T> {
+    pub fn new1(albedo: T) -> StaticLambertian<T> {
         Self { albedo }
     }
 }
 
-impl<T:Texture> StaticMaterial for StaticLambertian<T> {
+impl<T: Texture> StaticMaterial for StaticLambertian<T> {
     fn scatter(
         &self,
         _: &Ray,
@@ -546,11 +546,11 @@ impl StaticMaterial for StaticDielectric {
 }
 #[allow(dead_code)]
 #[derive(Clone)]
-pub struct StaticDiffuseLight<T:Texture> {
-    emit:T,
+pub struct StaticDiffuseLight<T: Texture> {
+    emit: T,
 }
 #[allow(dead_code)]
-impl<T:Texture> StaticDiffuseLight<T> {
+impl<T: Texture> StaticDiffuseLight<T> {
     pub fn new(c: Vec3) -> StaticDiffuseLight<StaticBaseColor> {
         StaticDiffuseLight {
             emit: StaticBaseColor::new(c),
@@ -561,7 +561,7 @@ impl<T:Texture> StaticDiffuseLight<T> {
     }
 }
 
-impl<T:Texture> StaticMaterial for StaticDiffuseLight<T> {
+impl<T: Texture> StaticMaterial for StaticDiffuseLight<T> {
     fn scatter(
         &self,
         _: &Ray,
@@ -592,11 +592,12 @@ impl<T:Texture> StaticMaterial for StaticDiffuseLight<T> {
     }
 }
 #[derive(Clone)]
-pub struct StaticIsotropic<T:Texture> {
+pub struct StaticIsotropic<T: Texture> {
     pub(crate) albedo: T,
 }
 
-impl<T:Texture>  StaticIsotropic<T> {
+impl<T: Texture> StaticIsotropic<T> {
+    #[allow(dead_code)]
     pub fn new(c: Vec3) -> StaticIsotropic<StaticBaseColor> {
         StaticIsotropic {
             albedo: StaticBaseColor::new(c),
@@ -608,7 +609,7 @@ impl<T:Texture>  StaticIsotropic<T> {
     }
 }
 
-impl<T:Texture> StaticMaterial for StaticIsotropic<T> {
+impl<T: Texture> StaticMaterial for StaticIsotropic<T> {
     fn scatter(
         &self,
         r_in: &Ray,
@@ -639,17 +640,17 @@ impl<T:Texture> StaticMaterial for StaticIsotropic<T> {
     }
 }
 #[derive(Clone)]
-pub struct StaticFlipFace<T:StaticHittable> {
+pub struct StaticFlipFace<T: StaticHittable> {
     ptr: T,
 }
 
-impl<T:StaticHittable> StaticFlipFace<T> {
+impl<T: StaticHittable> StaticFlipFace<T> {
     pub fn new(ptr: T) -> Self {
         Self { ptr }
     }
 }
 
-impl<T:StaticHittable> StaticHittable for StaticFlipFace<T> {
+impl<T: StaticHittable> StaticHittable for StaticFlipFace<T> {
     #[allow(clippy::needless_return)]
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if let Option::Some(mut rec) = self.ptr.hit(r, t_min, t_max) {
@@ -663,4 +664,3 @@ impl<T:StaticHittable> StaticHittable for StaticFlipFace<T> {
         self.ptr.bounding_box(time0, time1)
     }
 }
-

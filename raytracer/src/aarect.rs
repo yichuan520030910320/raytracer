@@ -1,10 +1,10 @@
 use crate::aabb::Aabb;
-use crate::hittable::{Hitrecord, Hittable, Material, StaticHittable, StaticHitrecord};
+use crate::hittable::{Hitrecord, Hittable, Material, StaticHitrecord, StaticHittable};
+use crate::material;
+use crate::material::StaticMaterial;
 use crate::run::{range_random_double, Ray, Vec3};
 use std::f64::INFINITY;
 use std::sync::Arc;
-use crate::material::StaticMaterial;
-use crate::material;
 
 #[allow(clippy::needless_return)]
 pub fn maxnum1(a: f64, b: f64, c: f64) -> f64 {
@@ -103,10 +103,10 @@ impl Hittable for XyRect {
     fn random(&self, o: &Vec3) -> Vec3 {
         let randompoint = Vec3::new(
             range_random_double(self.x0, self.x1),
-            range_random_double(self.y0,self.y1),
+            range_random_double(self.y0, self.y1),
             self.k,
         );
-        randompoint - *o//分布在击中点球面上的一个点与球心的连线
+        randompoint - *o //分布在击中点球面上的一个点与球心的连线
     }
 }
 
@@ -122,6 +122,7 @@ unsafe impl Send for Triangel {}
 unsafe impl Sync for Triangel {}
 
 impl Triangel {
+    #[allow(dead_code)]
     pub fn new(_a1: Vec3, _a2: Vec3, _a3: Vec3, mat: Arc<dyn Material>) -> Self {
         Self {
             mp: mat,
@@ -152,17 +153,20 @@ impl Hittable for Triangel {
             //use the method 2 in https://www.cnblogs.com/graphics/archive/2010/08/05/1793393.html
             let mut rec = Hitrecord::new(Vec3::zero(), Vec3::zero(), 0.0, false, self.mp.clone());
             rec.p = r.at(t);
-            // let a1 = self.a1.x - self.a2.x;
-            // let b1 = self.a1.x - self.a3.x;
-            // let c1 = self.a1.x - hit.x;
-            // let a2 = self.a1.y - self.a2.y;
-            // let b2 = self.a1.y - self.a3.y;
-            // let c2 = self.a1.y - hit.y;
-            // rec.u=(c1*b2-b1*c2)/(a1*b2-b1*a2);
-            // rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order //use the most stupid way to solve the problem
-            // //the silly way
+            let a1 = self.a1.x - self.a2.x;
+            let b1 = self.a1.x - self.a3.x;
+            let c1 = self.a1.x - hit.x;
+            let a2 = self.a1.y - self.a2.y;
+            let b2 = self.a1.y - self.a3.y;
+            let c2 = self.a1.y - hit.y;
+            rec.u=(c1*b2-b1*c2)/(a1*b2-b1*a2);
+            rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order //use the most stupid way to solve the problem
+            //println!("{},{}",rec.u,rec.v);
+            //the silly way
+            // rec.v=0.0;
+            // rec.u=0.0;//todo big problem!!!
             rec.t = t;
-            let ourward_normal = n;
+            let ourward_normal = n.unit();
             rec.set_face_normal(&r, ourward_normal);
             rec.mat_ptr = self.mp.clone();
             Some(rec)
@@ -204,6 +208,7 @@ unsafe impl Send for XzRect {}
 unsafe impl Sync for XzRect {}
 
 impl XzRect {
+    #[allow(dead_code)]
     pub fn new(_x0: f64, _x1: f64, _z0: f64, _z1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
         Self {
             mp: mat,
@@ -263,7 +268,7 @@ impl Hittable for XzRect {
             self.k,
             range_random_double(self.z0, self.z1),
         );
-        randompoint - *o//分布在击中点球面上的一个点与球心的连线
+        randompoint - *o //分布在击中点球面上的一个点与球心的连线
     }
 }
 #[allow(dead_code)]
@@ -335,38 +340,16 @@ impl Hittable for YzRect {
     fn random(&self, o: &Vec3) -> Vec3 {
         let randompoint = Vec3::new(
             self.k,
-            range_random_double(self.y0,self.y1),
+            range_random_double(self.y0, self.y1),
             range_random_double(self.z0, self.z1),
         );
-        randompoint - *o//分布在击中点球面上的一个点与球心的连线
+        randompoint - *o //分布在击中点球面上的一个点与球心的连线
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //static
-pub struct StaticXyRect<T:StaticMaterial> {
-    pub(crate) mp:T,
+pub struct StaticXyRect<T: StaticMaterial> {
+    pub(crate) mp: T,
     pub(crate) x0: f64,
     pub(crate) x1: f64,
     pub(crate) y0: f64,
@@ -374,8 +357,8 @@ pub struct StaticXyRect<T:StaticMaterial> {
     pub(crate) k: f64,
 }
 #[allow(dead_code)]
-impl <T:StaticMaterial>StaticXyRect<T> {
-    pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat:T) -> Self {
+impl<T: StaticMaterial> StaticXyRect<T> {
+    pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat: T) -> Self {
         Self {
             mp: mat,
             x0: _x0,
@@ -387,9 +370,9 @@ impl <T:StaticMaterial>StaticXyRect<T> {
     }
 }
 
-impl<T:StaticMaterial+Clone > StaticHittable for StaticXyRect<T> {
+impl<T: StaticMaterial + Clone> StaticHittable for StaticXyRect<T> {
     #[allow(clippy::needless_return)]
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let t = (self.k - r.ori.z) / r.dic.z;
         if t < t_min || t > t_max {
             return None;
@@ -408,7 +391,7 @@ impl<T:StaticMaterial+Clone > StaticHittable for StaticXyRect<T> {
         let ourward_normal = Vec3::new(0.0, 0.0, 1.0);
         rec.set_face_normal(&r, ourward_normal);
         rec.p = r.at(t);
-        rec.mat_ptr=&self.mp;
+        rec.mat_ptr = &self.mp;
         Some(rec)
     }
 
@@ -420,18 +403,19 @@ impl<T:StaticMaterial+Clone > StaticHittable for StaticXyRect<T> {
     }
 }
 
-pub struct StaticTriangel<T:StaticMaterial> {
-    pub(crate) mp:T,
+pub struct StaticTriangel<T: StaticMaterial> {
+    pub(crate) mp: T,
     pub a1: Vec3,
     pub a2: Vec3,
     pub a3: Vec3,
 }
 
-unsafe impl <T:StaticMaterial>Send for StaticTriangel<T> {}
+unsafe impl<T: StaticMaterial> Send for StaticTriangel<T> {}
 
-unsafe impl<T:StaticMaterial> Sync for StaticTriangel<T> {}
+unsafe impl<T: StaticMaterial> Sync for StaticTriangel<T> {}
 
-impl<T:StaticMaterial> StaticTriangel<T> {
+impl<T: StaticMaterial> StaticTriangel<T> {
+    #[allow(dead_code)]
     pub fn new(_a1: Vec3, _a2: Vec3, _a3: Vec3, mat: T) -> Self {
         Self {
             mp: mat,
@@ -442,9 +426,9 @@ impl<T:StaticMaterial> StaticTriangel<T> {
     }
 }
 
-impl<T:StaticMaterial+Clone + material::Material> StaticHittable for StaticTriangel<T> {
+impl<T: StaticMaterial + Clone + material::Material> StaticHittable for StaticTriangel<T> {
     #[allow(clippy::needless_return)]
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let dirct1 = self.a2 - self.a1;
         let dirct2 = self.a3 - self.a1;
         let n = Vec3::cross(dirct1, dirct2);
@@ -500,7 +484,7 @@ impl<T:StaticMaterial+Clone + material::Material> StaticHittable for StaticTrian
     }
 }
 
-pub struct StaticXzRect<T:StaticMaterial> {
+pub struct StaticXzRect<T: StaticMaterial> {
     pub(crate) mp: T,
     pub(crate) x0: f64,
     pub(crate) x1: f64,
@@ -509,11 +493,11 @@ pub struct StaticXzRect<T:StaticMaterial> {
     pub(crate) k: f64,
 }
 
-unsafe impl<T:StaticMaterial> Send for StaticXzRect<T> {}
+unsafe impl<T: StaticMaterial> Send for StaticXzRect<T> {}
 
-unsafe impl<T:StaticMaterial> Sync for StaticXzRect<T> {}
+unsafe impl<T: StaticMaterial> Sync for StaticXzRect<T> {}
 
-impl<T:StaticMaterial> StaticXzRect<T> {
+impl<T: StaticMaterial> StaticXzRect<T> {
     pub fn new(_x0: f64, _x1: f64, _z0: f64, _z1: f64, _k: f64, mat: T) -> Self {
         Self {
             mp: mat,
@@ -526,9 +510,9 @@ impl<T:StaticMaterial> StaticXzRect<T> {
     }
 }
 
-impl<T:StaticMaterial+Clone> StaticHittable for StaticXzRect<T> {
+impl<T: StaticMaterial + Clone> StaticHittable for StaticXzRect<T> {
     #[allow(clippy::needless_return)]
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let t = (self.k - r.ori.y) / r.dic.y;
         if t < t_min || t > t_max {
             return None;
@@ -577,7 +561,7 @@ impl<T:StaticMaterial+Clone> StaticHittable for StaticXzRect<T> {
     }
 }
 #[allow(dead_code)]
-pub struct StaticYzRect<T:StaticMaterial> {
+pub struct StaticYzRect<T: StaticMaterial> {
     pub(crate) mp: T,
     pub(crate) y0: f64,
     pub(crate) y1: f64,
@@ -586,7 +570,7 @@ pub struct StaticYzRect<T:StaticMaterial> {
     pub(crate) k: f64,
 }
 
-impl<T:StaticMaterial> StaticYzRect<T> {
+impl<T: StaticMaterial> StaticYzRect<T> {
     #[allow(dead_code)]
     pub fn new(_y0: f64, _y1: f64, _z0: f64, _z1: f64, _k: f64, mat: T) -> Self {
         Self {
@@ -600,8 +584,8 @@ impl<T:StaticMaterial> StaticYzRect<T> {
     }
 }
 
-impl <T:StaticMaterial+Clone>StaticHittable for StaticYzRect<T> {
-    fn hit (&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
+impl<T: StaticMaterial + Clone> StaticHittable for StaticYzRect<T> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         let t = (self.k - r.ori.x) / r.dic.x;
         if t < t_min || t > t_max {
             return None;
@@ -630,4 +614,3 @@ impl <T:StaticMaterial+Clone>StaticHittable for StaticYzRect<T> {
         ))
     }
 }
-

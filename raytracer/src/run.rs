@@ -1,24 +1,28 @@
-
-
 const INF: f64 = 1000000.0;
 
-use crate::aarect::{Triangel, XyRect, XzRect, YzRect, StaticXzRect};
-use crate::hittable::{Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, RotateZ, Sphere, Translate, StaticHittableList, StaticHittable, StaticSphere};
-use crate::material::{Dielectric, DiffuseLight, FlipFace, Lambertian, Metal, StaticLambertian};
+use crate::aarect::{StaticXzRect, XzRect};
+use crate::hittable::{Hittable, HittableList, StaticHittable, StaticHittableList};
+use crate::material::{Lambertian, StaticLambertian};
 use crate::pdf::{HittablePdf, MixturePdf, Pdf, StaticHittablePdf, StaticMixturePdf};
-use crate::perlin::NoiseTexture;
+
+use crate::camera;
 pub use crate::ray::Ray;
-use crate::texture::{CheckerTexture, ImageTexture, ObjTexture, StaticBaseColor};
+use crate::scence::{
+    cornell_box, cornell_box_rabbit, cornell_smoke, earth, final_book2_scence,
+    my_scence_ball_world, obj, obj_with_texture, random_sence, simple_light, two_berlin_spheres,
+    two_spheres,
+};
+use crate::staticscence::{
+    static_cornell_box, static_earth, static_random_sence, two_texture_static,
+};
+use crate::texture::StaticBaseColor;
+pub use crate::vec3::Vec3;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use rand::Rng;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
-pub use crate::vec3::Vec3;
-use crate::camera;
-use crate::scence::{two_spheres, random_sence, two_berlin_spheres, earth, simple_light, cornell_box, cornell_smoke, final_book2_scence, my_scence_ball_world, obj, obj_with_texture, cornell_box_rabbit};
-use crate::staticscence::{two_texture_static, static_random_sence, static_earth, static_cornell_box};
 
 pub(crate) fn random_doouble() -> f64 {
     rand::thread_rng().gen_range(1..101) as f64 / 102.0
@@ -38,6 +42,7 @@ pub(crate) fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 #[allow(clippy::needless_return)]
+#[allow(dead_code)]
 fn color(
     x: Ray,
     background: Vec3,
@@ -61,12 +66,12 @@ fn color(
             if scatterrecord.is_specular {
                 return scatterrecord.attenuation
                     * color(
-                    scatterrecord.specular_ray,
-                    background,
-                    world,
-                    lights,
-                    dep - 1,
-                );
+                        scatterrecord.specular_ray,
+                        background,
+                        world,
+                        lights,
+                        dep - 1,
+                    );
             }
 
             let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
@@ -77,9 +82,9 @@ fn color(
 
             let mm = emitted
                 + scatterrecord.attenuation
-                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                * color(scattered, background, world, lights, dep - 1)
-                / pdf_val;
+                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                    * color(scattered, background, world, lights, dep - 1)
+                    / pdf_val;
 
             return mm;
         }
@@ -88,7 +93,7 @@ fn color(
         background
     }
 }
-
+#[allow(dead_code)]
 pub(crate) fn run() {
     let is_ci = match std::env::var("CI") {
         Ok(x) => x == "true",
@@ -106,16 +111,21 @@ pub(crate) fn run() {
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 3; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 100; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
-    let number = 6;
+    let number = 12;
     let mut world = HittableList { objects: vec![] };
     match number {
-        1 => world = two_spheres(),
+        1 => { world = two_spheres();
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
+            lookat = Vec3::new(0.0, 0.0, 0.0);
+            lookfrom = Vec3::new(13.0, 2.0, 3.0);
+            vfov = 20.0;
+        }
         2 => {
             world = random_sence();
             lookat = Vec3::new(0.0, 0.0, 0.0);
@@ -278,10 +288,9 @@ pub(crate) fn run() {
     bar.finish();
 }
 
-
-
+#[allow(dead_code)]
 #[allow(clippy::needless_return)]
-fn staticcolor< T:StaticHittable>(
+fn staticcolor<T: StaticHittable>(
     x: Ray,
     background: Vec3,
     world: &StaticHittableList,
@@ -304,15 +313,15 @@ fn staticcolor< T:StaticHittable>(
             if scatterrecord.is_specular {
                 return scatterrecord.attenuation
                     * staticcolor(
-                    scatterrecord.specular_ray,
-                    background,
-                    world,
-                    lights,
-                    dep - 1,
-                );
+                        scatterrecord.specular_ray,
+                        background,
+                        world,
+                        lights,
+                        dep - 1,
+                    );
             }
 
-            let lightptr = StaticHittablePdf::new(lights.clone(), &_rec.p);
+            let lightptr = StaticHittablePdf::new(lights, &_rec.p);
             let p = StaticMixturePdf::new(&lightptr, &scatterrecord.pdf_ptr);
             scattered = Ray::new(_rec.p, p.generate(), x.tm);
 
@@ -320,9 +329,9 @@ fn staticcolor< T:StaticHittable>(
 
             let mm = emitted
                 + scatterrecord.attenuation
-                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                * staticcolor(scattered, background, world, lights, dep - 1)
-                / pdf_val;
+                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                    * staticcolor(scattered, background, world, lights, dep - 1)
+                    / pdf_val;
 
             return mm;
         }
@@ -331,7 +340,8 @@ fn staticcolor< T:StaticHittable>(
         background
     }
 }
-pub fn runstatic(){
+#[allow(dead_code)]
+pub fn runstatic() {
     let is_ci = match std::env::var("CI") {
         Ok(x) => x == "true",
         Err(_) => false,
@@ -348,7 +358,7 @@ pub fn runstatic(){
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 50; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 5; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
@@ -357,7 +367,8 @@ pub fn runstatic(){
     let number = 4;
     let mut world = StaticHittableList { objects: vec![] };
     match number {
-        1 => { world = two_texture_static();
+        1 => {
+            world = two_texture_static();
             vfov = 20.0;
             lookat = Vec3::new(0.0, 0.0, 0.0);
             lookfrom = Vec3::new(13.0, 2.0, 3.0);
@@ -391,8 +402,6 @@ pub fn runstatic(){
         _ => println!("you are wrong !! please choose the wonderful world you want to see again."),
     }
 
-
-
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
     let aperture = 0.0; //ought to be 2
@@ -424,17 +433,17 @@ pub fn runstatic(){
                 554.0,
                 StaticLambertian::<StaticBaseColor>::new(Vec3::zero()),
             ));
-            let tmp: Arc<dyn StaticHittable + Send> = Arc::new(StaticSphere::new(
-                Vec3::zero(),
-                Vec3::zero(),
-                0.0,
-                Vec3::new(190.0, 90.0, 190.0),
-                90.0,
-                StaticLambertian::<StaticBaseColor>::new(Vec3::zero()),
-            ));
+            // let tmp: Arc<dyn StaticHittable + Send> = Arc::new(StaticSphere::new(
+            //     Vec3::zero(),
+            //     Vec3::zero(),
+            //     0.0,
+            //     Vec3::new(190.0, 90.0, 190.0),
+            //     90.0,
+            //     StaticLambertian::<StaticBaseColor>::new(Vec3::zero()),
+            // ));
             lightworld.add(light1);
             //lightworld.add(tmp);
-            let lightin=lightworld;
+            let lightin = lightworld;
 
             let row_begin = image_heigth as usize * i / n_jobs;
             let row_end = image_heigth as usize * (i + 1) / n_jobs;
@@ -451,7 +460,9 @@ pub fn runstatic(){
                         let v = (image_heigth as f64 - y as f64 + random_doouble())
                             / (image_heigth - 1) as f64;
                         let r = cam.get_ray(u, v);
-                        pixel_color += staticcolor::<StaticHittableList>(r, backgroud, &worldptr, &lightin, max_depth);
+                        pixel_color += staticcolor::<StaticHittableList>(
+                            r, backgroud, &worldptr, &lightin, max_depth,
+                        );
                     }
                     if pixel_color.x.is_nan() {
                         pixel_color.x = 0.0;

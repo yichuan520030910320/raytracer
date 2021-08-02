@@ -25,6 +25,8 @@ impl BaseColor {
 
 impl Texture for BaseColor {
     fn value(&self, _: f64, _: f64, _: &Vec3) -> Vec3 {
+        //println!("{:?}",self.color);
+
         self.color
     }
 }
@@ -64,6 +66,7 @@ pub struct ImageTexture {
 }
 
 impl ObjTexture {
+    #[allow(dead_code)]
     pub fn new(filename: &str, u: f64, v: f64) -> Self {
         Self {
             u,
@@ -87,14 +90,14 @@ impl Texture for ObjTexture {
         let color_scale = 1.0 / 255.0;
         let pixel = self.img.get_pixel(i as u32, j as u32);
         //let pixel=(self.data)+j*self.bytes_per_scanline+i*BYTES_PER_PIXEL;
-        println!(
-            "rnm  vec {:?}",
-            Vec3::new(
-                color_scale * (pixel[0] as f64),
-                color_scale * (pixel[1] as f64),
-                color_scale * (pixel[2] as f64),
-            )
-        );
+        // println!(
+        //     //"rnm  vec {:?}",
+        //     Vec3::new(
+        //         color_scale * (pixel[0] as f64),
+        //         color_scale * (pixel[1] as f64),
+        //         color_scale * (pixel[2] as f64),
+        //     )
+        // );
 
         Vec3::new(
             color_scale * (pixel[0] as f64),
@@ -105,6 +108,7 @@ impl Texture for ObjTexture {
 }
 
 impl ImageTexture {
+    #[allow(dead_code)]
     pub fn new(filename: &str) -> Self {
         Self {
             width: 0,
@@ -138,14 +142,9 @@ impl Texture for ImageTexture {
     }
 }
 
-
-
-
-
-
 #[allow(dead_code)]
 #[derive(Clone)]
-pub struct StaticCheckerTexture<T1:Texture,T2:Texture> {
+pub struct StaticCheckerTexture<T1: Texture, T2: Texture> {
     color_value: Vec3,
     odd: T1,
     even: T2,
@@ -168,16 +167,17 @@ impl Texture for StaticBaseColor {
 }
 
 impl StaticCheckerTexture<StaticBaseColor, StaticBaseColor> {
+    #[allow(dead_code)]
     pub fn new(_odd: Vec3, _even: Vec3) -> Self {
         Self {
             color_value: Vec3::zero(),
             odd: StaticBaseColor::new(_odd),
-            even:StaticBaseColor::new(_even),
+            even: StaticBaseColor::new(_even),
         }
     }
 }
 
-impl<T1:Texture,T2:Texture> Texture for StaticCheckerTexture<T1, T2> {
+impl<T1: Texture, T2: Texture> Texture for StaticCheckerTexture<T1, T2> {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
         let sines = (10.0 * p.x).sin() * (10.0 * p.y).sin() * (10.0 * p.z).sin();
         if sines < 0.0 {
@@ -202,6 +202,7 @@ pub struct StaticImageTexture {
 }
 
 impl StaticObjTexture {
+    #[allow(dead_code)]
     pub fn new(filename: &str, u: f64, v: f64) -> Self {
         Self {
             u,
@@ -225,14 +226,14 @@ impl Texture for StaticObjTexture {
         let color_scale = 1.0 / 255.0;
         let pixel = self.img.get_pixel(i as u32, j as u32);
         //let pixel=(self.data)+j*self.bytes_per_scanline+i*BYTES_PER_PIXEL;
-        println!(
-            "rnm  vec {:?}",
-            Vec3::new(
-                color_scale * (pixel[0] as f64),
-                color_scale * (pixel[1] as f64),
-                color_scale * (pixel[2] as f64),
-            )
-        );
+        // println!(
+        //     "rnm  vec {:?}",
+        //     Vec3::new(
+        //         color_scale * (pixel[0] as f64),
+        //         color_scale * (pixel[1] as f64),
+        //         color_scale * (pixel[2] as f64),
+        //     )
+        // );
 
         Vec3::new(
             color_scale * (pixel[0] as f64),
@@ -275,6 +276,3 @@ impl Texture for StaticImageTexture {
         )
     }
 }
-
-
-

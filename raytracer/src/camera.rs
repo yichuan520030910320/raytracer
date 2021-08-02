@@ -1,5 +1,5 @@
-use crate::run::range_random_double;
 pub use crate::ray::Ray;
+use crate::run::range_random_double;
 pub use crate::vec3::Vec3;
 use std::f64::consts::PI;
 

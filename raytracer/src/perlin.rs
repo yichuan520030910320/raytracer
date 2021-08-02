@@ -1,5 +1,5 @@
-use crate::texture::Texture;
 use crate::run::{random_doouble, Vec3};
+use crate::texture::Texture;
 use rand::Rng;
 
 const POINT_COUNT: usize = 256;

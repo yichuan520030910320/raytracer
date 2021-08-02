@@ -1,7 +1,7 @@
 pub use crate::aabb::Aabb;
-use crate::aarect::{XyRect, XzRect, YzRect, StaticXyRect, StaticXzRect, StaticYzRect};
-use crate::material::{Isotropic, StaticMaterial, StaticIsotropic};
+use crate::aarect::{StaticXyRect, StaticXzRect, StaticYzRect, XyRect, XzRect, YzRect};
 pub use crate::material::Material;
+use crate::material::{Isotropic, StaticIsotropic, StaticMaterial};
 pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
 use rand::Rng;
@@ -10,10 +10,9 @@ use std::f64::consts::PI;
 const INF: f64 = 1000000.0;
 
 use crate::onb::Onb;
-use std::sync::Arc;
-use crate::texture::Texture;
-use crate::{texture, material};
+use crate::{material, texture};
 use std::option::Option::Some;
+use std::sync::Arc;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
@@ -202,6 +201,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
+    #[allow(dead_code)]
     pub fn new(
         p: Vec3,
         normal: Vec3,
@@ -317,6 +317,7 @@ impl Hittable for Box1 {
 }
 
 impl Box1 {
+    #[allow(dead_code)]
     pub fn new(p0: &Vec3, p1: &Vec3, ptr: Arc<dyn Material>) -> Self {
         let mut world = HittableList { objects: vec![] };
         let obj1 = XyRect {
@@ -387,6 +388,7 @@ pub struct Translate {
 }
 
 impl Translate {
+    #[allow(dead_code)]
     pub fn new(ptr: Arc<dyn Hittable>, offset: Vec3) -> Self {
         Self { ptr, offset }
     }
@@ -435,6 +437,7 @@ pub struct RotateY {
 }
 
 impl RotateY {
+    #[allow(dead_code)]
     pub fn new(p: Arc<dyn Hittable>, angle: f64) -> Self {
         let radians = degrees_to_radians(angle);
 
@@ -524,13 +527,12 @@ impl Hittable for RotateY {
         rotateo.y = o.y;
         rotateo.x = self.cos_theta * o.x - self.sin_theta * o.z;
         rotateo.z = self.sin_theta * o.x + self.cos_theta * o.z;
-let rec=self.ptr.random(&rotateo);
-        let mut ans =Vec3::zero();
-        ans.y=rec.y;
+        let rec = self.ptr.random(&rotateo);
+        let mut ans = Vec3::zero();
+        ans.y = rec.y;
 
         ans.x = self.cos_theta * rec.x - self.sin_theta * rec.z;
         ans.z = self.sin_theta * rec.x + self.cos_theta * rec.z;
-
 
         ans
 
@@ -724,6 +726,7 @@ pub struct HittableList {
 }
 
 impl HittableList {
+    #[allow(dead_code)]
     pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
     }
@@ -841,6 +844,7 @@ impl Hittable for ConstantMedium {
 }
 
 impl ConstantMedium {
+    #[allow(dead_code)]
     pub fn new(b: Arc<dyn Hittable>, d: f64, c: Vec3) -> Self {
         Self {
             boundary: b,
@@ -857,6 +861,7 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
+    #[allow(dead_code)]
     pub fn new(src_objects: Vec<Arc<dyn Hittable>>, time0: f64, time1: f64) -> Self {
         let span = src_objects.len();
         let mut objects = src_objects;
@@ -927,7 +932,6 @@ impl Hittable for BvhNode {
     }
 }
 
-
 pub trait StaticHittable: Send + Sync {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
@@ -955,6 +959,7 @@ pub struct StaticHitrecord<'a> {
 }
 
 impl<'a> StaticHitrecord<'a> {
+    #[allow(dead_code)]
     pub fn grt_sphere_uv(p: Vec3, u: &mut f64, v: &mut f64) {
         let theta = (-p.y).acos();
         let temptheta = (-p.z) / p.x;
@@ -1004,14 +1009,7 @@ pub struct StaticMovingSphere<T: StaticMaterial> {
 
 impl<T: material::StaticMaterial> StaticMovingSphere<T> {
     #[allow(dead_code)]
-    pub fn new(
-        cen0: Vec3,
-        cen1: Vec3,
-        _time0: f64,
-        _time1: f64,
-        r: f64,
-        mat_ptr: T,
-    ) -> Self {
+    pub fn new(cen0: Vec3, cen1: Vec3, _time0: f64, _time1: f64, r: f64, mat_ptr: T) -> Self {
         Self {
             center0: cen0,
             center1: cen1,
@@ -1092,14 +1090,8 @@ pub struct StaticSphere<T: StaticMaterial> {
 }
 
 impl<T: StaticMaterial> StaticSphere<T> {
-    pub fn new(
-        p: Vec3,
-        normal: Vec3,
-        t: f64,
-        center: Vec3,
-        radius: f64,
-        mat_ptr: T,
-    ) -> Self {
+    #[allow(dead_code)]
+    pub fn new(p: Vec3, normal: Vec3, t: f64, center: Vec3, radius: f64, mat_ptr: T) -> Self {
         Self {
             p,
             normal,
@@ -1218,7 +1210,6 @@ impl<T: StaticMaterial + Clone> StaticHittable for StaticBox1<T> {
         }
         if let Some(rec) = self.sides.5.hit(r, the_closest, t_max) {
             ans = Some(rec.clone());
-            the_closest = rec.t;
         }
         ans
     }
@@ -1234,49 +1225,56 @@ impl<T: StaticMaterial + Clone> StaticBox1<T> {
             box_min: *p0,
             box_max: *p1,
 
-            sides: (StaticXyRect {
-                mp: ptr.clone(),
-                x0: p0.x,
-                x1: p1.x,
-                y0: p0.y,
-                y1: p1.y,
-                k: p1.z,
-            }, StaticXyRect {
-                mp: ptr.clone(),
-                x0: p0.x,
-                x1: p1.x,
-                y0: p0.y,
-                y1: p1.y,
-                k: p0.z,
-            }, StaticYzRect {
-                mp: ptr.clone(),
-                y0: p1.y,
-                y1: p0.y,
-                z0: p1.z,
-                z1: p1.z,
-                k: p1.x,
-            }, StaticYzRect {
-                mp: ptr.clone(),
-                y0: p1.y,
-                y1: p0.y,
-                z0: p1.z,
-                z1: p1.z,
-                k: p0.x,
-            }, StaticXzRect {
-                mp: ptr.clone(),
-                x0: p1.x,
-                x1: p0.x,
-                z0: p1.z,
-                z1: p0.z,
-                k: p0.y,
-            }, StaticXzRect {
-                mp: ptr.clone(),
-                x0: p1.x,
-                x1: p0.x,
-                z0: p1.z,
-                z1: p0.z,
-                k: p1.y,
-            }),
+            sides: (
+                StaticXyRect {
+                    mp: ptr.clone(),
+                    x0: p0.x,
+                    x1: p1.x,
+                    y0: p0.y,
+                    y1: p1.y,
+                    k: p1.z,
+                },
+                StaticXyRect {
+                    mp: ptr.clone(),
+                    x0: p0.x,
+                    x1: p1.x,
+                    y0: p0.y,
+                    y1: p1.y,
+                    k: p0.z,
+                },
+                StaticYzRect {
+                    mp: ptr.clone(),
+                    y0: p1.y,
+                    y1: p0.y,
+                    z0: p1.z,
+                    z1: p1.z,
+                    k: p1.x,
+                },
+                StaticYzRect {
+                    mp: ptr.clone(),
+                    y0: p1.y,
+                    y1: p0.y,
+                    z0: p1.z,
+                    z1: p1.z,
+                    k: p0.x,
+                },
+                StaticXzRect {
+                    mp: ptr.clone(),
+                    x0: p1.x,
+                    x1: p0.x,
+                    z0: p1.z,
+                    z1: p0.z,
+                    k: p0.y,
+                },
+                StaticXzRect {
+                    mp: ptr.clone(),
+                    x0: p1.x,
+                    x1: p0.x,
+                    z0: p1.z,
+                    z1: p0.z,
+                    k: p1.y,
+                },
+            ),
         }
     }
 }
@@ -1664,7 +1662,9 @@ pub struct StaticConstantMedium<T1: StaticHittable, T2: Clone + StaticMaterial> 
 }
 
 #[allow(clippy::needless_return)]
-impl<T1: StaticHittable, T2: Clone + StaticMaterial> StaticHittable for StaticConstantMedium<T1, T2> {
+impl<T1: StaticHittable, T2: Clone + StaticMaterial> StaticHittable
+    for StaticConstantMedium<T1, T2>
+{
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if let Option::Some(mut rec1) = self.boundary.hit(r, -INF, INF) {
             if let Option::Some(mut rec2) = self.boundary.hit(r, rec1.t + 0.0001, INF) {
@@ -1714,14 +1714,15 @@ impl<T1: StaticHittable, T2: Clone + StaticMaterial> StaticHittable for StaticCo
     }
 }
 
-impl<T1: StaticHittable, T2: Clone + texture::Texture> StaticConstantMedium<T1, StaticIsotropic<T2>> {
+impl<T1: StaticHittable, T2: Clone + texture::Texture>
+    StaticConstantMedium<T1, StaticIsotropic<T2>>
+{
+    #[allow(dead_code)]
     pub fn new(b: T1, d: f64, c: T2) -> Self {
         //c 用vec来new出一个basrcolor !!!!
         Self {
             boundary: b,
-            phase_function: StaticIsotropic {
-                albedo: c,
-            },
+            phase_function: StaticIsotropic { albedo: c },
             neg_inv_density: (-1.0 / d),
         }
     }
@@ -1734,6 +1735,7 @@ pub struct StaticBvhNode {
 }
 
 impl StaticBvhNode {
+    #[allow(dead_code)]
     pub fn new(src_objects: Vec<Arc<dyn StaticHittable>>, time0: f64, time1: f64) -> Self {
         let span = src_objects.len();
         let mut objects = src_objects;
@@ -1803,6 +1805,3 @@ impl StaticHittable for StaticBvhNode {
         Some(outout)
     }
 }
-
-
-

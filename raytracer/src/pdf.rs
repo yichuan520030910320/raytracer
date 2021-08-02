@@ -42,6 +42,7 @@ pub struct HittablePdf {
 }
 
 impl HittablePdf {
+    #[allow(dead_code)]
     pub fn new(p: Arc<dyn Hittable>, orgin: &Vec3) -> Self {
         Self { o: *orgin, ptr: p }
     }
@@ -63,6 +64,7 @@ pub struct MixturePdf {
 }
 
 impl MixturePdf {
+    #[allow(dead_code)]
     pub fn new(p0: Arc<dyn Pdf>, p1: Arc<dyn Pdf>) -> Self {
         Self { p0, p1 }
     }
@@ -101,11 +103,6 @@ impl Pdf for NoPdf {
     }
 }
 
-
-
-
-
-
 //Static
 
 pub struct StaticCosinePdf {
@@ -129,24 +126,25 @@ impl Pdf for StaticCosinePdf {
 }
 
 impl StaticCosinePdf {
+    #[allow(dead_code)]
     pub fn new(w: &Vec3) -> Self {
         let ans = Onb::build_from(w);
         Self { uvw: ans }
     }
 }
 
-pub struct StaticHittablePdf<'a,T:StaticHittable> {
+pub struct StaticHittablePdf<'a, T: StaticHittable> {
     o: Vec3,
-    ptr:&'a T,
+    ptr: &'a T,
 }
 
-impl<'a,T:StaticHittable> StaticHittablePdf<'a,T> {
+impl<'a, T: StaticHittable> StaticHittablePdf<'a, T> {
     pub fn new(p: &'a T, orgin: &Vec3) -> Self {
         Self { o: *orgin, ptr: p }
     }
 }
 
-impl<'a,T:StaticHittable> Pdf for StaticHittablePdf<'a,T> {
+impl<'a, T: StaticHittable> Pdf for StaticHittablePdf<'a, T> {
     fn value(&self, direction: &Vec3) -> f64 {
         self.ptr.pdf_value(&self.o, direction)
     }
@@ -156,18 +154,18 @@ impl<'a,T:StaticHittable> Pdf for StaticHittablePdf<'a,T> {
     }
 }
 
-pub struct StaticMixturePdf<'a,T1:Pdf,T2:Pdf> {
-    p0:&'a T1,
-    p1:&'a T2,
+pub struct StaticMixturePdf<'a, T1: Pdf, T2: Pdf> {
+    p0: &'a T1,
+    p1: &'a T2,
 }
 
-impl<'a,T1:Pdf,T2:Pdf> StaticMixturePdf<'a,T1, T2> {
-    pub fn new(p0: &'a T1, p1:&'a T2) -> Self {
+impl<'a, T1: Pdf, T2: Pdf> StaticMixturePdf<'a, T1, T2> {
+    pub fn new(p0: &'a T1, p1: &'a T2) -> Self {
         Self { p0, p1 }
     }
 }
 
-impl<'a,T1:Pdf,T2:Pdf> Pdf for StaticMixturePdf<'a,T1, T2> {
+impl<'a, T1: Pdf, T2: Pdf> Pdf for StaticMixturePdf<'a, T1, T2> {
     fn value(&self, direction: &Vec3) -> f64 {
         self.p0.value(direction) * 0.5 + self.p1.value(direction) * 0.5
     }
@@ -186,6 +184,7 @@ pub struct StaticNoPdf {
 }
 
 impl StaticNoPdf {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self { val: 0.0 }
     }
