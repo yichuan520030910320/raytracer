@@ -27,19 +27,18 @@ impl Vec3 {
     pub fn ones() -> Self {
         Self::new(1.0, 1.0, 1.0)
     }
-
+    #[allow(dead_code)]
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
     }
-
     pub fn squared_length(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
-
+    #[allow(dead_code)]
     pub fn length(&self) -> f64 {
         { (self.x * self.x + self.y * self.y + self.z * self.z) as f64 }.sqrt()
     }
-
+    #[allow(dead_code)]
     pub fn unit(self) -> Self {
         Self::new(
             self.x / self.length(),
@@ -51,7 +50,7 @@ impl Vec3 {
     pub fn dot(a: Self, b: Self) -> f64 {
         a.x * b.x + a.y * b.y + a.z * b.z
     }
-
+    #[allow(dead_code)]
     pub fn random() -> Self {
         Self::new(random_doouble(), random_doouble(), random_doouble())
     }
@@ -68,15 +67,18 @@ impl Vec3 {
         (self.x).abs() < s && self.y.abs() < s && self.z.abs() < s
     }
     //may need to do
+    #[allow(dead_code)]
     pub fn reflect(v: Self, n: Self) -> Self {
         v - n * (2.0_f64 * Vec3::dot(v, n))
     }
+    #[allow(dead_code)]
     pub fn refract(uv: Self, n: Self, etai_over_etat: f64) -> Self {
         let costhta = Vec3::dot(-uv, n);
         let r_out_perp = (uv + n * costhta) * etai_over_etat;
         let r_out_parallel = n * (-(1.0 - Vec3::squared_length(&r_out_perp)).abs().sqrt());
         r_out_perp + r_out_parallel
     }
+    #[allow(dead_code)]
     pub fn cross(u: Self, v: Self) -> Self {
         Vec3::new(
             u.y * v.z - u.z * v.y,
@@ -84,6 +86,7 @@ impl Vec3 {
             u.x * v.y - u.y * v.x,
         )
     }
+    #[allow(dead_code)]
     pub fn sameside(a: Vec3, b: Vec3, c: Vec3, p: Vec3) -> bool {
         let ab = b - a;
         let ac = c - a;
@@ -94,6 +97,7 @@ impl Vec3 {
         Vec3::dot(v1, v2) >= 0.0
     }
     #[allow(clippy::needless_return)]
+    #[allow(dead_code)]
     pub fn random_in_unit_disk() -> Self {
         loop {
             let p = Vec3::new(
@@ -110,6 +114,7 @@ impl Vec3 {
 }
 
 impl Vec3 {
+    #[allow(dead_code)]
     pub fn get(&self, demesion: i32) -> f64 {
         if demesion == 0 {
             self.x
@@ -145,6 +150,7 @@ impl Vec3 {
             -in_unit_sphere
         }
     }
+    #[allow(dead_code)]
     pub fn random_cosine_direction() -> Vec3 {
         let r1 = random_doouble();
         let r2 = random_doouble();

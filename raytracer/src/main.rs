@@ -1,6 +1,7 @@
 mod aabb;
 mod aarect;
 mod camera;
+mod example_macro;
 mod hittable;
 mod material;
 mod onb;
@@ -13,11 +14,10 @@ mod scence;
 mod staticscence;
 mod texture;
 mod vec3;
-mod example_macro;
 
 #[allow(unused_imports)]
 use crate::run::{run, runstatic};
 fn main() {
-   run();
+    run();
     //runstatic();
 }

@@ -2,6 +2,7 @@
 // You SHOULD remove above line in your code.
 
 //use raytracer_codegen::make_spheres_impl;
+#[allow(unused_imports)]
 use crate::vec3::Vec3;
 
 // Call the procedural macro, which will become `make_spheres` function.

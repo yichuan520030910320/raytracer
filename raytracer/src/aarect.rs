@@ -159,12 +159,12 @@ impl Hittable for Triangel {
             let a2 = self.a1.y - self.a2.y;
             let b2 = self.a1.y - self.a3.y;
             let c2 = self.a1.y - hit.y;
-            rec.u=(c1*b2-b1*c2)/(a1*b2-b1*a2);
-            rec.v=(a1*c2-a2*c1)/(a1*b2-b1*a2);//may change the order //use the most stupid way to solve the problem
-            //println!("{},{}",rec.u,rec.v);
-            //the silly way
-            // rec.v=0.0;
-            // rec.u=0.0;//todo big problem!!!
+            rec.u = (c1 * b2 - b1 * c2) / (a1 * b2 - b1 * a2);
+            rec.v = (a1 * c2 - a2 * c1) / (a1 * b2 - b1 * a2); //may change the order //use the most stupid way to solve the problem
+                                                               //println!("{},{}",rec.u,rec.v);
+                                                               //the silly way
+                                                               // rec.v=0.0;
+                                                               // rec.u=0.0;//todo big problem!!!
             rec.t = t;
             let ourward_normal = n.unit();
             rec.set_face_normal(&r, ourward_normal);

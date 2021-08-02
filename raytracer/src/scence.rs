@@ -1,12 +1,12 @@
-use crate::aarect::{Triangel, XyRect, XzRect, YzRect, StaticTriangel};
+use crate::aarect::{StaticTriangel, Triangel, XyRect, XzRect, YzRect};
 use crate::hittable::{
     Box1, BvhNode, ConstantMedium, Hittable, HittableList, MovingSphere, RotateY, RotateZ, Sphere,
     Translate,
 };
-use crate::material::{Dielectric, DiffuseLight, FlipFace, Lambertian, Metal, StaticMetal};
+use crate::material::{Dielectric, DiffuseLight, FlipFace, Lambertian, Metal};
 use crate::perlin::NoiseTexture;
 use crate::run::{random_doouble, range_random_double, Vec3};
-use crate::texture::{CheckerTexture, ImageTexture, ObjTexture, BaseColor};
+use crate::texture::{CheckerTexture, ImageTexture, ObjTexture};
 use std::sync::Arc;
 
 #[allow(dead_code)]
@@ -36,7 +36,6 @@ pub(crate) fn two_spheres() -> HittableList {
     // let rectangle=XzRect::new(-5.0, 5.0, -5.0, 5.0, 0.0, Arc::new(Lambertian::new(Vec3::new(0.3,0.8,0.9))));
     // world.add(Arc::new(rectangle));
 
-
     let below = Sphere {
         p: Vec3 {
             x: 0.0,
@@ -62,7 +61,6 @@ pub(crate) fn two_spheres() -> HittableList {
         Vec3::new(0.2, 0.3, 0.1),
         Vec3::new(0.9, 0.9, 0.9),
     ));
-
 
     let above = Sphere {
         p: Vec3 {
@@ -764,7 +762,7 @@ pub(crate) fn cornell_box_rabbit() -> HittableList {
                     z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
                 },
                 Arc::new(Lambertian::new1(Arc::new(mat1))),
-                // Arc::new(Lambertian::new(Vec3::new(0.99,0.756,0.756)))
+                //Arc::new(Lambertian::new(Vec3::new(0.99,0.756,0.756)))
             );
             boxes2.add(Arc::new(triange));
         }
@@ -793,7 +791,6 @@ pub(crate) fn cornell_box_rabbit() -> HittableList {
     // world.add(
     //     Arc::new(whitebox5)
     // );
-
 
     let light1 = XzRect {
         mp: Arc::new(DiffuseLight::new(Vec3::new(13.0, 13.0, 13.0))),

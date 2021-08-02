@@ -111,7 +111,7 @@ pub(crate) fn run() {
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 100; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 800; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
@@ -120,7 +120,8 @@ pub(crate) fn run() {
     let number = 12;
     let mut world = HittableList { objects: vec![] };
     match number {
-        1 => { world = two_spheres();
+        1 => {
+            world = two_spheres();
             backgroud = Vec3::new(0.7, 0.8, 1.0);
             lookat = Vec3::new(0.0, 0.0, 0.0);
             lookfrom = Vec3::new(13.0, 2.0, 3.0);
