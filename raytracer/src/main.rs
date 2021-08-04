@@ -18,6 +18,13 @@ mod vec3;
 #[allow(unused_imports)]
 use crate::run::{run, runstatic};
 fn main() {
-    run();
-    //runstatic();
+    let num=2;
+    match num {
+        1=>run(),
+        2=>runstatic(),
+        _ => {
+            println!("please rechoose the type");
+        }
+    }
+
 }

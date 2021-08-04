@@ -1,15 +1,14 @@
 use crate::aarect::{StaticXyRect, StaticXzRect, StaticYzRect};
-use crate::hittable::{
-    StaticBox1, StaticHittableList, StaticMovingSphere, StaticRotateY, StaticSphere,
-    StaticTranslate,
-};
+use crate::hittable::{StaticBox1, StaticHittableList, StaticMovingSphere, StaticRotateY, StaticSphere, StaticTranslate, StaticHittable, StaticBvhNode};
 use crate::material::{
     StaticDielectric, StaticDiffuseLight, StaticFlipFace, StaticLambertian, StaticMetal,
 };
 use crate::perlin::NoiseTexture;
-use crate::run::{random_doouble, range_random_double, Vec3};
+use crate::run::{random_doouble, range_random_double};
 use crate::texture::{CheckerTexture, StaticBaseColor, StaticImageTexture};
 use std::sync::Arc;
+use crate::vec3::Vec3;
+
 
 pub fn two_texture_static() -> StaticHittableList {
     let mut world = StaticHittableList { objects: vec![] };
@@ -380,5 +379,101 @@ pub(crate) fn static_cornell_box() -> StaticHittableList {
     };
     let light1_bonus = Arc::new(StaticFlipFace::new(light1));
     world.add(light1_bonus);
+    world
+}
+use  raytracer_codegen::random_scene_static_bvh;
+random_scene_static_bvh!{}
+pub fn static_bvh_random_scence()->StaticHittableList{
+
+    let mut world = StaticHittableList { objects: vec![] };
+    let checker = CheckerTexture::new(Vec3::new(0.2, 0.3, 0.1), Vec3::new(0.9, 0.9, 0.9));
+    let m=Vec3::new(1.0,1.0,1.0);
+    let ground = StaticSphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: -1000.0,
+            z: 0.0,
+        },
+        radius: 1000.0,
+        mat_ptr: StaticLambertian::new1(checker),
+    };
+    world.add(Arc::new(ground));
+    let obj:Arc<dyn StaticHittable>=add_bvh_static();
+    world.add(obj);
+    let material1 = StaticSphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: 1.0,
+            z: 0.0,
+        },
+        radius: 1.0,
+        mat_ptr: StaticDielectric::new(1.5),
+    };
+    world.add(Arc::new(material1));
+    let material2 = StaticSphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: -4.0,
+            y: 1.0,
+            z: 0.0,
+        },
+        radius: 1.0,
+        mat_ptr: StaticLambertian::<StaticBaseColor>::new(Vec3::new(0.4, 0.2, 0.1)),
+    };
+    world.add(Arc::new(material2));
+
+    let material3 = StaticSphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 4.0,
+            y: 1.0,
+            z: 0.0,
+        },
+        radius: 1.0,
+        mat_ptr: StaticMetal::new(Vec3::new(0.7, 0.6, 0.5), 0.0),
+    };
+    world.add(Arc::new(material3));
     world
 }

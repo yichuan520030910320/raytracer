@@ -1,13 +1,15 @@
 use rand::Rng;
 use std::f64::consts::PI;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use proc_macro2::{TokenStream, Span, Ident};
+use syn::__private::TokenStreamExt;
 
 //let secret_number = ;
-fn random_doouble() -> f64 {
+pub(crate) fn random_doouble() -> f64 {
     rand::thread_rng().gen_range(1..101) as f64 / 102.0
 }
 
-fn range_random_double(min: f64, max: f64) -> f64 {
+pub(crate) fn range_random_double(min: f64, max: f64) -> f64 {
     min + (max - min) * random_doouble()
 }
 
@@ -16,6 +18,12 @@ pub struct Vec3 {
     pub x: f64,
     pub y: f64,
     pub z: f64,
+}
+
+impl quote::ToTokens for Vec3 {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        tokens.append(Ident::new("Vec3", Span::call_site()));
+    }
 }
 
 #[warn(unused_parens)]

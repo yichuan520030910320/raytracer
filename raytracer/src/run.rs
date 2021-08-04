@@ -12,9 +12,7 @@ use crate::scence::{
     my_scence_ball_world, obj, obj_with_texture, random_sence, simple_light, two_berlin_spheres,
     two_spheres,
 };
-use crate::staticscence::{
-    static_cornell_box, static_earth, static_random_sence, two_texture_static,
-};
+use crate::staticscence::{static_cornell_box, static_earth, static_random_sence, two_texture_static, static_bvh_random_scence};
 use crate::texture::StaticBaseColor;
 pub use crate::vec3::Vec3;
 use image::{ImageBuffer, RgbImage};
@@ -111,13 +109,13 @@ pub(crate) fn run() {
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 800; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 8; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
-    let number = 12;
+    let number = 6;
     let mut world = HittableList { objects: vec![] };
     match number {
         1 => {
@@ -365,7 +363,7 @@ pub fn runstatic() {
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
-    let number = 4;
+    let number = 5;
     let mut world = StaticHittableList { objects: vec![] };
     match number {
         1 => {
@@ -398,6 +396,16 @@ pub fn runstatic() {
             backgroud = Vec3::new(0.0, 0.0, 0.0);
             lookat = Vec3::new(278.0, 278.0, 0.0);
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
+        }
+        5=>{
+            world = static_bvh_random_scence();
+            lookat = Vec3::new(0.0, 0.0, 0.0);
+            lookfrom = Vec3::new(13.0, 2.0, 3.0);
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
+            vfov = 20.0;
+            ratio = 3.0 / 2.0;
+            image_width = 1200_u32;
+            image_heigth = (image_width as f64 / ratio) as u32;
         }
 
         _ => println!("you are wrong !! please choose the wonderful world you want to see again."),

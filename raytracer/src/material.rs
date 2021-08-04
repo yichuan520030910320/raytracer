@@ -587,7 +587,6 @@ impl<T: Texture> StaticMaterial for StaticDiffuseLight<T> {
         if rec.front_face {
             return self.emit.value(u, v, p);
         }
-
         return self.emit.value(u, v, p);
     }
 }

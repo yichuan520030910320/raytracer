@@ -1728,46 +1728,17 @@ impl<T1: StaticHittable, T2: Clone + texture::Texture>
     }
 }
 
-pub struct StaticBvhNode {
-    pub left: Arc<dyn StaticHittable>,
-    pub right: Arc<dyn StaticHittable>,
+pub struct StaticBvhNode<T1:StaticHittable,T2:StaticHittable> {
+    pub left: Arc<T1>,
+    pub right: Arc<T2>,
     pub box1: Aabb,
 }
 
-impl StaticBvhNode {
+impl<T1:StaticHittable,T2:StaticHittable> StaticBvhNode<T1, T2> {
     #[allow(dead_code)]
-    pub fn new(src_objects: Vec<Arc<dyn StaticHittable>>, time0: f64, time1: f64) -> Self {
-        let span = src_objects.len();
-        let mut objects = src_objects;
-        let axis = rand::thread_rng().gen_range(0..3);
-
-        let left: Arc<dyn StaticHittable>;
-        let right: Arc<dyn StaticHittable>;
-        if span == 1 {
-            left = objects.remove(0);
-            right = left.clone();
-        } else if span == 2 {
-            objects.sort_by(|a, b| {
-                let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
-                let y = b.bounding_box(time0, time1).unwrap().minimun.get(axis);
-                x.partial_cmp(&y).unwrap()
-            });
-            right = objects.remove(1);
-            left = objects.remove(0);
-        } else {
-            objects.sort_by(|a, b| {
-                let x = a.bounding_box(time0, time1).unwrap().minimun.get(axis);
-                let y = b.bounding_box(time0, time1).unwrap().minimun.get(axis);
-                x.partial_cmp(&y).unwrap()
-            });
-            let mid = span / 2;
-            let (object0, object1) = objects.split_at_mut(mid as usize);
-            left = Arc::new(StaticBvhNode::new(object0.to_vec(), time0, time1));
-            right = Arc::new(StaticBvhNode::new(object1.to_vec(), time0, time1));
-        }
+    pub fn new(left:Arc<T1>,right:Arc<T2>, time0: f64, time1: f64) -> Self {
         let box11 = left.bounding_box(time0, time1).unwrap();
         let box22 = right.bounding_box(time0, time1).unwrap();
-
         Self {
             left,
             right,
@@ -1777,7 +1748,7 @@ impl StaticBvhNode {
 }
 
 #[allow(clippy::needless_return)]
-impl StaticHittable for StaticBvhNode {
+impl <T1:StaticHittable,T2:StaticHittable>StaticHittable for StaticBvhNode<T1, T2> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if !self.box1.hit(&r, t_min, t_max) {
             return None;
@@ -1799,7 +1770,6 @@ impl StaticHittable for StaticBvhNode {
             }
         }
     }
-
     fn bounding_box(&self, _: f64, _: f64) -> Option<Aabb> {
         let outout = self.box1;
         Some(outout)

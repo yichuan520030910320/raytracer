@@ -15,3 +15,4 @@ rand = "0.8.3"
 threadpool = "1.8"
 tobj = "3.0.1"
 raytracer_codegen = { path = "../raytracer_codegen" }
+yaml-rust = "0.4"
