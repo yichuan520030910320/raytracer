@@ -7,11 +7,7 @@ use crate::pdf::{HittablePdf, MixturePdf, Pdf, StaticHittablePdf, StaticMixtureP
 
 use crate::camera;
 pub use crate::ray::Ray;
-use crate::scence::{
-    cornell_box, cornell_box_rabbit, cornell_smoke, earth, final_book2_scence,
-    my_scence_ball_world, obj, obj_with_texture, random_sence, simple_light, two_berlin_spheres,
-    two_spheres,
-};
+use crate::scence::{cornell_box, cornell_box_rabbit, cornell_smoke, earth, final_book2_scence, my_scence_ball_world, obj, obj_with_texture, random_sence, simple_light, two_berlin_spheres, two_spheres, my_world, my_untimately};
 use crate::staticscence::{static_cornell_box, static_earth, static_random_sence, two_texture_static, static_bvh_random_scence};
 use crate::texture::StaticBaseColor;
 pub use crate::vec3::Vec3;
@@ -109,13 +105,13 @@ pub(crate) fn run() {
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 8; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 10; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
-    let number = 6;
+    let number = 14;
     let mut world = HittableList { objects: vec![] };
     match number {
         1 => {
@@ -186,6 +182,27 @@ pub(crate) fn run() {
             backgroud = Vec3::new(0.0, 0.0, 0.0);
             lookat = Vec3::new(278.0, 278.0, 0.0);
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
+        }
+        13=>{
+            world=my_world();
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
+            lookfrom = Vec3::new(70.0, 0.0, 0.0);
+            lookat = Vec3::zero();
+            image_width=1600_u32;
+            ratio=1.0/0.618;
+            image_heigth=(image_width as f64/ratio)as u32;
+            vfov=62.0;
+
+        }
+        14=>{
+            world=my_untimately();
+            backgroud = Vec3::new(0.7, 0.8, 1.0);
+            lookat = Vec3::new(500.0, 278.0, 0.0);
+            lookfrom = Vec3::new(500.0, 278.0, -800.0);
+            image_width=1600_u32;
+            ratio=1.0/0.618;
+            image_heigth=(image_width as f64/ratio)as u32;
+
         }
         _ => println!("you are wrong !! please choose the wonderful world you want to see again."),
     }
