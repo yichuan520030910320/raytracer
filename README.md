@@ -35,9 +35,17 @@ Bonus tracks：
 
 (due to the limited time ,maybe I can add more object and elevate sampl_per_pixel)  only 20 sample_per_pixel but it take 4 hours
 
+if you can't see it ,you can click
+
+https://github.com/yichuan520030910320/raytracer/blob/master/pic/test20.png
+
 ![manyball](pic\manyball.png)
 
 simple scence made up of sphere
+
+if you can't see it ,you can click
+
+https://github.com/yichuan520030910320/raytracer/blob/master/pic/manyball.png
 
 ![image-20210715102814452](C:\Users\18303\Desktop\myraytracer1\pic\image-20210715102814452.png)
 
