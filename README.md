@@ -31,27 +31,27 @@ Bonus tracks：
 
 # 2.some final work(continue to update)
 
-![test20](C:\Users\18303\Desktop\mywork\test20.png)
+![test20](pic\test20.png)
 
 (due to the limited time ,maybe I can add more object and elevate sampl_per_pixel)  only 20 sample_per_pixel but it take 4 hours
 
-![manyball](C:\Users\18303\Desktop\mywork\manyball.png)
+![manyball](pic\manyball.png)
 
 simple scence made up of sphere
 
-![image-20210715102814452](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715102814452.png)
+![image-20210715102814452](C:\Users\18303\Desktop\myraytracer1\pic\image-20210715102814452.png)
 
 book1 scence
 
-![image-20210721130246064](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210721130246064.png)
+![image-20210721130246064](pic\image-20210720131903632.png)
 
 book 2
 
-![image-20210723143514689](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210723143514689.png)
+![image-20210723143514689](pic\image-20210723143514689.png)
 
 classic cornell box with pdf
 
-![cornellbox](C:\Users\18303\Desktop\mywork\cornellbox.png)
+![cornellbox](pic\cornellbox.png)
 
 classic cornell box with obj
 
@@ -73,13 +73,11 @@ make ci要退到
 
 #### -过程生成图片
 
-![image-20210714142903118](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210714142903118.png)
+![image-20210714142903118](pic\image-20210714142903118.png)
 
-![image-20210714142952468](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210714142952468.png)
+
 
 有两种漫反射的公式可以后续切换使用
-
-![image-20210714144010981](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210714144010981.png)
 
 image 9
 
@@ -87,33 +85,17 @@ image 9
 
 8.6另一种漫反射
 
-![image-20210714144731469](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210714144731469.png)
+![image-20210714193256246](pic\image-20210714193256246.png)
 
-image 10
+![image-20210714225420400](pic\image-20210714225420400.png)
 
-![image-20210714192543947](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210714192543947.png)
+![image-20210715002554712](pic\image-20210715002554712.png)
 
-![image-20210714193256246](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210714193256246.png)
 
-![image-20210714221946034](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210714221946034.png)
 
-![image-20210714225420400](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210714225420400.png)
+![image-20210715094402456](pic\image-20210715094402456.png)
 
-![image-20210715002554712](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715002554712.png)
-
-![image-20210715002850214](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715002850214.png)
-
-![image-20210715092122755](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715092122755.png)
-
-仅渲染一次
-
-目标是渲染500次
-
-![image-20210715093141883](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715093141883.png)
-
-![image-20210715094402456](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715094402456.png)
-
-![image-20210715102814452](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715102814452.png)
+![image-20210715102814452](pic\image-20210715102814452.png)
 
 100次
 
@@ -121,77 +103,53 @@ image 10
 
 #### -过程生成图片
 
-![image-20210715102948675](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715102948675.png)
+![image-20210715102948675](pic\image-20210715102948675.png)
 
-![image-20210715104553142](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715104553142.png)
 
-![image-20210715120300806](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210715120300806.png)
 
-![image-20210716194415150](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210716194415150.png)
-
-![image-20210716200628900](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210716200628900.png)
+![image-20210716194415150](pic\image-20210716194415150.png)
 
 修掉返回值的BUG数组，并且写掉两个柏林球......
 
-![image-20210717100135004](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717100135004.png)
-
-![image-20210717100228305](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717100228305.png)
-
-
-
-![image-20210717102920691](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717102920691.png)
-
-![image-20210717103138795](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717103138795.png)
-
-![image-20210717103430166](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717103430166.png)
-
-![image-20210717105053316](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717105053316.png)
+![image-20210717105053316](pic\image-20210717105053316.png)
 
 11
 
-![image-20210717110138355](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717110138355.png)
+![image-20210717110138355](pic\image-20210717110138355.png)
 
-![image-20210717111047282](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717111047282.png)
+![image-20210717111047282](pic\image-20210717111047282.png)
 
 13
 
-![image-20210717172023020](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210717172023020.png)
+![image-20210717172023020](pic\image-20210717172023020.png)
 
-![image-20210718014350516](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210718014350516.png)
+![image-20210718014350516](pic\image-20210718014350516.png)
 
 16
 
-![image-20210719002917592](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210719002917592.png)
+![image-20210719002917592](pic\image-20210719002917592.png)
 
-![image-20210719003332508](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210719003332508.png)
-
-
+![image-20210719183557505](pic\image-20210719183557505.png)
 
 
 
-
-
-![image-20210719183557505](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210719183557505.png)
-
-
-
-![image-20210719191810207](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210719191810207.png)
+![image-20210719191810207](pic\image-20210719191810207.png)
 
 
 
 
 
-![image-20210720131903632](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210720131903632.png)
+![image-20210720131903632](pic\image-20210720131903632.png)
 
-![image-20210720220344720](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210720220344720.png)
+![image-20210720220344720](pic\image-20210720220344720.png)
 
-![image-20210721130246064](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210721130246064.png)
+![image-20210721130246064](pic\image-20210721130246064.png)
 
 #### -多线程学习
 
 笔记：
 
-![image-20210720135437432](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210720135437432.png)
+![image-20210720135437432](pic\image-20210720135437432.png)
 
 [1]线程
 
@@ -457,7 +415,7 @@ fn main() {
 
 
 
-![image-20210721131121011](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210721131121011.png)
+![image-20210721131121011](pic\image-20210721131121011.png)
 
 
 
@@ -473,7 +431,7 @@ fn main() {
 
 ![image-20210801141256049](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210801141256049.png)
 
-![image-20210801141417361](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210801141417361.png)
+![image-20210801141417361](pic\image-20210801141417361.png)
 
 pdf的作用，让法向的光更多，从而达到降噪的作用，在相同的采样数下达到噪点更少的效果
 
@@ -485,25 +443,25 @@ pdf_value的含义是计算概率密度，即投影面占据整个圆的面积�
 
 #### -过程生成图片
 
-![image-20210721132054690](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210721132054690.png)
+![image-20210721132054690](pic\image-20210721132054690.png)
 
-![image-20210721132507114](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210721132507114.png)
+![image-20210721132507114](pic\image-20210721132507114.png)
 
 100
 
-![image-20210721153903742](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210721153903742.png)
+![image-20210721153903742](pic\image-20210721153903742.png)
 
 3
 
-![image-20210721201328530](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210721201328530.png)
+![image-20210721201328530](pic\image-20210721201328530.png)
 
 5
 
-![image-20210721234807023](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210721234807023.png)
+![image-20210721234807023](pic\image-20210721234807023.png)
 
 8
 
-![image-20210723143514689](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210723143514689.png)
+![image-20210723143514689](pic\image-20210723143514689.png)
 
 目前任务：完成自由创作！原理进一步理解，前几张图用PDF做出，emmm;BONUS完成！（学并完成）
 
@@ -515,17 +473,13 @@ github学习使用
 
 
 
-![image-20210724151025577](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210724151025577.png)
+![image-20210724151025577](pic\image-20210724151025577.png)
 
-![image-20210724164720946](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210724164720946.png)
+![image-20210724164720946](pic\image-20210724164720946.png)
 
-![image-20210724164746436](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210724164746436.png)
+![image-20210724164746436](pic\image-20210724164746436.png)
 
-![image-20210724164858532](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210724164858532.png)
 
-可以做一个魔方，三角塔
-
-![image-20210725005709920](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210725005709920.png)
 
 ## [2]week5~6
 
@@ -680,13 +634,9 @@ for (i, m) in materials.iter().enumerate() {
 
 
 
+![image-20210730112534761](pic\image-20210730112534761.png)
 
-
-
-
-![image-20210730112534761](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210730112534761.png)
-
-![image-20210730120108468](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210730120108468.png)
+![image-20210730120108468](pic\image-20210730120108468.png)
 
 
 
@@ -696,7 +646,7 @@ for (i, m) in materials.iter().enumerate() {
 
 
 
-![image-20210730232058569](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210730232058569.png)
+![image-20210730232058569](pic\image-20210730232058569.png)
 
 
 
@@ -704,11 +654,11 @@ for (i, m) in materials.iter().enumerate() {
 
 Q1：
 
-![image-20210731005304998](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210731005304998.png)
+
 
 这个前两个为什么不能不用dyn
 
-![image-20210731230239065](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210731230239065.png)
+![image-20210731230239065](pic\image-20210731230239065.png)
 
 Q2:引用加泛型的作用
 
@@ -791,7 +741,7 @@ macro_rules! vec {
 
 （2）过程宏
 
-![image-20210802153809021](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210802153809021.png)
+![image-20210802153809021](pic\image-20210802153809021.png)
 
 AST：语法树
 
@@ -886,7 +836,7 @@ seq! { n in 0..10 {
 
 
 
-![image-20210802115752387](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210802115752387.png)
+
 
 
 
@@ -925,13 +875,13 @@ tip：一个小插曲
 
 这句话值得重视，在quote内部最好用RUST的原生类型
 
-![image-20210804005631713](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210804005631713.png)
+![image-20210804005631713](pic\image-20210804005631713.png)
 
 
 
 这样写的话，卡了一个晚上的BUG
 
-![image-20210804005659658](C:\Users\18303\AppData\Roaming\Typora\typora-user-images\image-20210804005659658.png)
+![image-20210804005659658](pic\image-20210804005659658.png)
 
 
 
