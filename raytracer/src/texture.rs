@@ -5,6 +5,7 @@ use std::sync::Arc;
 pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3;
 }
+
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct CheckerTexture {
@@ -12,6 +13,7 @@ pub struct CheckerTexture {
     odd: Arc<dyn Texture>,
     even: Arc<dyn Texture>,
 }
+
 #[derive(Clone)]
 pub struct BaseColor {
     color: Vec3,
@@ -51,12 +53,14 @@ impl Texture for CheckerTexture {
         }
     }
 }
+
 #[derive(Clone)]
 pub struct ObjTexture {
     pub u: f64,
     pub v: f64,
     pub img: RgbImage,
 }
+
 #[derive(Clone)]
 pub struct ImageTexture {
     pub width: i32,
@@ -149,6 +153,7 @@ pub struct StaticCheckerTexture<T1: Texture, T2: Texture> {
     odd: T1,
     even: T2,
 }
+
 #[derive(Clone)]
 pub struct StaticBaseColor {
     color: Vec3,
@@ -187,12 +192,14 @@ impl<T1: Texture, T2: Texture> Texture for StaticCheckerTexture<T1, T2> {
         }
     }
 }
+
 #[derive(Clone)]
 pub struct StaticObjTexture {
     pub u: f64,
     pub v: f64,
     pub img: RgbImage,
 }
+
 #[derive(Clone)]
 pub struct StaticImageTexture {
     pub width: i32,

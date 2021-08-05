@@ -37,6 +37,7 @@ pub trait Material: Send + Sync {
 pub struct Lambertian {
     albedo: Arc<dyn Texture>,
 }
+
 pub struct ScatterRecord {
     pub specular_ray: Ray,
     pub is_specular: bool,
@@ -99,8 +100,7 @@ pub struct Metal {
 impl Metal {
     #[allow(dead_code)]
     pub fn new(albedo: Vec3, mut fuzz: f64) -> Self {
-        if fuzz < 1.0 {
-        } else {
+        if fuzz < 1.0 {} else {
             fuzz = 1.0
         }
         Self { albedo, fuzz }
@@ -131,6 +131,7 @@ impl Material for Metal {
         }
     }
 }
+
 #[derive(Clone)]
 pub struct Dielectric {
     ref_idx: f64,
@@ -221,11 +222,13 @@ impl Material for Dielectric {
         return srec;
     }
 }
+
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct DiffuseLight {
     emit: Arc<dyn Texture>,
 }
+
 #[allow(dead_code)]
 impl DiffuseLight {
     pub fn new(c: Vec3) -> Self {
@@ -268,6 +271,7 @@ impl Material for DiffuseLight {
         return self.emit.value(u, v, p);
     }
 }
+
 #[derive(Clone)]
 pub struct Isotropic {
     albedo: Arc<dyn Texture>,
@@ -316,6 +320,7 @@ impl Material for Isotropic {
         }
     }
 }
+
 #[derive(Clone)]
 pub struct FlipFace {
     ptr: Arc<dyn Hittable>,
@@ -360,10 +365,12 @@ pub trait StaticMaterial: Send + Sync {
         0.0
     }
 }
+
 #[derive(Clone)]
 pub struct StaticLambertian<T: Texture> {
     albedo: T,
 }
+
 pub struct StaticScatterRecord {
     pub specular_ray: Ray,
     pub is_specular: bool,
@@ -423,8 +430,7 @@ pub struct StaticMetal {
 
 impl StaticMetal {
     pub fn new(albedo: Vec3, mut fuzz: f64) -> Self {
-        if fuzz < 1.0 {
-        } else {
+        if fuzz < 1.0 {} else {
             fuzz = 1.0
         }
         Self { albedo, fuzz }
@@ -455,6 +461,7 @@ impl StaticMaterial for StaticMetal {
         }
     }
 }
+
 #[derive(Clone)]
 pub struct StaticDielectric {
     ref_idx: f64,
@@ -544,11 +551,13 @@ impl StaticMaterial for StaticDielectric {
         return srec;
     }
 }
+
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct StaticDiffuseLight<T: Texture> {
     emit: T,
 }
+
 #[allow(dead_code)]
 impl<T: Texture> StaticDiffuseLight<T> {
     pub fn new(c: Vec3) -> StaticDiffuseLight<StaticBaseColor> {
@@ -590,6 +599,7 @@ impl<T: Texture> StaticMaterial for StaticDiffuseLight<T> {
         return self.emit.value(u, v, p);
     }
 }
+
 #[derive(Clone)]
 pub struct StaticIsotropic<T: Texture> {
     pub(crate) albedo: T,
@@ -638,6 +648,7 @@ impl<T: Texture> StaticMaterial for StaticIsotropic<T> {
         }
     }
 }
+
 #[derive(Clone)]
 pub struct StaticFlipFace<T: StaticHittable> {
     ptr: T,

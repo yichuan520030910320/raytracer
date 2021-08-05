@@ -25,6 +25,7 @@ pub(crate) fn random_doouble() -> f64 {
 pub(crate) fn range_random_double(min: f64, max: f64) -> f64 {
     min + (max - min) * random_doouble()
 }
+
 #[allow(clippy::needless_return)]
 pub(crate) fn clamp(x: f64, min: f64, max: f64) -> f64 {
     if x < min {
@@ -60,12 +61,12 @@ fn color(
             if scatterrecord.is_specular {
                 return scatterrecord.attenuation
                     * color(
-                        scatterrecord.specular_ray,
-                        background,
-                        world,
-                        lights,
-                        dep - 1,
-                    );
+                    scatterrecord.specular_ray,
+                    background,
+                    world,
+                    lights,
+                    dep - 1,
+                );
             }
 
             let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
@@ -76,9 +77,9 @@ fn color(
 
             let mm = emitted
                 + scatterrecord.attenuation
-                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                    * color(scattered, background, world, lights, dep - 1)
-                    / pdf_val;
+                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                * color(scattered, background, world, lights, dep - 1)
+                / pdf_val;
 
             return mm;
         }
@@ -87,6 +88,7 @@ fn color(
         background
     }
 }
+
 #[allow(dead_code)]
 pub(crate) fn run() {
     let is_ci = match std::env::var("CI") {
@@ -183,26 +185,24 @@ pub(crate) fn run() {
             lookat = Vec3::new(278.0, 278.0, 0.0);
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
         }
-        13=>{
-            world=my_world();
+        13 => {
+            world = my_world();
             backgroud = Vec3::new(0.7, 0.8, 1.0);
             lookfrom = Vec3::new(70.0, 0.0, 0.0);
             lookat = Vec3::zero();
-            image_width=1600_u32;
-            ratio=1.0/0.618;
-            image_heigth=(image_width as f64/ratio)as u32;
-            vfov=62.0;
-
+            image_width = 1600_u32;
+            ratio = 1.0 / 0.618;
+            image_heigth = (image_width as f64 / ratio) as u32;
+            vfov = 62.0;
         }
-        14=>{
-            world=my_untimately();
+        14 => {
+            world = my_untimately();
             backgroud = Vec3::new(0.7, 0.8, 1.0);
             lookat = Vec3::new(500.0, 278.0, 0.0);
             lookfrom = Vec3::new(500.0, 278.0, -800.0);
-            image_width=1600_u32;
-            ratio=1.0/0.618;
-            image_heigth=(image_width as f64/ratio)as u32;
-
+            image_width = 1600_u32;
+            ratio = 1.0 / 0.618;
+            image_heigth = (image_width as f64 / ratio) as u32;
         }
         _ => println!("you are wrong !! please choose the wonderful world you want to see again."),
     }
@@ -329,12 +329,12 @@ fn staticcolor<T: StaticHittable>(
             if scatterrecord.is_specular {
                 return scatterrecord.attenuation
                     * staticcolor(
-                        scatterrecord.specular_ray,
-                        background,
-                        world,
-                        lights,
-                        dep - 1,
-                    );
+                    scatterrecord.specular_ray,
+                    background,
+                    world,
+                    lights,
+                    dep - 1,
+                );
             }
 
             let lightptr = StaticHittablePdf::new(lights, &_rec.p);
@@ -345,9 +345,9 @@ fn staticcolor<T: StaticHittable>(
 
             let mm = emitted
                 + scatterrecord.attenuation
-                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                    * staticcolor(scattered, background, world, lights, dep - 1)
-                    / pdf_val;
+                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                * staticcolor(scattered, background, world, lights, dep - 1)
+                / pdf_val;
 
             return mm;
         }
@@ -356,6 +356,7 @@ fn staticcolor<T: StaticHittable>(
         background
     }
 }
+
 #[allow(dead_code)]
 pub fn runstatic() {
     let is_ci = match std::env::var("CI") {
@@ -414,7 +415,7 @@ pub fn runstatic() {
             lookat = Vec3::new(278.0, 278.0, 0.0);
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
         }
-        5=>{
+        5 => {
             world = static_bvh_random_scence();
             lookat = Vec3::new(0.0, 0.0, 0.0);
             lookfrom = Vec3::new(13.0, 2.0, 3.0);

@@ -17,14 +17,14 @@ mod vec3;
 
 #[allow(unused_imports)]
 use crate::run::{run, runstatic};
+
 fn main() {
-    let num=1;
+    let num = 1;
     match num {
-        1=>run(),
-        2=>runstatic(),
+        1 => run(),
+        2 => runstatic(),
         _ => {
             println!("please rechoose the type");
         }
     }
-
 }

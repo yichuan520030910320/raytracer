@@ -3,6 +3,7 @@ use crate::texture::Texture;
 use rand::Rng;
 
 const POINT_COUNT: usize = 256;
+
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct Perlin {
@@ -129,6 +130,7 @@ impl Perlin {
         accum.abs()
     }
 }
+
 #[derive(Clone)]
 pub struct NoiseTexture {
     noise: Perlin,

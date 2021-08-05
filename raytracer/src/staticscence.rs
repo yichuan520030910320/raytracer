@@ -381,13 +381,13 @@ pub(crate) fn static_cornell_box() -> StaticHittableList {
     world.add(light1_bonus);
     world
 }
-use  raytracer_codegen::random_scene_static_bvh;
-random_scene_static_bvh!{}
-pub fn static_bvh_random_scence()->StaticHittableList{
 
+use raytracer_codegen::random_scene_static_bvh;
+random_scene_static_bvh! {}
+pub fn static_bvh_random_scence() -> StaticHittableList {
     let mut world = StaticHittableList { objects: vec![] };
     let checker = CheckerTexture::new(Vec3::new(0.2, 0.3, 0.1), Vec3::new(0.9, 0.9, 0.9));
-    let m=Vec3::new(1.0,1.0,1.0);
+    let m = Vec3::new(1.0, 1.0, 1.0);
     let ground = StaticSphere {
         p: Vec3 {
             x: 0.0,
@@ -409,7 +409,7 @@ pub fn static_bvh_random_scence()->StaticHittableList{
         mat_ptr: StaticLambertian::new1(checker),
     };
     world.add(Arc::new(ground));
-    let obj:Arc<dyn StaticHittable>=add_bvh_static();
+    let obj: Arc<dyn StaticHittable> = add_bvh_static();
     world.add(obj);
     let material1 = StaticSphere {
         p: Vec3 {

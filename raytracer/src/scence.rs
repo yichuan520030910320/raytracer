@@ -2135,14 +2135,14 @@ pub fn my_world() -> HittableList {
 pub fn my_untimately() -> HittableList {
     {
         let mut world = HittableList { objects: vec![] };
-let checker=ImageTexture::new("medrian.jpg");
-        let checker1=ImageTexture::new("medrian3.jpg");
-        let checker2=ImageTexture::new("medrian2.jpg");
-        let checker4=ImageTexture::new("medrian2.jpg");
-        let checker3=ImageTexture::new("imagesfloor.jpg");
+        let checker = ImageTexture::new("medrian.jpg");
+        let checker1 = ImageTexture::new("medrian3.jpg");
+        let checker2 = ImageTexture::new("medrian2.jpg");
+        let checker4 = ImageTexture::new("medrian2.jpg");
+        let checker3 = ImageTexture::new("imagesfloor.jpg");
 
         let red = YzRect {
-            mp:Arc::new(Lambertian::new1(Arc::new(checker1))),
+            mp: Arc::new(Lambertian::new1(Arc::new(checker1))),
             y0: -15.0,
             y1: 570.0,
             z0: 0.0,
@@ -2152,7 +2152,7 @@ let checker=ImageTexture::new("medrian.jpg");
         world.add(Arc::new(red));
 
         let green = YzRect {
-            mp:  Arc::new(Lambertian::new1(Arc::new(checker2))),
+            mp: Arc::new(Lambertian::new1(Arc::new(checker2))),
 
             y0: -15.0,
             y1: 570.0,
@@ -2162,7 +2162,7 @@ let checker=ImageTexture::new("medrian.jpg");
         };
         world.add(Arc::new(green));
         let white1 = XzRect {
-            mp:  Arc::new(Lambertian::new1(Arc::new(checker3))),
+            mp: Arc::new(Lambertian::new1(Arc::new(checker3))),
 
             x0: 0.0,
             x1: 999.0,
@@ -2172,7 +2172,7 @@ let checker=ImageTexture::new("medrian.jpg");
         };
         world.add(Arc::new(white1));
         let white2 = XzRect {
-            mp:  Arc::new(Lambertian::new1(Arc::new(checker))),
+            mp: Arc::new(Lambertian::new1(Arc::new(checker))),
 
             x0: 0.0,
             x1: 999.0,
@@ -2183,7 +2183,7 @@ let checker=ImageTexture::new("medrian.jpg");
         world.add(Arc::new(white2));
 
         let white3 = XyRect {
-            mp: Arc::new(Metal::new(Vec3::new(0.73,0.73,0.73),0.1)),
+            mp: Arc::new(Metal::new(Vec3::new(0.73, 0.73, 0.73), 0.1)),
 
             x0: 0.0,
             x1: 999.0,
@@ -2197,10 +2197,10 @@ let checker=ImageTexture::new("medrian.jpg");
         let white3 = XyRect {
             mp: Arc::new(Lambertian::new1(Arc::new(checker4))),
 
-            x0: -200.0-20.0,
-            x1: 999.0+200.0+20.0,
-            y0: -15.0-100.0-30.0,
-            y1: 570.0+100.0+30.0,
+            x0: -200.0 - 20.0,
+            x1: 999.0 + 200.0 + 20.0,
+            y0: -15.0 - 100.0 - 30.0,
+            y1: 570.0 + 100.0 + 30.0,
             k: -800.0,
         };
         world.add(Arc::new(white3));
@@ -2249,7 +2249,7 @@ let checker=ImageTexture::new("medrian.jpg");
                     Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
                     200.0,
                 )),
-                Vec3::new(849.0, 200.0-15.0, 345.0),
+                Vec3::new(849.0, 200.0 - 15.0, 345.0),
             );
             world.add(Arc::new(allin));
         }
@@ -2404,11 +2404,10 @@ let checker=ImageTexture::new("medrian.jpg");
             }
             let allin = Translate::new(
                 Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
-                Vec3::new(240.0, 50.0, 350.0+110.0),
+                Vec3::new(240.0, 50.0, 350.0 + 110.0),
             );
             world.add(Arc::new(allin));
         }
-
 
 
 // // patrick
@@ -2523,63 +2522,59 @@ let checker=ImageTexture::new("medrian.jpg");
 //         }
 
 
-
-
-                 let cornell_box = tobj::load_obj(
-             "patrick.obj",
-             &tobj::LoadOptions {
-                 single_index: true,
-                 triangulate: true,
-                 ..Default::default()
-             },
-         );
-         let filejpg = "Char_Patrick.png";
-         assert!(cornell_box.is_ok());
-         let rate = 120.0;
-         let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
-         for (_i, m) in models.iter().enumerate() {
-             let mesh = &m.mesh;
-             let mut boxes2 = HittableList { objects: vec![] };
-             for v in 0..mesh.indices.len() / 3 {
-                 let x1 = mesh.indices[3 * v];
-                 let x2 = mesh.indices[3 * v + 1];
-                 let x3 = mesh.indices[3 * v + 2];
-                 // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
-                 //todo
-                 let u1 = mesh.texcoords[(x1 * 2) as usize];
-                 let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
-                 let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
-        let triange = Triangel::new(
-                     Vec3 {
-                         x: rate * mesh.positions[(3 * x1) as usize] as f64,
-                         y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
-                         z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
-                     },
-                     Vec3 {
-                         x: rate * mesh.positions[(3 * x2) as usize] as f64,
-                         y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
-                         z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
-                     },
-                     Vec3 {
-                         x: rate * mesh.positions[(3 * x3) as usize] as f64,
-                         y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
-                         z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-                     },
-                     Arc::new(Lambertian::new1(Arc::new(mat1))),
-                 );
-                 boxes2.add(Arc::new(triange));
-             }
-             let allin = Translate::new(
-                 Arc::new(RotateY::new(
-                     Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
-                     140.0,
-                 )),
-                 Vec3::new(360.0, -15.0, 90.0),
-             );
-             world.add(Arc::new(allin));
-         }
-
-
+        let cornell_box = tobj::load_obj(
+            "patrick.obj",
+            &tobj::LoadOptions {
+                single_index: true,
+                triangulate: true,
+                ..Default::default()
+            },
+        );
+        let filejpg = "Char_Patrick.png";
+        assert!(cornell_box.is_ok());
+        let rate = 120.0;
+        let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+        for (_i, m) in models.iter().enumerate() {
+            let mesh = &m.mesh;
+            let mut boxes2 = HittableList { objects: vec![] };
+            for v in 0..mesh.indices.len() / 3 {
+                let x1 = mesh.indices[3 * v];
+                let x2 = mesh.indices[3 * v + 1];
+                let x3 = mesh.indices[3 * v + 2];
+                // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
+                //todo
+                let u1 = mesh.texcoords[(x1 * 2) as usize];
+                let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
+                let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
+                let triange = Triangel::new(
+                    Vec3 {
+                        x: rate * mesh.positions[(3 * x1) as usize] as f64,
+                        y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+                        z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+                    },
+                    Vec3 {
+                        x: rate * mesh.positions[(3 * x2) as usize] as f64,
+                        y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+                        z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+                    },
+                    Vec3 {
+                        x: rate * mesh.positions[(3 * x3) as usize] as f64,
+                        y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+                        z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+                    },
+                    Arc::new(Lambertian::new1(Arc::new(mat1))),
+                );
+                boxes2.add(Arc::new(triange));
+            }
+            let allin = Translate::new(
+                Arc::new(RotateY::new(
+                    Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+                    140.0,
+                )),
+                Vec3::new(360.0, -15.0, 90.0),
+            );
+            world.add(Arc::new(allin));
+        }
 
 
 //todo desk
@@ -2593,7 +2588,7 @@ let checker=ImageTexture::new("medrian.jpg");
             },
         );
         assert!(cornell_box.is_ok());
-        let rate =   0.440;
+        let rate = 0.440;
         let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
         for (_i, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
@@ -2641,7 +2636,7 @@ let checker=ImageTexture::new("medrian.jpg");
             },
         );
         assert!(cornell_box.is_ok());
-        let rate =   0.440*1.0*10.0;
+        let rate = 0.440 * 1.0 * 10.0;
         let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
         for (_i, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
@@ -2680,10 +2675,6 @@ let checker=ImageTexture::new("medrian.jpg");
         }
 
 
-
-
-
-
         let cornell_box = tobj::load_obj(
             //rabbit
             "bigpc.obj",
@@ -2694,7 +2685,7 @@ let checker=ImageTexture::new("medrian.jpg");
             },
         );
         assert!(cornell_box.is_ok());
-        let rate =   0.0840*100.0*2.5;
+        let rate = 0.0840 * 100.0 * 2.5;
         let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
         for (_i, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
@@ -2730,10 +2721,6 @@ let checker=ImageTexture::new("medrian.jpg");
 
             world.add(Arc::new(allin));
         }
-
-
-
-
 
 
 //todo lamp
@@ -2817,7 +2804,6 @@ let checker=ImageTexture::new("medrian.jpg");
 //         };
 //         let light1_bonus = Arc::new(FlipFace::new(Arc::new(light1)));
 //         world.add(light1_bonus);
-
 
 
         let light1 = XzRect {

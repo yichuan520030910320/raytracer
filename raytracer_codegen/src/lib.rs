@@ -26,10 +26,7 @@ fn bvh_build(contenent: &mut Vec<Cotenent>) -> TokenStream {
         let left = objects.remove(0);
         let temp_code = left.code;
         quote! {   #temp_code}
-
-    }
-
-    else{
+    } else {
         objects.sort_by(|a, b| {
             let x = a.bounding.get(axis);
             let y = b.bounding.get(axis);
@@ -41,9 +38,7 @@ fn bvh_build(contenent: &mut Vec<Cotenent>) -> TokenStream {
         let left = bvh_build(&mut object0.to_vec());
         let right = bvh_build(&mut object1.to_vec());
         quote! { Arc::new(StaticBvhNode::new(#left,#right,0.0,1.0))}
-
     }
-
 }
 
 #[proc_macro]
@@ -52,7 +47,7 @@ pub fn random_scene_static_bvh(_: proc_macro::TokenStream) -> proc_macro::TokenS
     for a in -11..11 {
         for b in -11..11 {
             let choose_mat = random_doouble();
-            println!("aaa  {}",choose_mat);
+            println!("aaa  {}", choose_mat);
             let center = Vec3::new(
                 a as f64 + 0.9 * random_doouble(),
                 0.2,
@@ -62,8 +57,7 @@ pub fn random_scene_static_bvh(_: proc_macro::TokenStream) -> proc_macro::TokenS
             let r2 = center.y;
             let r3 = center.z;
             if ((center - Vec3::new(4.0, 0.2, 0.0)).length()) > 1.19 {
-
-                println!("got in  {}",choose_mat);
+                println!("got in  {}", choose_mat);
                 if choose_mat < 0.6 {
                     let albedo = Vec3::random() * Vec3::random();
 
@@ -92,8 +86,7 @@ StaticSphere {
                             )
                         )}),
                     });
-                }
-                else if choose_mat<0.850{
+                } else if choose_mat < 0.850 {
                     print!("***");
                     let albedo = Vec3::randomrange(0.5, 1.0);
                     let x1 = albedo.x;
@@ -123,8 +116,7 @@ StaticSphere {
                             )
                         )},
                     });
-                }
-                else {
+                } else {
 
 
 //                     objects.push(Cotenent {
@@ -178,7 +170,7 @@ StaticSphere {
 
 
     objects.push(Cotenent {
-        bounding: Vec3::new(0.3,0.3,0.3) - Vec3::new(0.2, 0.2, 0.2),
+        bounding: Vec3::new(0.3, 0.3, 0.3) - Vec3::new(0.2, 0.2, 0.2),
         code: (quote! {(
                             Arc::new(
 StaticMovingSphere {
@@ -194,7 +186,7 @@ StaticMovingSphere {
                             )
                         )}),
     });
-println!("&&&&");
+    println!("&&&&");
     let allnode = bvh_build(&mut objects);
     let result = proc_macro::TokenStream::from(quote! {
          fn add_bvh_static()->Arc<dyn StaticHittable>{

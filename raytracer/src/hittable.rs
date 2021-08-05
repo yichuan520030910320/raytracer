@@ -1663,7 +1663,7 @@ pub struct StaticConstantMedium<T1: StaticHittable, T2: Clone + StaticMaterial> 
 
 #[allow(clippy::needless_return)]
 impl<T1: StaticHittable, T2: Clone + StaticMaterial> StaticHittable
-    for StaticConstantMedium<T1, T2>
+for StaticConstantMedium<T1, T2>
 {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if let Option::Some(mut rec1) = self.boundary.hit(r, -INF, INF) {
@@ -1715,7 +1715,7 @@ impl<T1: StaticHittable, T2: Clone + StaticMaterial> StaticHittable
 }
 
 impl<T1: StaticHittable, T2: Clone + texture::Texture>
-    StaticConstantMedium<T1, StaticIsotropic<T2>>
+StaticConstantMedium<T1, StaticIsotropic<T2>>
 {
     #[allow(dead_code)]
     pub fn new(b: T1, d: f64, c: T2) -> Self {
@@ -1728,15 +1728,15 @@ impl<T1: StaticHittable, T2: Clone + texture::Texture>
     }
 }
 
-pub struct StaticBvhNode<T1:StaticHittable,T2:StaticHittable> {
+pub struct StaticBvhNode<T1: StaticHittable, T2: StaticHittable> {
     pub left: Arc<T1>,
     pub right: Arc<T2>,
     pub box1: Aabb,
 }
 
-impl<T1:StaticHittable,T2:StaticHittable> StaticBvhNode<T1, T2> {
+impl<T1: StaticHittable, T2: StaticHittable> StaticBvhNode<T1, T2> {
     #[allow(dead_code)]
-    pub fn new(left:Arc<T1>,right:Arc<T2>, time0: f64, time1: f64) -> Self {
+    pub fn new(left: Arc<T1>, right: Arc<T2>, time0: f64, time1: f64) -> Self {
         let box11 = left.bounding_box(time0, time1).unwrap();
         let box22 = right.bounding_box(time0, time1).unwrap();
         Self {
@@ -1748,7 +1748,7 @@ impl<T1:StaticHittable,T2:StaticHittable> StaticBvhNode<T1, T2> {
 }
 
 #[allow(clippy::needless_return)]
-impl <T1:StaticHittable,T2:StaticHittable>StaticHittable for StaticBvhNode<T1, T2> {
+impl<T1: StaticHittable, T2: StaticHittable> StaticHittable for StaticBvhNode<T1, T2> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if !self.box1.hit(&r, t_min, t_max) {
             return None;
