@@ -31,7 +31,7 @@ Bonus tracks：
 
 # 2.some final work(continue to update)
 
-![test20](pic\test20.png)
+![test20](pic/test20.png)
 
 (due to the limited time ,maybe I can add more object and elevate sampl_per_pixel)  only 20 sample_per_pixel but it take 4 hours
 
@@ -39,7 +39,7 @@ if you can't see it ,you can click
 
 https://github.com/yichuan520030910320/raytracer/blob/master/pic/test20.png
 
-![manyball](pic\manyball.png)
+![manyball](pic/manyball.png)
 
 simple scence made up of sphere
 
@@ -47,19 +47,19 @@ if you can't see it ,you can click
 
 https://github.com/yichuan520030910320/raytracer/blob/master/pic/manyball.png
 
-![image-20210715102814452](C:\Users\18303\Desktop\myraytracer1\pic\image-20210715102814452.png)
+![image-20210715102814452](pic/image-20210715102814452.png)
 
 book1 scence
 
-![image-20210721130246064](pic\image-20210720131903632.png)
+![image-20210721130246064](pic/image-20210720131903632.png)
 
 book 2
 
-![image-20210723143514689](pic\image-20210723143514689.png)
+![image-20210723143514689](pic/image-20210723143514689.png)
 
 classic cornell box with pdf
 
-![cornellbox](pic\cornellbox.png)
+![cornellbox](pic/cornellbox.png)
 
 classic cornell box with obj
 
@@ -81,7 +81,7 @@ make ci要退到
 
 #### -过程生成图片
 
-![image-20210714142903118](pic\image-20210714142903118.png)
+![image-20210714142903118](pic/image-20210714142903118.png)
 
 
 
