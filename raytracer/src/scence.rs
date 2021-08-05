@@ -2138,7 +2138,9 @@ pub fn my_untimately() -> HittableList {
 let checker=ImageTexture::new("medrian.jpg");
         let checker1=ImageTexture::new("medrian3.jpg");
         let checker2=ImageTexture::new("medrian2.jpg");
+        let checker4=ImageTexture::new("medrian2.jpg");
         let checker3=ImageTexture::new("imagesfloor.jpg");
+
         let red = YzRect {
             mp:Arc::new(Lambertian::new1(Arc::new(checker1))),
             y0: -15.0,
@@ -2170,7 +2172,7 @@ let checker=ImageTexture::new("medrian.jpg");
         };
         world.add(Arc::new(white1));
         let white2 = XzRect {
-            mp:  Arc::new(Lambertian::new(Vec3::new(0.73,0.73,0.73))),
+            mp:  Arc::new(Lambertian::new1(Arc::new(checker))),
 
             x0: 0.0,
             x1: 999.0,
@@ -2181,7 +2183,7 @@ let checker=ImageTexture::new("medrian.jpg");
         world.add(Arc::new(white2));
 
         let white3 = XyRect {
-            mp: Arc::new(Lambertian::new1(Arc::new(checker))),
+            mp: Arc::new(Metal::new(Vec3::new(0.73,0.73,0.73),0.1)),
 
             x0: 0.0,
             x1: 999.0,
@@ -2190,6 +2192,19 @@ let checker=ImageTexture::new("medrian.jpg");
             k: 555.0,
         };
         world.add(Arc::new(white3));
+
+
+        let white3 = XyRect {
+            mp: Arc::new(Lambertian::new1(Arc::new(checker4))),
+
+            x0: -200.0-20.0,
+            x1: 999.0+200.0+20.0,
+            y0: -15.0-100.0-30.0,
+            y1: 570.0+100.0+30.0,
+            k: -800.0,
+        };
+        world.add(Arc::new(white3));
+
 //todo buddha
         let cornell_box = tobj::load_obj(
             //buddle
@@ -2285,7 +2300,7 @@ let checker=ImageTexture::new("medrian.jpg");
                     Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
                     200.0,
                 )),
-                Vec3::new(649.0, 70.0, 375.0),
+                Vec3::new(649.0, 90.0, 375.0),
             );
             world.add(Arc::new(allin));
         }
@@ -2389,13 +2404,128 @@ let checker=ImageTexture::new("medrian.jpg");
             }
             let allin = Translate::new(
                 Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
-                Vec3::new(180.0, 50.0, 350.0+110.0),
+                Vec3::new(240.0, 50.0, 350.0+110.0),
             );
             world.add(Arc::new(allin));
         }
 
-// patrick
-         let cornell_box = tobj::load_obj(
+
+
+// // patrick
+//          let cornell_box = tobj::load_obj(
+//              "patrick.obj",
+//              &tobj::LoadOptions {
+//                  single_index: true,
+//                  triangulate: true,
+//                  ..Default::default()
+//              },
+//          );
+//          let filejpg = "Char_Patrick.png";
+//          assert!(cornell_box.is_ok());
+//          let rate = 120.0;
+//          let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+//          for (_i, m) in models.iter().enumerate() {
+//              let mesh = &m.mesh;
+//              let mut boxes2 = HittableList { objects: vec![] };
+//              for v in 0..mesh.indices.len() / 3 {
+//                  let x1 = mesh.indices[3 * v];
+//                  let x2 = mesh.indices[3 * v + 1];
+//                  let x3 = mesh.indices[3 * v + 2];
+//                  // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
+//                  //todo
+//                  let u1 = mesh.texcoords[(x1 * 2) as usize];
+//                  let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
+//                  let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
+//         let triange = Triangel::new(
+//                      Vec3 {
+//                          x: rate * mesh.positions[(3 * x1) as usize] as f64,
+//                          y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+//                          z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+//                      },
+//                      Vec3 {
+//                          x: rate * mesh.positions[(3 * x2) as usize] as f64,
+//                          y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+//                          z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+//                      },
+//                      Vec3 {
+//                          x: rate * mesh.positions[(3 * x3) as usize] as f64,
+//                          y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+//                          z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+//                      },
+//                      Arc::new(Lambertian::new1(Arc::new(mat1))),
+//                  );
+//                  boxes2.add(Arc::new(triange));
+//              }
+//              let allin = Translate::new(
+//                  Arc::new(RotateY::new(
+//                      Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+//                      140.0,
+//                  )),
+//                  Vec3::new(370.0, 75.0, 350.0+110.0),
+//              );
+//              world.add(Arc::new(allin));
+//          }
+//
+// //
+// //bat
+//         let cornell_box = tobj::load_obj(
+//             "10485_Baseball_bat_v1_max2011_iteration-2.obj",
+//             &tobj::LoadOptions {
+//                 single_index: true,
+//                 triangulate: true,
+//                 ..Default::default()
+//             },
+//         );
+//         let filejpg = "10485_Baseball_bat_v1_diffuse.jpg";
+//         assert!(cornell_box.is_ok());
+//         let rate = 2.5;
+//         let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+//         for (_i, m) in models.iter().enumerate() {
+//             let mesh = &m.mesh;
+//             let mut boxes2 = HittableList { objects: vec![] };
+//             for v in 0..mesh.indices.len() / 3 {
+//                 let x1 = mesh.indices[3 * v];
+//                 let x2 = mesh.indices[3 * v + 1];
+//                 let x3 = mesh.indices[3 * v + 2];
+//                 // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
+//                 //todo
+//                 let u1 = mesh.texcoords[(x1 * 2) as usize];
+//                 let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
+//                 let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
+//                 let triange = Triangel::new(
+//                     Vec3 {
+//                         x: rate * mesh.positions[(3 * x1) as usize] as f64,
+//                         y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+//                         z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+//                     },
+//                     Vec3 {
+//                         x: rate * mesh.positions[(3 * x2) as usize] as f64,
+//                         y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+//                         z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+//                     },
+//                     Vec3 {
+//                         x: rate * mesh.positions[(3 * x3) as usize] as f64,
+//                         y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+//                         z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+//                     },
+//                     Arc::new(Lambertian::new1(Arc::new(mat1))),
+//                 );
+//                 boxes2.add(Arc::new(triange));
+//             }
+//             let allin = Translate::new(
+//                 Arc::new(RotateZ::new(Arc::new(RotateY::new(
+//                     Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+//                     0.0,
+//                 )),-90.0)),
+//                 Vec3::new(445.0, 255.0, 360.0+110.0),
+//             );
+//             world.add(Arc::new(allin));
+//         }
+
+
+
+
+                 let cornell_box = tobj::load_obj(
              "patrick.obj",
              &tobj::LoadOptions {
                  single_index: true,
@@ -2444,66 +2574,10 @@ let checker=ImageTexture::new("medrian.jpg");
                      Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
                      140.0,
                  )),
-                 Vec3::new(370.0, 75.0, 350.0+110.0),
+                 Vec3::new(360.0, -15.0, 90.0),
              );
              world.add(Arc::new(allin));
          }
-//
-//
-//bat
-        let cornell_box = tobj::load_obj(
-            "10485_Baseball_bat_v1_max2011_iteration-2.obj",
-            &tobj::LoadOptions {
-                single_index: true,
-                triangulate: true,
-                ..Default::default()
-            },
-        );
-        let filejpg = "10485_Baseball_bat_v1_diffuse.jpg";
-        assert!(cornell_box.is_ok());
-        let rate = 2.5;
-        let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
-        for (_i, m) in models.iter().enumerate() {
-            let mesh = &m.mesh;
-            let mut boxes2 = HittableList { objects: vec![] };
-            for v in 0..mesh.indices.len() / 3 {
-                let x1 = mesh.indices[3 * v];
-                let x2 = mesh.indices[3 * v + 1];
-                let x3 = mesh.indices[3 * v + 2];
-                // u v is not the correct result //the patrick triangle may be uncorrect while look at the result pic//inmite the RUST org
-                //todo
-                let u1 = mesh.texcoords[(x1 * 2) as usize];
-                let v1 = mesh.texcoords[(x1 * 2 + 1) as usize];
-                let mat1 = ObjTexture::new(filejpg, u1 as f64, v1 as f64);
-                let triange = Triangel::new(
-                    Vec3 {
-                        x: rate * mesh.positions[(3 * x1) as usize] as f64,
-                        y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
-                        z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
-                    },
-                    Vec3 {
-                        x: rate * mesh.positions[(3 * x2) as usize] as f64,
-                        y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
-                        z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
-                    },
-                    Vec3 {
-                        x: rate * mesh.positions[(3 * x3) as usize] as f64,
-                        y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
-                        z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
-                    },
-                    Arc::new(Lambertian::new1(Arc::new(mat1))),
-                );
-                boxes2.add(Arc::new(triange));
-            }
-            let allin = Translate::new(
-                Arc::new(RotateZ::new(Arc::new(RotateY::new(
-                    Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
-                    0.0,
-                )),-90.0)),
-                Vec3::new(445.0, 255.0, 360.0+110.0),
-            );
-            world.add(Arc::new(allin));
-        }
 
 
 
@@ -2559,6 +2633,59 @@ let checker=ImageTexture::new("medrian.jpg");
 
         let cornell_box = tobj::load_obj(
             //rabbit
+            "Gaming_Chair.obj",
+            &tobj::LoadOptions {
+                single_index: true,
+                triangulate: true,
+                ..Default::default()
+            },
+        );
+        assert!(cornell_box.is_ok());
+        let rate =   0.440*1.0*10.0;
+        let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+        for (_i, m) in models.iter().enumerate() {
+            let mesh = &m.mesh;
+            let mut boxes2 = HittableList { objects: vec![] };
+            for v in 0..mesh.indices.len() / 3 {
+                let x1 = mesh.indices[3 * v];
+                let x2 = mesh.indices[3 * v + 1];
+                let x3 = mesh.indices[3 * v + 2];
+                let triange = Triangel::new(
+                    Vec3 {
+                        x: rate * mesh.positions[(3 * x1) as usize] as f64,
+                        y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+                        z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+                    },
+                    Vec3 {
+                        x: rate * mesh.positions[(3 * x2) as usize] as f64,
+                        y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+                        z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+                    },
+                    Vec3 {
+                        x: rate * mesh.positions[(3 * x3) as usize] as f64,
+                        y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+                        z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+                    },
+                    Arc::new(Dielectric::new(1.5)),
+                    // Arc::new(Lambertian::new(Vec3::new(0.8, 0.33411, 0.000882))),
+                );
+                boxes2.add(Arc::new(triange));
+            }
+            let allin = Translate::new(
+                Arc::new(RotateY::new(Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)), -90.0)),
+                Vec3::new(195.0, -10.0, 150.0),
+            );
+
+            world.add(Arc::new(allin));
+        }
+
+
+
+
+
+
+        let cornell_box = tobj::load_obj(
+            //rabbit
             "bigpc.obj",
             &tobj::LoadOptions {
                 single_index: true,
@@ -2598,7 +2725,7 @@ let checker=ImageTexture::new("medrian.jpg");
             }
             let allin = Translate::new(
                 Arc::new(RotateY::new(Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)), 90.0)),
-                Vec3::new(85.0, 118.0, 130.0),
+                Vec3::new(85.0, 118.0, 100.0),
             );
 
             world.add(Arc::new(allin));
