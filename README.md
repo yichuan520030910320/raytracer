@@ -37,6 +37,12 @@ Bonus tracks：
 
 (due to the limited time ,maybe I can add more object and elevate sampl_per_pixel)  only 20 sample_per_pixel but it take 4 hours
 
+this is more clear
+
+![test20](pic/finalwork.png)
+
+70 per_pixel 
+
 if you can't see it ,you can click
 
 https://github.com/yichuan520030910320/raytracer/blob/master/pic/test20.png
