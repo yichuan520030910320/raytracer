@@ -1,3 +1,7 @@
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/yichuan520030910320/raytracer)
+
+![GitHub Repo stars](https://img.shields.io/github/stars/yichuan520030910320/raytracer?style=social)
+
 # 1.execution
 
 必做部分：
@@ -27,7 +31,7 @@ Bonus tracks：
 - [x] Track 7
   - [ ] 手写obj_loader
 
-具体内容参考tutorial
+具体内容参考[tutorial](https://github.com/aik2mlj/raytracer-tutorial)
 
 感谢 [闵乐钧](https://github.com/aik2mlj) [林春茹](https://github.com/XHRlyb) [仇天元](https://github.com/PaperL) [王崑运](https://github.com/sadpiggy) [何夏麟](https://github.com/MuLinjiu) [罗皓天](https://github.com/AegeanYan) 对本项目的大力支持，让我跪着（边跪边爬？）走完这条路
 
