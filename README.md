@@ -4,7 +4,49 @@
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/yichuan520030910320/raytracer?style=social)
 
-# 0.how to install and run?
+
+
+# 0.some final work(continue to update)
+
+![test20](pic/test20.png)
+
+(due to the limited time ,maybe I can add more object and elevate sampl_per_pixel)  only 20 sample_per_pixel but it take 4 hours
+
+this is more clear
+
+![test20](pic/finalwork.png)
+
+70 per_pixel 
+
+if you can't see it ,you can click
+
+https://github.com/yichuan520030910320/raytracer/blob/master/pic/test20.png
+
+![manyball](pic/manyball.png)
+
+simple scence made up of sphere
+
+if you can't see it ,you can click
+
+https://github.com/yichuan520030910320/raytracer/blob/master/pic/manyball.png
+
+![image-20210715102814452](pic/image-20210715102814452.png)
+
+book1 scence
+
+![image-20210721130246064](pic/image-20210720131903632.png)
+
+book 2
+
+![image-20210723143514689](pic/image-20210723143514689.png)
+
+classic cornell box with pdf
+
+![cornellbox](pic/cornellbox.png)
+
+classic cornell box with obj
+
+# 1.how to install and run?
 
 manual in Chinese
 
@@ -58,7 +100,7 @@ Also note that the path must be correct and must be in the same directory as the
 - After make ci you can see the progress meter if you think it is too slow you can change <img src="https://s2.loli.net/2022/04/19/rDgdKREfhwu9P83.png" alt="image- 20220419170527136.png" style="zoom:33%;" />This value reduces the resolution and increases the speed
 - The final result is in output/test.png
 
-# 1.execution
+# 2.execution
 
 必做部分：
 
@@ -90,46 +132,6 @@ Bonus tracks：
 具体内容参考[tutorial](https://github.com/aik2mlj/raytracer-tutorial)
 
 感谢 [闵乐钧](https://github.com/aik2mlj) [林春茹](https://github.com/XHRlyb) [仇天元](https://github.com/PaperL) [王崑运](https://github.com/sadpiggy) [何夏麟](https://github.com/MuLinjiu) [罗皓天](https://github.com/AegeanYan) 对本项目的大力支持，让我跪着（边跪边爬？）走完这条路
-
-# 2.some final work(continue to update)
-
-![test20](pic/test20.png)
-
-(due to the limited time ,maybe I can add more object and elevate sampl_per_pixel)  only 20 sample_per_pixel but it take 4 hours
-
-this is more clear
-
-![test20](pic/finalwork.png)
-
-70 per_pixel 
-
-if you can't see it ,you can click
-
-https://github.com/yichuan520030910320/raytracer/blob/master/pic/test20.png
-
-![manyball](pic/manyball.png)
-
-simple scence made up of sphere
-
-if you can't see it ,you can click
-
-https://github.com/yichuan520030910320/raytracer/blob/master/pic/manyball.png
-
-![image-20210715102814452](pic/image-20210715102814452.png)
-
-book1 scence
-
-![image-20210721130246064](pic/image-20210720131903632.png)
-
-book 2
-
-![image-20210723143514689](pic/image-20210723143514689.png)
-
-classic cornell box with pdf
-
-![cornellbox](pic/cornellbox.png)
-
-classic cornell box with obj
 
 # 3.learning process
 
