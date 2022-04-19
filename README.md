@@ -31,7 +31,7 @@ make ci
 另外注意路径要正确 要在makefile同一个目录下
 
 - 你可以改变run.rs的<img src="https://s2.loli.net/2022/04/19/RPpA1nGJkyhilfL.png" alt="image-20220419170527136.png" style="zoom:25%;" /> 的number来改变你想要的图片！(in the file raytracer/src/run.rs) take whatever you want!
-- make ci之后你可以看到进度表 如果你觉得跑的太慢的话可以改变<img src="https://s2.loli.net/2022/04/19/RPpA1nGJkyhilfL.png" alt="image-20220419170527136.png" style="zoom:33%;" />这个值来降低清晰度 提高速度
+- make ci之后你可以看到进度表 如果你觉得跑的太慢的话可以改变<img src="https://s2.loli.net/2022/04/19/rDgdKREfhwu9P83.png" alt="image- 20220419170527136.png" style="zoom:33%;" />这个值来降低清晰度 提高速度
 
 - 最终的结果在output/test.png
 
@@ -55,7 +55,7 @@ Note that the first make ci may take a long time
 Also note that the path must be correct and must be in the same directory as the makefile
 
 - You can change run.rs's <img src="https://s2.loli.net/2022/04/19/RPpA1nGJkyhilfL.png" alt="image-20220419170527136.png" style="zoom:25%; "/> number to change the picture you want!(in the file raytracer/src/run.rs) take whatever you want!
-- After make ci you can see the progress meter if you think it is too slow you can change <img src="https://s2.loli.net/2022/04/19/RPpA1nGJkyhilfL.png" alt="image- 20220419170527136.png" style="zoom:33%;" />This value reduces the resolution and increases the speed
+- After make ci you can see the progress meter if you think it is too slow you can change <img src="https://s2.loli.net/2022/04/19/rDgdKREfhwu9P83.png" alt="image- 20220419170527136.png" style="zoom:33%;" />This value reduces the resolution and increases the speed
 - The final result is in output/test.png
 
 # 1.execution
