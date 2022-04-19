@@ -7,8 +7,15 @@ use crate::pdf::{HittablePdf, MixturePdf, Pdf, StaticHittablePdf, StaticMixtureP
 
 use crate::camera;
 pub use crate::ray::Ray;
-use crate::scence::{cornell_box, cornell_box_rabbit, cornell_smoke, earth, final_book2_scence, my_scence_ball_world, obj, obj_with_texture, random_sence, simple_light, two_berlin_spheres, two_spheres, my_world, my_untimately};
-use crate::staticscence::{static_cornell_box, static_earth, static_random_sence, two_texture_static, static_bvh_random_scence};
+use crate::scence::{
+    cornell_box, cornell_box_rabbit, cornell_smoke, earth, final_book2_scence,
+    my_scence_ball_world, my_untimately, my_world, obj, obj_with_texture, random_sence,
+    simple_light, two_berlin_spheres, two_spheres,
+};
+use crate::staticscence::{
+    static_bvh_random_scence, static_cornell_box, static_earth, static_random_sence,
+    two_texture_static,
+};
 use crate::texture::StaticBaseColor;
 pub use crate::vec3::Vec3;
 use image::{ImageBuffer, RgbImage};
@@ -61,12 +68,12 @@ fn color(
             if scatterrecord.is_specular {
                 return scatterrecord.attenuation
                     * color(
-                    scatterrecord.specular_ray,
-                    background,
-                    world,
-                    lights,
-                    dep - 1,
-                );
+                        scatterrecord.specular_ray,
+                        background,
+                        world,
+                        lights,
+                        dep - 1,
+                    );
             }
 
             let lightptr = Arc::new(HittablePdf::new(lights.clone(), &_rec.p));
@@ -77,9 +84,9 @@ fn color(
 
             let mm = emitted
                 + scatterrecord.attenuation
-                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                * color(scattered, background, world, lights, dep - 1)
-                / pdf_val;
+                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                    * color(scattered, background, world, lights, dep - 1)
+                    / pdf_val;
 
             return mm;
         }
@@ -107,13 +114,14 @@ pub(crate) fn run() {
     // let image_width = 400 as u32;
     let mut image_width = 600_u32;
     let mut image_heigth = (image_width as f64 / ratio) as u32;
-    let sample_per_pixel = 1; //ought to be 100  可以做的更大比如500//
+    let sample_per_pixel = 2; //ought to be 100  可以做的更大比如500//
     let max_depth = 50; //an bo modifyed to lessen the time
     let mut backgroud = Vec3::new(0.0, 0.0, 0.0);
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
-    let number = 4;
+    //choose picture you want
+    let number = 2;
     let mut world = HittableList { objects: vec![] };
     match number {
         1 => {
@@ -244,7 +252,6 @@ pub(crate) fn run() {
     let bar = ProgressBar::new(16);
     let world_inthread = Arc::new(world);
     for i in 0..n_jobs {
-        println!("yyy");
         let tx = tx.clone();
         let worldptr = world_inthread.clone();
         let lightsptr = lights.clone();
@@ -329,12 +336,12 @@ fn staticcolor<T: StaticHittable>(
             if scatterrecord.is_specular {
                 return scatterrecord.attenuation
                     * staticcolor(
-                    scatterrecord.specular_ray,
-                    background,
-                    world,
-                    lights,
-                    dep - 1,
-                );
+                        scatterrecord.specular_ray,
+                        background,
+                        world,
+                        lights,
+                        dep - 1,
+                    );
             }
 
             let lightptr = StaticHittablePdf::new(lights, &_rec.p);
@@ -345,9 +352,9 @@ fn staticcolor<T: StaticHittable>(
 
             let mm = emitted
                 + scatterrecord.attenuation
-                * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
-                * staticcolor(scattered, background, world, lights, dep - 1)
-                / pdf_val;
+                    * _rec.mat_ptr.scattering_odf(&x, &_rec, &scattered)
+                    * staticcolor(scattered, background, world, lights, dep - 1)
+                    / pdf_val;
 
             return mm;
         }

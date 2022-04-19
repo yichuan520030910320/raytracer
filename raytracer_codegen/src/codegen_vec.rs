@@ -1,7 +1,7 @@
+use proc_macro2::{Ident, Span, TokenStream};
 use rand::Rng;
 use std::f64::consts::PI;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use proc_macro2::{TokenStream, Span, Ident};
 use syn::__private::TokenStreamExt;
 
 //let secret_number = ;

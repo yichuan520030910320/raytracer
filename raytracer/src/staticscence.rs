@@ -1,14 +1,16 @@
 use crate::aarect::{StaticXyRect, StaticXzRect, StaticYzRect};
-use crate::hittable::{StaticBox1, StaticHittableList, StaticMovingSphere, StaticRotateY, StaticSphere, StaticTranslate, StaticHittable, StaticBvhNode};
+use crate::hittable::{
+    StaticBox1, StaticBvhNode, StaticHittable, StaticHittableList, StaticMovingSphere,
+    StaticRotateY, StaticSphere, StaticTranslate,
+};
 use crate::material::{
     StaticDielectric, StaticDiffuseLight, StaticFlipFace, StaticLambertian, StaticMetal,
 };
 use crate::perlin::NoiseTexture;
 use crate::run::{random_doouble, range_random_double};
 use crate::texture::{CheckerTexture, StaticBaseColor, StaticImageTexture};
-use std::sync::Arc;
 use crate::vec3::Vec3;
-
+use std::sync::Arc;
 
 pub fn two_texture_static() -> StaticHittableList {
     let mut world = StaticHittableList { objects: vec![] };

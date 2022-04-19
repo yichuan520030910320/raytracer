@@ -42,7 +42,8 @@ impl Aabb {
                     t0 = (self.maximum.x - r.ori.x) / r.dic.x;
                     t1 = (self.minimun.x - r.ori.x) / r.dic.x;
                 }
-                if t0 < t_min {} else {
+                if t0 < t_min {
+                } else {
                     t_min = t0;
                 }
                 if t1 < t_max {
@@ -61,7 +62,8 @@ impl Aabb {
                     t0 = (self.maximum.y - r.ori.y) / r.dic.y;
                     t1 = (self.minimun.y - r.ori.y) / r.dic.y;
                 }
-                if t0 < t_min {} else {
+                if t0 < t_min {
+                } else {
                     t_min = t0;
                 }
                 if t1 < t_max {
@@ -80,7 +82,8 @@ impl Aabb {
                     t0 = (self.maximum.z - r.ori.z) / r.dic.z;
                     t1 = (self.minimun.z - r.ori.z) / r.dic.z;
                 }
-                if t0 < t_min {} else {
+                if t0 < t_min {
+                } else {
                     t_min = t0;
                 }
                 if t1 < t_max {

@@ -3,8 +3,8 @@
 mod codegen_vec;
 mod readfromjson;
 
-use crate::codegen_vec::range_random_double;
 use crate::codegen_vec::random_doouble;
+use crate::codegen_vec::range_random_double;
 use crate::codegen_vec::Vec3;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -16,7 +16,6 @@ struct Cotenent {
     bounding: Vec3,
     code: TokenStream,
 }
-
 
 fn bvh_build(contenent: &mut Vec<Cotenent>) -> TokenStream {
     let span = contenent.len();
@@ -47,7 +46,7 @@ pub fn random_scene_static_bvh(_: proc_macro::TokenStream) -> proc_macro::TokenS
     for a in -11..11 {
         for b in -11..11 {
             let choose_mat = random_doouble();
-            println!("aaa  {}", choose_mat);
+            // println!("aaa  {}", choose_mat);
             let center = Vec3::new(
                 a as f64 + 0.9 * random_doouble(),
                 0.2,
@@ -57,7 +56,7 @@ pub fn random_scene_static_bvh(_: proc_macro::TokenStream) -> proc_macro::TokenS
             let r2 = center.y;
             let r3 = center.z;
             if ((center - Vec3::new(4.0, 0.2, 0.0)).length()) > 1.19 {
-                println!("got in  {}", choose_mat);
+                // println!("got in  {}", choose_mat);
                 if choose_mat < 0.6 {
                     let albedo = Vec3::random() * Vec3::random();
 
@@ -87,7 +86,7 @@ StaticSphere {
                         )}),
                     });
                 } else if choose_mat < 0.850 {
-                    print!("***");
+                    // print!("***");
                     let albedo = Vec3::randomrange(0.5, 1.0);
                     let x1 = albedo.x;
                     let x2 = albedo.y;
@@ -96,95 +95,92 @@ StaticSphere {
                     objects.push(Cotenent {
                         bounding: center - Vec3::new(0.2, 0.2, 0.2),
                         code: quote! {(
-                            Arc::new(
-StaticSphere {
-                        p: Vec3::zero(),
-                        normal:Vec3 {
-                            x: 0.0,
-                            y: 0.0,
-                            z: 0.0,
-                        },
-                        t: 0.0,
-                        center: Vec3{x:#r1,
-                            y: #r2,
-                            z:#r3,} ,
-                        radius: 0.2,
-                        mat_ptr: StaticMetal::new(Vec3::new(
-                                        #x1,#x2,#x3
-                                    ), #fuzz)
-                    }
-                            )
-                        )},
+                                                    Arc::new(
+                        StaticSphere {
+                                                p: Vec3::zero(),
+                                                normal:Vec3 {
+                                                    x: 0.0,
+                                                    y: 0.0,
+                                                    z: 0.0,
+                                                },
+                                                t: 0.0,
+                                                center: Vec3{x:#r1,
+                                                    y: #r2,
+                                                    z:#r3,} ,
+                                                radius: 0.2,
+                                                mat_ptr: StaticMetal::new(Vec3::new(
+                                                                #x1,#x2,#x3
+                                                            ), #fuzz)
+                                            }
+                                                    )
+                                                )},
                     });
                 } else {
-
-
-//                     objects.push(Cotenent {
-//                         bounding: Vec3::new(0.3,0.3,0.3) - Vec3::new(0.2, 0.2, 0.2),
-//                         code: (quote! {(
-//                             Arc::new(
-// StaticMovingSphere {
-//                        center0: Vec3::new(0.1,0.1,0.1),
-//                         center1:Vec3::new(0.2,0.2,0.2),
-//                         time0:0.0,//todo
-//                         time1: 1.0,
-//                         radius: 0.2,
-//                         mat_ptr: StaticLambertian::<StaticBaseColor>::new(Vec3::new(
-//                                        0.99,0.0,0.0
-//                                     )),
-//                     }
-//                             )
-//                         )}),
-//                     });
+                    //                     objects.push(Cotenent {
+                    //                         bounding: Vec3::new(0.3,0.3,0.3) - Vec3::new(0.2, 0.2, 0.2),
+                    //                         code: (quote! {(
+                    //                             Arc::new(
+                    // StaticMovingSphere {
+                    //                        center0: Vec3::new(0.1,0.1,0.1),
+                    //                         center1:Vec3::new(0.2,0.2,0.2),
+                    //                         time0:0.0,//todo
+                    //                         time1: 1.0,
+                    //                         radius: 0.2,
+                    //                         mat_ptr: StaticLambertian::<StaticBaseColor>::new(Vec3::new(
+                    //                                        0.99,0.0,0.0
+                    //                                     )),
+                    //                     }
+                    //                             )
+                    //                         )}),
+                    //                     });
                     objects.push(Cotenent {
                         bounding: center - Vec3::new(0.2, 0.2, 0.2),
                         code: quote! {(
-                            Arc::new(
-StaticSphere {
-                        p: Vec3 {
-                            x: 0.0,
-                            y: 0.0,
-                            z: 0.0,
-                        },
-                        normal: Vec3 {
-                            x: 0.0,
-                            y: 0.0,
-                            z: 0.0,
-                        },
-                        t: 0.0,
-                        center: Vec3 {
-                            x: #r1,
-                            y: #r2,
-                            z: #r3,
-                        },
-                        radius: 0.2,
-                        mat_ptr: StaticDielectric::new(1.5),
-                    }
-                            )
-                        )},
+                                                    Arc::new(
+                        StaticSphere {
+                                                p: Vec3 {
+                                                    x: 0.0,
+                                                    y: 0.0,
+                                                    z: 0.0,
+                                                },
+                                                normal: Vec3 {
+                                                    x: 0.0,
+                                                    y: 0.0,
+                                                    z: 0.0,
+                                                },
+                                                t: 0.0,
+                                                center: Vec3 {
+                                                    x: #r1,
+                                                    y: #r2,
+                                                    z: #r3,
+                                                },
+                                                radius: 0.2,
+                                                mat_ptr: StaticDielectric::new(1.5),
+                                            }
+                                                    )
+                                                )},
                     });
                 }
             }
         }
     }
 
-
     objects.push(Cotenent {
         bounding: Vec3::new(0.3, 0.3, 0.3) - Vec3::new(0.2, 0.2, 0.2),
         code: (quote! {(
-                            Arc::new(
-StaticMovingSphere {
-                       center0: Vec3::new(0.1,0.1,0.1),
-                        center1:Vec3::new(0.2,0.2,0.2),
-                        time0:0.0,//todo
-                        time1: 1.0,
-                        radius: 0.2,
-                        mat_ptr: StaticLambertian::<StaticBaseColor>::new(Vec3::new(
-                                       0.99,0.0,0.0
-                                    )),
-                    }
-                            )
-                        )}),
+                                    Arc::new(
+        StaticMovingSphere {
+                               center0: Vec3::new(0.1,0.1,0.1),
+                                center1:Vec3::new(0.2,0.2,0.2),
+                                time0:0.0,//todo
+                                time1: 1.0,
+                                radius: 0.2,
+                                mat_ptr: StaticLambertian::<StaticBaseColor>::new(Vec3::new(
+                                               0.99,0.0,0.0
+                                            )),
+                            }
+                                    )
+                                )}),
     });
     println!("&&&&");
     let allnode = bvh_build(&mut objects);

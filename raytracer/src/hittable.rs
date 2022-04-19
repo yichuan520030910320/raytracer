@@ -1663,7 +1663,7 @@ pub struct StaticConstantMedium<T1: StaticHittable, T2: Clone + StaticMaterial> 
 
 #[allow(clippy::needless_return)]
 impl<T1: StaticHittable, T2: Clone + StaticMaterial> StaticHittable
-for StaticConstantMedium<T1, T2>
+    for StaticConstantMedium<T1, T2>
 {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<StaticHitrecord> {
         if let Option::Some(mut rec1) = self.boundary.hit(r, -INF, INF) {
@@ -1715,7 +1715,7 @@ for StaticConstantMedium<T1, T2>
 }
 
 impl<T1: StaticHittable, T2: Clone + texture::Texture>
-StaticConstantMedium<T1, StaticIsotropic<T2>>
+    StaticConstantMedium<T1, StaticIsotropic<T2>>
 {
     #[allow(dead_code)]
     pub fn new(b: T1, d: f64, c: T2) -> Self {

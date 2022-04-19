@@ -100,7 +100,8 @@ pub struct Metal {
 impl Metal {
     #[allow(dead_code)]
     pub fn new(albedo: Vec3, mut fuzz: f64) -> Self {
-        if fuzz < 1.0 {} else {
+        if fuzz < 1.0 {
+        } else {
             fuzz = 1.0
         }
         Self { albedo, fuzz }
@@ -430,7 +431,8 @@ pub struct StaticMetal {
 
 impl StaticMetal {
     pub fn new(albedo: Vec3, mut fuzz: f64) -> Self {
-        if fuzz < 1.0 {} else {
+        if fuzz < 1.0 {
+        } else {
             fuzz = 1.0
         }
         Self { albedo, fuzz }

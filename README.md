@@ -1,6 +1,62 @@
+
+
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/yichuan520030910320/raytracer)
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/yichuan520030910320/raytracer?style=social)
+
+# 0.how to install and run?
+
+manual in Chinese
+
+- 你可以先把压缩包下载到本地（或者是git clone）
+
+- 在本地你需要安装vscode或者clion的RUST插件来运行本项目
+
+<img src="https://s2.loli.net/2022/04/19/bBU8vuGoYmz49ae.png" alt="image-20220419164953229.png" style="zoom:33%;" />
+
+- 以vscode为例，在安装好这个插件之后，你可以ctrl + ` 打开终端（随便你怎么开终端）
+
+```
+make ci
+```
+
+即可
+
+<img src="https://s2.loli.net/2022/04/19/1JW5R4jruicMdVC.png" alt="image-20220419165055817.png" style="zoom:33%;" />
+
+回车运行 接下来就能跑了
+
+注意第一次make ci可能需要比较长的时间
+
+另外注意路径要正确 要在makefile同一个目录下
+
+- 你可以改变run.rs的<img src="https://s2.loli.net/2022/04/19/RPpA1nGJkyhilfL.png" alt="image-20220419170527136.png" style="zoom:25%;" /> 的number来改变你想要的图片！(in the file raytracer/src/run.rs) take whatever you want!
+- make ci之后你可以看到进度表 如果你觉得跑的太慢的话可以改变<img src="https://s2.loli.net/2022/04/19/RPpA1nGJkyhilfL.png" alt="image-20220419170527136.png" style="zoom:33%;" />这个值来降低清晰度 提高速度
+
+- 最终的结果在output/test.png
+
+manual in English
+
+- You can first download the compressed package to the local (or git clone)
+- You need to install the RUST plugin of vscode or clion locally to run this project
+
+<img src="https://s2.loli.net/2022/04/19/bBU8vuGoYmz49ae.png" alt="image-20220419164953229.png" style="zoom:33%;" />
+
+- Take vscode as an example, after installing this plugin, you can ctrl + ` to open the terminal (however you want to open the terminal)
+
+```
+make ci
+```
+
+Enter and run, and then you can run
+
+Note that the first make ci may take a long time
+
+Also note that the path must be correct and must be in the same directory as the makefile
+
+- You can change run.rs's <img src="https://s2.loli.net/2022/04/19/RPpA1nGJkyhilfL.png" alt="image-20220419170527136.png" style="zoom:25%; "/> number to change the picture you want!(in the file raytracer/src/run.rs) take whatever you want!
+- After make ci you can see the progress meter if you think it is too slow you can change <img src="https://s2.loli.net/2022/04/19/RPpA1nGJkyhilfL.png" alt="image- 20220419170527136.png" style="zoom:33%;" />This value reduces the resolution and increases the speed
+- The final result is in output/test.png
 
 # 1.execution
 
