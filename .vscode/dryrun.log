@@ -1,0 +1,5 @@
+make.exe --dry-run --always-make --keep-going --print-directory
+make.exe: Entering directory 'c:/Users/18303/Desktop/learn/ppca/myraytracer1'
+cargo run
+make.exe: Leaving directory 'c:/Users/18303/Desktop/learn/ppca/myraytracer1'
+ 

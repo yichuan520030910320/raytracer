@@ -1,0 +1,1 @@
+{"buildTargets":[".PHONY","ci","clean","clippy","fmt","run","run_release","test"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}
