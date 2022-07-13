@@ -8,7 +8,7 @@ make.exe: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Jun 17 00:51:04 2022
+# Make data base, printed on Tue Jul 05 09:38:39 2022
 
 # Variables
 
@@ -48,7 +48,8 @@ VSCODE_NLS_CONFIG = {"locale":"zh-cn","availableLanguages":{"*":"zh-cn"},"_langu
 ONEDRIVE = C:\Users\18303\OneDrive
 # environment
 PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
-# makefile (from 'Makefile', line 1)
+# makefile  
+(from 'Makefile', line 1)
 MAKEFILE_LIST :=  Makefile
 # environment
 TMP = C:\Users\18303\AppData\Local\Temp
@@ -59,7 +60,7 @@ PROGRAMW6432 = C:\Program Files
 # environment
 PROGRAMDATA = C:\ProgramData
 # environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-572f68b2-b7f7-4b01-95f5-d539ed69f0bb-sock
+VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-3fa40d78-1433-43de-93c9-bb996fb373d2-sock
 # environment
 VSCODE_CWD = C:\Users\18303\Desktop\learn\ppca\myraytracer1
 # default
@@ -89,7 +90,7 @@ ELECTRON_RUN_AS_NODE = 1
 # automatic
 %F = $(notdir $%)
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_3100_FJUHGOGVHGJMOXLO
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_36964_PPEZMNSPEMBEOBKV
 # environment
 VSCODE_PIPE_LOGGING = true
 # environment
@@ -173,8 +174,6 @@ SYSTEMROOT = C:\Windows
 # environment
 APPDATA = C:\Users\18303\AppData\Roaming
 # environment
-__COMPAT_LAYER = DetectorsAppHealth
-# environment
 TEMP = C:\Users\18303\AppData\Local\Temp
 # environment
 COMSPEC = C:\Windows\system32\cmd.exe
@@ -205,11 +204,11 @@ LANG = C
 # environment
 PROCESSOR_LEVEL = 6
 # environment
-VSCODE_PID = 3100
+VSCODE_PID = 36964
 # environment
 USERDOMAIN_ROAMINGPROFILE = DESKTOP-GNHGROJ
 # variable set hash-table stats:
-# Load=98/1024=10%, Rehash=0, Collisions=15/120=13%
+# Load=97/1024=9%, Rehash=0, Collisions=15/119=13%
 
 # Pattern-specific Variable Values
 
@@ -217,7 +216,7 @@ USERDOMAIN_ROAMINGPROFILE = DESKTOP-GNHGROJ
 
 # Directories
 
-# . (key c:/Users/18303/Desktop/learn/ppca/myraytracer1, mtime 1655397451): 71 files, no impossibilities.
+# . (key c:/Users/18303/Desktop/learn/ppca/myraytracer1, mtime 1655398497): 71 files, no impossibilities.
 
 # 71 files, no impossibilities in 1 directories.
 
@@ -313,11 +312,12 @@ fmt:
 # No general ('VPATH' variable) search path.
 
 # strcache buffers: 1 (0) / strings = 82 / storage = 1028 B / avg = 12 B
-# current buf: size = 8162 B / used = 1028 B / count = 82 / avg = 12 B
+# current buf: size = 8162 B / used =  
+1028 B / count = 82 / avg = 12 B
 
 # strcache performance: lookups = 103 / hit rate = 20%
 # hash-table stats:
 # Load=82/8192=1%, Rehash=0, Collisions=1/103=1%
-# Finished Make data base on Fri Jun 17 00:51:04 2022
+# Finished Make data base on Tue Jul 05 09:38:39 2022
 
  

@@ -1,5 +1,4 @@
 use crate::run::{Ray, Vec3};
-
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Aabb {
     pub minimun: Vec3,

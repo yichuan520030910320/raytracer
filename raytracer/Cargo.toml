@@ -17,3 +17,10 @@ tobj = "3.0.1"
 raytracer_codegen = { path = "../raytracer_codegen" }
 yaml-rust = "0.4"
 serde_json = "1.0"
+criterion = "0.3"
+project-root = "0.2.2"
+
+
+[[bench]]
+name = "my_benchmark"
+harness = false

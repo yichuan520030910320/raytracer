@@ -732,9 +732,15 @@ for (i, m) in materials.iter().enumerate() {
 
 ### (2)泛型引用相关的bonus
 
+https://alschwalm.com/blog/static/2017/03/07/exploring-dynamic-dispatch-in-rust/
+
+https://zhuanlan.zhihu.com/p/163650432
+
+静态分发和动态分发
+
 Q1：
 
-
+The dyn keyword is used to highlight that calls to methods on the associated Trait are dynamically dispatched.
 
 这个前两个为什么不能不用dyn
 
@@ -758,7 +764,7 @@ Q2:引用加泛型的作用
 
 ### (3)给transform加上pdf
 
-就是让随机的光线加上偏移量（角度或者位移）
+就是让随机的光线加上偏移量（角度或者位移）(probability dense function)
 
 就好了
 

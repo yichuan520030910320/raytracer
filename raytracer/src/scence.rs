@@ -86,6 +86,61 @@ pub(crate) fn two_spheres() -> HittableList {
     world
 }
 
+
+#[allow(dead_code)]
+pub(crate) fn two_Dielectric_spheres() -> HittableList {
+    let mut world = HittableList { objects: vec![] };
+
+    let checker = Arc::new(NoiseTexture::new(4.0));
+    let below = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: -1000.0,
+            z: 0.0,
+        },
+        radius: 1000.0,
+        mat_ptr: Arc::new(Lambertian::new1(checker)),
+    };
+    world.add(Arc::new(below));
+
+    let checker1 = Arc::new(NoiseTexture::new(4.0));
+    let above = Sphere {
+        p: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        normal: Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        t: 0.0,
+        center: Vec3 {
+            x: 0.0,
+            y: 2.0,
+            z: 0.0,
+        },
+        radius: 2.0,
+        mat_ptr: Arc::new(Dielectric::new(1.5)),
+    };
+    world.add(Arc::new(above));
+
+    world
+}
+
+
 #[allow(dead_code)]
 pub(crate) fn random_sence() -> HittableList {
     let mut world = HittableList { objects: vec![] };
@@ -521,6 +576,58 @@ pub(crate) fn cornell_box() -> HittableList {
         mat_ptr: Arc::new(Dielectric::new(1.5)),
     };
     world.add(Arc::new(material1));
+
+
+
+
+    // let cornell_box = tobj::load_obj(
+    //     //buddle
+    //     "spherehigh.obj",
+    //     &tobj::LoadOptions {
+    //         single_index: true,
+    //         triangulate: true,
+    //         ..Default::default()
+    //     },
+    // );
+    // assert!(cornell_box.is_ok());
+    // let rate = 10.0 * 1.9;
+    // let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+    // for (_i, m) in models.iter().enumerate() {
+    //     let mesh = &m.mesh;
+    //     let mut boxes2 = HittableList { objects: vec![] };
+    //     for v in 0..mesh.indices.len() / 3 {
+    //         let x1 = mesh.indices[3 * v];
+    //         let x2 = mesh.indices[3 * v + 1];
+    //         let x3 = mesh.indices[3 * v + 2];
+    //         let triange = Triangel::new(
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x1) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x1 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x1 + 2) as usize] as f64,
+    //             },
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x2) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x2 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x2 + 2) as usize] as f64,
+    //             },
+    //             Vec3 {
+    //                 x: rate * mesh.positions[(3 * x3) as usize] as f64,
+    //                 y: rate * mesh.positions[(3 * x3 + 1) as usize] as f64,
+    //                 z: rate * mesh.positions[(3 * x3 + 2) as usize] as f64,
+    //             },
+    //             Arc::new(Dielectric::new(1.5)),
+    //         );
+    //         boxes2.add(Arc::new(triange));
+    //     }
+    //     let allin = Translate::new(
+    //         Arc::new(RotateY::new(
+    //             Arc::new(BvhNode::new(boxes2.objects, 0.0, 1.0)),
+    //             200.0,
+    //         )),
+    //         Vec3::new(190.0, 90.0, 90.0),
+    //     );
+    //     world.add(Arc::new(allin));
+    // }
 
     // let mut whitebox2: Arc<dyn Hittable> = Arc::new(Box1::new(
     //     &Vec3::new(0.0, 0.0, 0.0),

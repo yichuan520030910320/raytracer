@@ -1,13 +1,66 @@
-const INF: f64 = 1000000.0;
+pub fn fibonacci(n: u64) -> u64 {
+    match n {
+        0 => 1,
+        1 => 1,
+        n => fibonacci(n - 1) + fibonacci(n - 2),
+    }
+}
+fn fibonacci1(n: u64) -> u64 {
+    let mut a = 0;
+    let mut b = 1;
 
+    match n {
+        0 => b,
+        _ => {
+            for _ in 0..n {
+                let c = a + b;
+                a = b;
+                b = c;
+            }
+            b
+        }
+    }
+}
+
+const INF: f64 = 1000000.0;
+// mod aabb;
+// mod aarect;
+// mod example_macro;
+// mod hittable;
+// mod material;
+// mod onb;
+// mod pdf;
+// mod perlin;
+// mod ray;
+// mod rtweekend;
+// mod run;
+// mod scence;
+// mod staticscence;
+// mod texture;
+// mod vec3;
+// include!("aarect.rs");
+// include!("aabb.rs");
+// include!("camera.rs");
+// include!("hittable.rs");
+// include!("onb.rs");
+// include!("material.rs");
+// include!("scence.rs");
+// include!("staticscence.rs");
+// include!("pdf.rs");
+// include!("ray.rs");
+// include!("texture.rs");
+// include!("vec3.rs");
 use crate::aarect::{StaticXzRect, XzRect};
+use crate::camera;
 use crate::hittable::{Hittable, HittableList, StaticHittable, StaticHittableList};
 use crate::material::{Lambertian, StaticLambertian};
 use crate::pdf::{HittablePdf, MixturePdf, Pdf, StaticHittablePdf, StaticMixturePdf};
-
-use crate::camera;
 pub use crate::ray::Ray;
-use crate::scence::{cornell_box, cornell_box_rabbit, cornell_smoke, earth, final_book2_scence, my_scence_ball_world, my_untimately, my_world, obj, obj_with_texture, random_sence, simple_light, two_berlin_spheres, two_spheres, two_Dielectric_spheres};
+use crate::scence::{
+    cornell_box, cornell_box_rabbit, cornell_smoke, earth, final_book2_scence,
+    my_scence_ball_world, my_untimately, my_world, obj, obj_with_texture, random_sence,
+    simple_light, two_berlin_spheres, two_spheres,
+};
 use crate::staticscence::{
     static_bvh_random_scence, static_cornell_box, static_earth, static_random_sence,
     two_texture_static,
@@ -17,9 +70,97 @@ pub use crate::vec3::Vec3;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use rand::Rng;
+use std::f64::consts::PI;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
+
+#[derive(Clone, Debug, PartialEq, Copy)]
+pub struct Camera {
+    origin: Vec3,
+    horizontal: Vec3,
+    vertical: Vec3,
+    lower_left_corner: Vec3,
+    u: Vec3,
+    v: Vec3,
+    w: Vec3,
+    lens_radius: f64,
+    time0: f64,
+    time1: f64,
+}
+
+fn degree_to_radians(degrees: f64) -> f64 {
+    degrees * PI / 180.0
+}
+
+impl Camera {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        lookfrom: Vec3,
+        lookat: Vec3,
+        vup: Vec3,
+        vfov: f64,
+        aspect_ratio: f64,
+        aperture: f64,
+        focus_dist: f64,
+        _time0: f64,
+        _time1: f64,
+    ) -> Self {
+        let theta = degree_to_radians(vfov);
+        let h = (theta / 2.0).tan();
+        let view_heigth = 2.0 * h;
+        let view_width = aspect_ratio * view_heigth;
+        let w = Vec3::unit(lookfrom - lookat);
+        let u = Vec3::unit(Vec3::cross(vup, w));
+        let v = Vec3::cross(w, u);
+
+        let horizontemp = u * view_width * focus_dist;
+        let verticaltemp = v * view_heigth * focus_dist;
+
+        // let ratio: f64 = 16.0 / 9.0;
+        // let view_heigth: f64 = 2.0;
+        // let view_width = (view_heigth * ratio) as f64;
+        Self {
+            origin: Vec3 {
+                x: lookfrom.x,
+                y: lookfrom.y,
+                z: lookfrom.z,
+            },
+
+            horizontal: Vec3 {
+                x: horizontemp.x,
+                y: horizontemp.y,
+                z: horizontemp.z,
+            },
+
+            vertical: Vec3 {
+                x: verticaltemp.x,
+                y: verticaltemp.y,
+                z: verticaltemp.z,
+            },
+            lower_left_corner: Vec3 {
+                x: lookfrom.x - horizontemp.x / 2.0 - verticaltemp.x / 2.0 - w.x * focus_dist,
+                y: lookfrom.y - horizontemp.y / 2.0 - verticaltemp.y / 2.0 - w.y * focus_dist,
+                z: lookfrom.z - horizontemp.z / 2.0 - verticaltemp.z / 2.0 - w.z * focus_dist,
+            },
+            u,
+            v,
+            w,
+            lens_radius: aperture / 2.0,
+            time0: _time0,
+            time1: _time1,
+        }
+    }
+    pub fn get_ray(&self, s: f64, t: f64) -> Ray {
+        let rd = Vec3::random_in_unit_disk() * self.lens_radius;
+        let offset = self.u * rd.x + self.v * rd.y;
+        Ray::new(
+            self.origin + offset,
+            self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin - offset,
+            range_random_double(self.time0, self.time1),
+        )
+    }
+}
 
 pub(crate) fn random_doouble() -> f64 {
     rand::thread_rng().gen_range(1..101) as f64 / 102.0
@@ -117,7 +258,7 @@ pub(crate) fn run() {
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
     //choose picture you want
-    let number = 6;
+    let number = 1;
     let mut world = HittableList { objects: vec![] };
     match number {
         1 => {
@@ -210,13 +351,6 @@ pub(crate) fn run() {
             image_width = 1600_u32;
             ratio = 1.0 / 0.618;
             image_heigth = (image_width as f64 / ratio) as u32;
-        }
-        15 => {
-            world = two_Dielectric_spheres();
-            vfov = 20.0;
-            lookat = Vec3::new(0.0, 0.0, 0.0);
-            lookfrom = Vec3::new(13.0, 2.0, 3.0);
-            backgroud = Vec3::new(0.7, 0.8, 1.0);
         }
         _ => println!("you are wrong !! please choose the wonderful world you want to see again."),
     }

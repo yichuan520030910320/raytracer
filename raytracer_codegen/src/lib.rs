@@ -182,7 +182,6 @@ StaticSphere {
                                     )
                                 )}),
     });
-    println!("&&&&");
     let allnode = bvh_build(&mut objects);
     let result = proc_macro::TokenStream::from(quote! {
          fn add_bvh_static()->Arc<dyn StaticHittable>{
