@@ -14,12 +14,13 @@ mod scence;
 mod staticscence;
 mod texture;
 mod vec3;
+mod testbench;
 
 #[allow(unused_imports)]
 use crate::run::{run, runstatic};
 
 fn main() {
-    let num = 1;
+    let num = 2;
     match num {
         1 => run(),
         2 => runstatic(),

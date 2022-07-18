@@ -6,7 +6,14 @@
 
 
 
-www
+Feature
+
+- [x] static dispatch (can be compared with dyn dispatch using benchmark)
+- [x] remove arc and change it to reference
+- [x] static bvh 
+- [x] add  cargo bench (use criterion)
+- [x] transformer pdf
+- [x] support obj
 
 # 0.some final work(continue to update)
 

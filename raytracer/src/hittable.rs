@@ -102,6 +102,48 @@ impl Hitrecord {
     }
 }
 
+// trait Hittable<'a> {
+//     fn hit(&self);
+// }
+//
+// trait Material {
+//     fn result(&self);
+// }
+//
+// struct Glass;
+//
+// impl Material for Glass {
+//     fn result(&self) {
+//         println!("Glass is broken!");
+//     }
+// }
+//
+// struct Sphere<'a> {
+//     name: String,
+//     mat_ptr: &'a dyn Material,
+// }
+//
+// impl<'a> Hittable<'a> for Sphere<'a> {
+//     fn hit(&self) {
+//         println!("Name is {}", self.name);
+//         self.mat_ptr.result();
+//     }
+// }
+//
+// struct HT<'a> {
+//     pub objects: Vec<Box<dyn Hittable<'a>>>,
+// }
+//
+// fn main() {
+//     let mut list = HT { objects: vec![] };
+//     let surface_material = Glass;
+//     let s = Sphere {
+//         name: String::from("球"),
+//         mat_ptr: &surface_material,
+//     };
+//     list.objects.push(Box::new(s));
+// }
+
 #[allow(dead_code)]
 pub struct MovingSphere {
     pub center0: Vec3,
