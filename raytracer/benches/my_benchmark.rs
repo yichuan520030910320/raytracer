@@ -8037,7 +8037,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     let mut lookfrom = Vec3::new(278.0, 278.0, -800.0); //13 2 3
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
-    let number = 2;
+    let number = 1;
     let mut world = StaticHittableList { objects: vec![] };
     match number {
         1 => {
@@ -8184,7 +8184,7 @@ pub fn criterion_benchmark1(c: &mut Criterion) {
     let mut lookat = Vec3::new(278.0, 278.0, 0.0);
     let mut vfov = 40.0;
     //choose picture you want
-    let number = 2;
+    let number = 3;
     let mut world = HittableList { objects: vec![] };
     match number {
         1 => {
@@ -8371,5 +8371,9 @@ pub fn criterion_benchmark1(c: &mut Criterion) {
 
 }
 
+
+
+//criterion_benchmark1 stand for dyn dispatch
+//criterion_benchmark stand for static dispatch
 criterion_group!(benches, criterion_benchmark);
 criterion_main!(benches);
